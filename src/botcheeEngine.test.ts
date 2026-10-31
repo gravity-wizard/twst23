@@ -4,19 +4,25 @@ import {
   BOTCHEE_COLUMNS,
   BOTCHEE_ROWS,
   FOUR_IN_A_ROW_LINES,
+  THREE_IN_A_ROW_LINES,
   chooseBotMove,
   createBotcheeGame,
+  getAdaptiveBotLevel,
   getBotcheeElapsedMs,
   getLegalPointMoves,
+  getLegalPatternMoves,
   getPointMoveScore,
   hasFourInARow,
+  hasThreeInARow,
   isLegalNumber,
+  isLegalPatternMove,
   playFlipsMove,
   playPatternMove,
   playPointMove,
   selectDie,
   flipSelectedDie,
   startBotcheeGame,
+  updateElo,
 } from "./botcheeEngine";
 
 const SOLVED_BOARD = [
@@ -104,36 +110,82 @@ describe("Points mode", () => {
 
 describe("Fic-Fac-Foe mode", () => {
   it("recognizes horizontal, vertical, and both diagonal wins", () => {
+    expect(THREE_IN_A_ROW_LINES).toHaveLength(20);
+    expect(hasThreeInARow(["human", "human", "human", null, ...Array(12).fill(null)], "human")).toBe(true);
+    expect(hasThreeInARow([null, "bot", null, null, null, "bot", null, null, null, "bot", null, null, null, null, null, null], "bot")).toBe(true);
+    expect(hasThreeInARow(["human", null, null, null, null, "human", null, null, null, null, "human", null, null, null, null, null], "human")).toBe(true);
+    expect(hasThreeInARow([null, null, null, "bot", null, null, "bot", null, null, "bot", null, null, "bot", null, null, null], "bot")).toBe(true);
     expect(hasFourInARow([1, 1, 1, 1, ...Array(12).fill(0)], 1)).toBe(true);
-    expect(hasFourInARow([2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0], 2)).toBe(true);
-    expect(hasFourInARow([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], 1)).toBe(true);
-    expect(hasFourInARow([0, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 0], 2)).toBe(true);
   });
 
-  it("wins on four marks and freezes the elapsed timer", () => {
+  it("limits each number to four and applies row, column, and box Sudoku rules", () => {
+    const state = {
+      ...startBotcheeGame(createBotcheeGame("fic-fac-foe"), 0),
+      board: [1, ...Array(15).fill(0)],
+    };
+    expect(isLegalPatternMove(state, 1, 1)).toBe(false);
+    expect(isLegalPatternMove(state, 4, 1)).toBe(false);
+    expect(isLegalPatternMove(state, 5, 1)).toBe(false);
+    expect(isLegalPatternMove(state, 1, 2)).toBe(true);
+    expect(getLegalPatternMoves(state.board, state.owners).every((move) => move.value !== 1)).toBe(false);
+    const fourOnes = { ...state, board: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] };
+    expect(getLegalPatternMoves(fourOnes.board, fourOnes.owners).every((move) => move.value !== 1)).toBe(true);
+  });
+
+  it("wins on three owned marks regardless of chosen number and freezes the elapsed timer", () => {
     const state = {
       ...startBotcheeGame(createBotcheeGame("fic-fac-foe"), 100),
-      board: [1, 1, 1, 0, ...Array(12).fill(0)],
+      board: [1, 2, 3, 0, ...Array(12).fill(0)],
+      owners: ["human", "human", "human", null, ...Array(12).fill(null)],
       turn: "human" as const,
     };
-    const next = playPatternMove(state, 3, 230);
+    const next = playPatternMove(state, 3, 4, 230);
     expect(next.status).toBe("won");
-    expect(next.endReason).toBe("four-in-a-row");
+    expect(next.endReason).toBe("three-in-a-row");
     expect(next.moves).toBe(1);
     expect(next.elapsedMs).toBe(130);
     expect(getBotcheeElapsedMs(next, 2000)).toBe(130);
   });
 
-  it("blocks an immediate win at level 1 and selects a legal strategic move at level 2", () => {
+  it("alternates ownership while each player chooses a legal number", () => {
+    const started = startBotcheeGame(createBotcheeGame("fic-fac-foe"), 10);
+    const humanMove = playPatternMove(started, 0, 1, 20);
+    expect(humanMove.turn).toBe("bot");
+    expect(humanMove.owners[0]).toBe("human");
+
+    const botMove = playPatternMove(humanMove, 5, 2, 30);
+    expect(botMove.turn).toBe("human");
+    expect(botMove.owners[5]).toBe("bot");
+    expect(botMove.board[5]).toBe(2);
+  });
+
+  it("blocks an immediate three-in-a-row at level 1 and level 2", () => {
     for (const botLevel of [1, 2] as const) {
       const state = {
         ...startBotcheeGame(createBotcheeGame("fic-fac-foe", botLevel), 0),
-        board: [1, 1, 1, 0, ...Array(12).fill(0)],
+        board: [1, 2, 3, 0, ...Array(12).fill(0)],
+        owners: ["human", "human", "human", null, ...Array(12).fill(null)],
         turn: "bot" as const,
       };
       const move = chooseBotMove(state, () => 0);
-      expect(move).toEqual({ kind: "pattern", index: 3 });
+      expect(move?.kind).toBe("pattern");
+      if (move?.kind === "pattern") {
+        expect(move.index).toBe(3);
+        expect(isLegalPatternMove(state, move.index, move.value)).toBe(true);
+      }
     }
+  });
+});
+
+describe("adaptive local Elo", () => {
+  it("updates rating after match results and selects stronger bots as rating rises", () => {
+    const draw = updateElo({ rating: 800, games: 0, wins: 0, losses: 0, draws: 0 }, 1, "draw");
+    expect(draw).toEqual({ rating: 804, games: 1, wins: 0, losses: 0, draws: 1 });
+    expect(updateElo(draw, 1, "win").rating).toBeGreaterThan(draw.rating);
+    expect(updateElo(draw, 1, "loss").rating).toBeLessThan(draw.rating);
+    expect(getAdaptiveBotLevel(699)).toBe(0);
+    expect(getAdaptiveBotLevel(700)).toBe(1);
+    expect(getAdaptiveBotLevel(1_050)).toBe(2);
   });
 });
 

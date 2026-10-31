@@ -25,7 +25,7 @@ export interface BotcheeState {
   readonly selectedDieId: number | null;
   readonly turn: BotcheePlayer;
   readonly status: BotcheeStatus;
-  readonly endReason: "board-full" | "no-legal-moves" | "four-in-a-row" | "solved" | "botched" | null;
+  readonly endReason: "board-full" | "no-legal-moves" | "three-in-a-row" | "solved" | "botched" | null;
   readonly moves: number;
   readonly flips: number;
   readonly startedAtMs: number | null;
@@ -41,6 +41,7 @@ export interface PointMove {
 export interface PatternMove {
   readonly kind: "pattern";
   readonly index: number;
+  readonly value: number;
 }
 
 export type BotMove = PointMove | PatternMove;
@@ -63,12 +64,18 @@ export const BOTCHEE_BOXES: readonly (readonly number[])[] = Array.from({ length
     (top + 1) * 4 + left + 1,
   ];
 });
-export const FOUR_IN_A_ROW_LINES: readonly (readonly number[])[] = [
+export const BOTCHEE_LINES: readonly (readonly number[])[] = [
   ...BOTCHEE_ROWS,
   ...BOTCHEE_COLUMNS,
   [0, 5, 10, 15],
   [3, 6, 9, 12],
 ];
+export const THREE_IN_A_ROW_LINES: readonly (readonly number[])[] = BOTCHEE_LINES.flatMap((line) =>
+  Array.from({ length: line.length - 2 }, (_, index) => line.slice(index, index + 3)),
+);
+export const FOUR_IN_A_ROW_LINES: readonly (readonly number[])[] = BOTCHEE_LINES.filter((line) =>
+  line.length === 4,
+);
 
 export const EMPTY_BOARD: readonly number[] = Array(BOTCHEE_BOARD_SIZE).fill(0);
 
@@ -146,10 +153,19 @@ export function getLegalPointMoves(board: readonly number[]): readonly PointMove
   return moves;
 }
 
-export function getLegalPatternMoves(board: readonly number[]): readonly PatternMove[] {
-  return board.flatMap((value, index) =>
-    value === 0 ? [{ kind: "pattern" as const, index }] : [],
-  );
+export function getLegalPatternMoves(
+  board: readonly number[],
+  owners: readonly (BotcheePlayer | null)[],
+): readonly PatternMove[] {
+  const counts = BOTCHEE_VALUES.map((value) => board.filter((placed) => placed === value).length);
+  return board.flatMap((cell, index) => {
+    if (cell !== 0) return [];
+    return BOTCHEE_VALUES.flatMap((value) =>
+      counts[value - 1] < 4 && isLegalNumber(board, index, value) && owners[index] === null
+        ? [{ kind: "pattern" as const, index, value }]
+        : [],
+    );
+  });
 }
 
 export function getPointMoveScore(board: readonly number[], move: PointMove): number {
@@ -229,6 +245,13 @@ export function playPointMove(
   };
 }
 
+export function hasThreeInARow(
+  owners: readonly (BotcheePlayer | null)[],
+  player: BotcheePlayer,
+): boolean {
+  return THREE_IN_A_ROW_LINES.some((line) => line.every((index) => owners[index] === player));
+}
+
 export function hasFourInARow(board: readonly number[], value: number): boolean {
   return FOUR_IN_A_ROW_LINES.some((line) => line.every((index) => board[index] === value));
 }
@@ -236,41 +259,46 @@ export function hasFourInARow(board: readonly number[], value: number): boolean 
 export function playPatternMove(
   state: BotcheeState,
   index: number,
+  value: number,
   nowMs: number,
 ): BotcheeState {
   if (state.mode !== "fic-fac-foe" || state.status !== "playing") return state;
-  if (!Number.isInteger(index) || index < 0 || index >= BOTCHEE_BOARD_SIZE || state.board[index] !== 0) {
+  if (
+    !Number.isInteger(index) ||
+    index < 0 ||
+    index >= BOTCHEE_BOARD_SIZE ||
+    !isLegalPatternMove(state, index, value)
+  ) {
     return state;
   }
 
-  const value = state.turn === "human" ? 1 : 2;
   const board = [...state.board];
   const owners = [...state.owners];
   board[index] = value;
   owners[index] = state.turn;
   const moves = state.moves + 1;
 
-  if (hasFourInARow(board, value)) {
+  if (hasThreeInARow(owners, state.turn)) {
     return {
       ...state,
       board,
       owners,
       moves,
       status: state.turn === "human" ? "won" : "lost",
-      endReason: "four-in-a-row",
+      endReason: "three-in-a-row",
       startedAtMs: null,
       elapsedMs: getBotcheeElapsedMs(state, nowMs),
     };
   }
 
-  if (board.every((cell) => cell !== 0)) {
+  if (board.every((cell) => cell !== 0) || getLegalPatternMoves(board, owners).length === 0) {
     return {
       ...state,
       board,
       owners,
       moves,
       status: "draw",
-      endReason: "board-full",
+      endReason: board.every((cell) => cell !== 0) ? "board-full" : "no-legal-moves",
       startedAtMs: null,
       elapsedMs: getBotcheeElapsedMs(state, nowMs),
     };
@@ -292,6 +320,25 @@ export function selectDie(state: BotcheeState, dieId: number): BotcheeState {
     !state.tray.some((die) => die.id === dieId)
   ) return state;
   return { ...state, selectedDieId: dieId };
+}
+
+export function isLegalPatternMove(
+  state: BotcheeState,
+  index: number,
+  value: number,
+): boolean {
+  if (
+    state.mode !== "fic-fac-foe" ||
+    state.status !== "playing" ||
+    !Number.isInteger(index) ||
+    index < 0 ||
+    index >= BOTCHEE_BOARD_SIZE ||
+    state.board[index] !== 0 ||
+    state.owners[index] !== null ||
+    !BOTCHEE_VALUES.includes(value as (typeof BOTCHEE_VALUES)[number])
+  ) return false;
+  if (state.board.filter((placed) => placed === value).length >= 4) return false;
+  return isLegalNumber(state.board, index, value);
 }
 
 export function flipSelectedDie(state: BotcheeState): BotcheeState {
@@ -384,44 +431,59 @@ function bestPointResponseScore(board: readonly number[]): number {
   return moves.reduce((best, move) => Math.max(best, getPointMoveScore(board, move)), 0);
 }
 
-function evaluateFicFacFoe(board: readonly number[], botValue: number): number {
-  return FOUR_IN_A_ROW_LINES.reduce((total, line) => {
-    const botCount = line.filter((index) => board[index] === botValue).length;
-    const humanCount = line.filter((index) => board[index] === (botValue === 1 ? 2 : 1)).length;
+function evaluateFicFacFoe(
+  owners: readonly (BotcheePlayer | null)[],
+  bot: BotcheePlayer,
+): number {
+  return THREE_IN_A_ROW_LINES.reduce((total, line) => {
+    const botCount = line.filter((index) => owners[index] === bot).length;
+    const humanCount = line.filter((index) => owners[index] === (bot === "human" ? "bot" : "human")).length;
     if (botCount > 0 && humanCount > 0) return total;
-    const weight = [0, 1, 8, 70, 10_000];
+    const weight = [0, 1, 10, 10_000];
     return total + (botCount > 0 ? weight[botCount] : -weight[humanCount]);
   }, 0);
 }
 
 function searchFicFacFoe(
-  board: readonly number[],
-  turn: number,
-  botValue: number,
+  state: BotcheeState,
+  turn: BotcheePlayer,
+  bot: BotcheePlayer,
   depth: number,
   alpha: number,
   beta: number,
   cache: Map<string, number>,
 ): number {
-  const opponentValue = botValue === 1 ? 2 : 1;
-  if (hasFourInARow(board, botValue)) return 10_000 + depth;
-  if (hasFourInARow(board, opponentValue)) return -10_000 - depth;
-  if (depth === 0 || board.every((value) => value !== 0)) return evaluateFicFacFoe(board, botValue);
+  if (hasThreeInARow(state.owners, bot)) return 10_000 + depth;
+  if (hasThreeInARow(state.owners, bot === "human" ? "bot" : "human")) return -10_000 - depth;
+  if (depth === 0 || state.status !== "playing") return evaluateFicFacFoe(state.owners, bot);
 
-  const key = `${board.join("")}:${turn}:${depth}:${botValue}`;
+  const key = `${state.board.join("")}:${state.owners.join("")}:${turn}:${depth}:${bot}`;
   const cached = cache.get(key);
   if (cached !== undefined) return cached;
 
-  const maximizing = turn === botValue;
+  const maximizing = turn === bot;
   let best = maximizing ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
   let pruned = false;
-  for (const move of getLegalPatternMoves(board)) {
-    const next = [...board];
-    next[move.index] = turn;
+  const moves = getLegalPatternMoves(state.board, state.owners);
+  if (moves.length === 0) return evaluateFicFacFoe(state.owners, bot);
+  for (const move of moves) {
+    const nextBoard = [...state.board];
+    const nextOwners = [...state.owners];
+    nextBoard[move.index] = move.value;
+    nextOwners[move.index] = turn;
+    const nextState: BotcheeState = {
+      ...state,
+      board: nextBoard,
+      owners: nextOwners,
+      turn: turn === "human" ? "bot" : "human",
+      moves: state.moves + 1,
+      status: hasThreeInARow(nextOwners, turn) ? (turn === "bot" ? "won" : "lost") : "playing",
+      endReason: hasThreeInARow(nextOwners, turn) ? "three-in-a-row" : null,
+    };
     const score = searchFicFacFoe(
-      next,
-      turn === 1 ? 2 : 1,
-      botValue,
+      nextState,
+      turn === "human" ? "bot" : "human",
+      bot,
       depth - 1,
       alpha,
       beta,
@@ -463,46 +525,99 @@ export function chooseBotMove(
   }
 
   if (state.mode === "fic-fac-foe") {
-    const moves = getLegalPatternMoves(state.board);
+    const moves = getLegalPatternMoves(state.board, state.owners);
     if (state.botLevel === 0) return pick(moves, random);
 
-    const botValue = 2;
+    const bot: BotcheePlayer = "bot";
     const winningMove = moves.find((move) => {
-      const next = [...state.board];
-      next[move.index] = botValue;
-      return hasFourInARow(next, botValue);
+      const nextOwners = [...state.owners];
+      nextOwners[move.index] = bot;
+      return hasThreeInARow(nextOwners, bot);
     });
     if (winningMove) return winningMove;
 
     const blockingMoves = moves.filter((move) => {
-      const next = [...state.board];
-      next[move.index] = 1;
-      return hasFourInARow(next, 1);
+      const nextOwners = [...state.owners];
+      nextOwners[move.index] = "human";
+      return hasThreeInARow(nextOwners, "human");
     });
     if (blockingMoves.length > 0) {
       if (state.botLevel === 1) return pick(blockingMoves, random);
       return pickBest(blockingMoves, (move) => {
-        const next = [...state.board];
-        next[move.index] = botValue;
-        return evaluateFicFacFoe(next, botValue);
+        const nextOwners = [...state.owners];
+        nextOwners[move.index] = bot;
+        return evaluateFicFacFoe(nextOwners, bot);
       }, random);
     }
 
     if (state.botLevel === 1) {
       return pickBest(moves, (move) => {
-        const next = [...state.board];
-        next[move.index] = botValue;
-        return evaluateFicFacFoe(next, botValue);
+        const nextOwners = [...state.owners];
+        nextOwners[move.index] = bot;
+        return evaluateFicFacFoe(nextOwners, bot);
       }, random);
     }
 
     const cache = new Map<string, number>();
     return pickBest(moves, (move) => {
-      const next = [...state.board];
-      next[move.index] = botValue;
-      return searchFicFacFoe(next, 1, botValue, 4, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, cache);
+      const nextBoard = [...state.board];
+      const nextOwners = [...state.owners];
+      nextBoard[move.index] = move.value;
+      nextOwners[move.index] = bot;
+      const nextState = {
+        ...state,
+        board: nextBoard,
+        owners: nextOwners,
+        turn: "human" as const,
+        moves: state.moves + 1,
+        status: hasThreeInARow(nextOwners, bot) ? "won" as const : "playing" as const,
+        endReason: hasThreeInARow(nextOwners, bot) ? "three-in-a-row" as const : null,
+      };
+      return searchFicFacFoe(
+        nextState,
+        "human",
+        bot,
+        3,
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+        cache,
+      );
     }, random);
   }
 
   return undefined;
+}
+
+export interface EloRecord {
+  readonly rating: number;
+  readonly games: number;
+  readonly wins: number;
+  readonly losses: number;
+  readonly draws: number;
+}
+
+export const INITIAL_ELO: EloRecord = { rating: 800, games: 0, wins: 0, losses: 0, draws: 0 };
+const BOT_ELO: Readonly<Record<BotLevel, number>> = { 0: 600, 1: 900, 2: 1200 };
+
+export function getAdaptiveBotLevel(rating: number): BotLevel {
+  if (rating < 700) return 0;
+  if (rating < 1_050) return 1;
+  return 2;
+}
+
+export function updateElo(
+  record: EloRecord,
+  botLevel: BotLevel,
+  result: "win" | "loss" | "draw",
+): EloRecord {
+  const expected = 1 / (1 + 10 ** ((BOT_ELO[botLevel] - record.rating) / 400));
+  const actual = result === "win" ? 1 : result === "loss" ? 0 : 0.5;
+  const rating = Math.max(100, Math.round(record.rating + 32 * (actual - expected)));
+  return {
+    rating,
+    games: record.games + 1,
+    wins: record.wins + (result === "win" ? 1 : 0),
+    losses: record.losses + (result === "loss" ? 1 : 0),
+    draws: record.draws + (result === "draw" ? 1 : 0),
+  };
 }

@@ -38,7 +38,7 @@ The pure rules and state transitions are in `src/engine.ts`. Browser preferences
 
 ## Botchee 4×4
 
-Botchee is available as a separate hash route at `https://gravity-wizard.github.io/twst23/#/botchee`; the existing Twisted 23 route remains the default. The current preview is labeled **v0.3.0** in the on-screen footer so screenshots identify the build. Version 1.0 is reserved for a later release after broad gameplay validation and stability checks; the current version is a playable preview, not a flawless release. A dedicated WordPress page can embed it with:
+Botchee is available as a separate hash route at `https://gravity-wizard.github.io/twst23/#/botchee`; the existing Twisted 23 route remains the default. The current preview is labeled **v0.4.0** in the on-screen footer so screenshots identify the build. Version 1.0 is reserved for a later release after broad gameplay validation and stability checks; this remains a playable preview, not a flawless release. A dedicated WordPress page can embed it with:
 
 ```html
 <iframe
@@ -49,7 +49,9 @@ Botchee is available as a separate hash route at `https://gravity-wizard.github.
 ></iframe>
 ```
 
-The pure rules and bot strategies are in `src/botcheeEngine.ts`. Points mode follows the Swift rules: place values 1–4 without repeats in a row, column, or 2×2 box; score the die value plus 5 for completing a row, 5 for a column, and 7 for a box. The Swift source names `zBest1move` and `zBotcher`, but does not contain numeric levels 0/1/2. This browser version defines those levels as beginner/random legal moves, best immediate score (the `zBest1move` behavior), and strategic lookahead. Fic-Fac-Foe and Flips are interpreted from the published Botchee Deluxe mode descriptions, not from the Swift app's game engine. In Flips, changing a selected die cycles its value 1→2→3→4→1 and counts as one move; that transition is a browser-game interpretation, not a confirmed physical-die rule. Botchee preferences and personal records stay on the device.
+The pure rules and bot strategies are in `src/botcheeEngine.ts`. Points mode follows the Swift rules: place values 1–4 without repeats in a row, column, or 2×2 box; score the die value plus 5 for completing a row, 5 for a column, and 7 for a box. The Swift source names `zBest1move` and `zBotcher`, but does not contain numeric levels 0/1/2. This browser version defines those levels as beginner/random legal moves, best immediate score (the `zBest1move` behavior), and strategic lookahead; Auto selects a level from separate local Elo ratings for Points and Fic-Fac-Foe. Fic-Fac-Foe alternates players choosing numbers, enforces the same Sudoku regions and a maximum of four copies of each value, and wins when a player owns three consecutive cells in a row, column, or diagonal. Elo starts at 800 and only describes results against this browser's bots; it is not a global ranking. The customization panel saves a separate color for each die value, rounded or square dice, and an optional sound setting locally.
+
+The original Botchee source archive provides `snd_bonus10.mp3` and `snd_error.mp3`, but no dedicated match-win or match-loss sound. The Points-mode end sounds reuse those source clips respectively for a win and a loss; the mapping is a browser-game interpretation, not an original match-result behavior. Fic-Fac-Foe and Flips are interpreted from the published Botchee Deluxe mode descriptions, not from the Swift app's game engine. In Flips, changing a selected die cycles its value 1→2→3→4→1 and counts as one move; that transition is a browser-game interpretation, not a confirmed physical-die rule. Botchee preferences and personal records stay on the device.
 
 ## Multiplayer and game-world direction
 
