@@ -48,7 +48,7 @@ const LEVEL_KEY = "botchee.bot-level.v1";
 const AUTO_LEVEL_KEY = "botchee.auto-level.v1";
 const SOUND_KEY = "botchee.sound.v1";
 const DICE_STYLE_KEY = "botchee.dice-style.v1";
-export const BOTCHEE_VERSION = "0.4.1";
+export const BOTCHEE_VERSION = "0.4.2";
 const DEFAULT_DICE_STYLE: DiceStyle = {
   colors: ["#70a7d8", "#e69b72", "#81cdb0", "#ecc56f"],
   playerColors: { human: "#91d7b6", bot: "#e5a188" },
@@ -255,6 +255,7 @@ function BotcheeGame() {
   );
   const [soundMessage, setSoundMessage] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("Choose a game mode and start a round.");
+  const [flippingDieId, setFlippingDieId] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const previousStatus = useRef(game.status);
 
@@ -380,6 +381,7 @@ function BotcheeGame() {
   function startRound() {
     const startedAt = Date.now();
     const next = startBotcheeGame(createBotcheeGame(mode, getBotLevelForMode(mode)), startedAt);
+    setFlippingDieId(null);
     setGame(next);
     setNow(startedAt);
     setSelectedValue(mode === "fic-fac-foe" ? null : 1);
@@ -387,6 +389,7 @@ function BotcheeGame() {
   }
 
   function chooseMode(nextMode: BotcheeMode) {
+    setFlippingDieId(null);
     setMode(nextMode);
     setGame(createBotcheeGame(nextMode, getBotLevelForMode(nextMode)));
     setSelectedValue(nextMode === "fic-fac-foe" ? null : 1);
@@ -429,9 +432,11 @@ function BotcheeGame() {
   }
 
   function flipDie() {
+    const flippedDieId = game.selectedDieId;
     const next = flipSelectedDie(game);
     commitGame(next);
     if (next !== game) {
+      setFlippingDieId(flippedDieId);
       const die = next.tray.find((candidate) => candidate.id === next.selectedDieId);
       setAnnouncement(`Die flipped to ${die?.face ?? "a new value"}. ${next.moves} moves used.`);
     }
@@ -625,11 +630,16 @@ function BotcheeGame() {
                 <button
                   key={die.id}
                   type="button"
-                  className={`die-chip dice-shape-${diceStyle.shape}${game.selectedDieId === die.id ? " is-selected" : ""}`}
+                  className={`die-chip dice-shape-${diceStyle.shape}${game.selectedDieId === die.id ? " is-selected" : ""}${flippingDieId === die.id ? " is-flipping" : ""}`}
                   style={{ "--die-color": diceStyle.colors[die.face - 1] } as CSSProperties}
                   aria-label={`Die ${die.id + 1}, showing ${die.face}${game.selectedDieId === die.id ? ", selected" : ""}`}
                   aria-pressed={game.selectedDieId === die.id}
                   disabled={game.status !== "playing"}
+                  onAnimationEnd={(event) => {
+                    if (event.animationName === "die-roll") {
+                      setFlippingDieId((current) => current === die.id ? null : current);
+                    }
+                  }}
                   onClick={() => {
                     setGame(selectDie(game, die.id));
                     setAnnouncement(`Die ${die.id + 1} selected, showing ${die.face}.`);
