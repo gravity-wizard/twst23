@@ -293,7 +293,7 @@
 .botchee-cell.has-value {
   background:
     linear-gradient(150deg, rgb(255 255 255 / 22%), transparent 58%),
-    var(--die-color, #d8cdb5);
+    var(--player-color, var(--die-color, #d8cdb5));
 }
 
 .botchee-cell.dice-shape-square,
@@ -566,6 +566,22 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+}
+
+.botchee-customize-label {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted-soft);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.player-color-controls {
+  grid-template-columns: repeat(2, 1fr);
+  border-top: 1px solid var(--line);
 }
 
 .dice-color-controls label {

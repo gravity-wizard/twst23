@@ -38,6 +38,7 @@ type DiceShape = "rounded" | "square";
 
 interface DiceStyle {
   readonly colors: readonly [string, string, string, string];
+  readonly playerColors: Readonly<Record<"human" | "bot", string>>;
   readonly shape: DiceShape;
 }
 
@@ -47,9 +48,10 @@ const LEVEL_KEY = "botchee.bot-level.v1";
 const AUTO_LEVEL_KEY = "botchee.auto-level.v1";
 const SOUND_KEY = "botchee.sound.v1";
 const DICE_STYLE_KEY = "botchee.dice-style.v1";
-export const BOTCHEE_VERSION = "0.4.0";
+export const BOTCHEE_VERSION = "0.4.1";
 const DEFAULT_DICE_STYLE: DiceStyle = {
   colors: ["#70a7d8", "#e69b72", "#81cdb0", "#ecc56f"],
+  playerColors: { human: "#91d7b6", bot: "#e5a188" },
   shape: "rounded",
 };
 const EMPTY_RECORDS: LocalRecords = {
@@ -65,6 +67,13 @@ function isDiceColors(value: unknown): value is DiceStyle["colors"] {
   return Array.isArray(value) &&
     value.length === 4 &&
     value.every((color) => typeof color === "string" && /^#[\da-f]{6}$/i.test(color));
+}
+
+function isPlayerColors(value: unknown): value is DiceStyle["playerColors"] {
+  if (!value || typeof value !== "object") return false;
+  const colors = value as Record<string, unknown>;
+  return ["human", "bot"].every((player) =>
+    typeof colors[player] === "string" && /^#[\da-f]{6}$/i.test(colors[player] as string));
 }
 
 const MODES: readonly { readonly id: BotcheeMode; readonly label: string }[] = [
@@ -123,10 +132,17 @@ function readDiceStyle(): { readonly style: DiceStyle; readonly warning: string 
     const candidate = value as Record<string, unknown>;
     if (
       !isDiceColors(candidate.colors) ||
+      (candidate.playerColors !== undefined && !isPlayerColors(candidate.playerColors)) ||
       (candidate.shape !== "rounded" && candidate.shape !== "square")
     ) throw new Error("Saved dice appearance has an invalid format.");
     return {
-      style: { colors: candidate.colors, shape: candidate.shape },
+      style: {
+        colors: candidate.colors,
+        playerColors: isPlayerColors(candidate.playerColors)
+          ? candidate.playerColors
+          : DEFAULT_DICE_STYLE.playerColors,
+        shape: candidate.shape,
+      },
       warning: null,
     };
   } catch (error) {
@@ -540,7 +556,10 @@ function BotcheeGame() {
                     game.owners[index] === "human" ? "is-human" : "",
                     `dice-shape-${diceStyle.shape}`,
                   ].filter(Boolean).join(" ")}
-                  style={value > 0 ? { "--die-color": diceStyle.colors[value - 1] } as CSSProperties : undefined}
+                  style={value > 0 ? {
+                    "--die-color": diceStyle.colors[value - 1],
+                    "--player-color": diceStyle.playerColors[game.owners[index] ?? "human"],
+                  } as CSSProperties : undefined}
                   aria-label={cellLabel(index)}
                   aria-disabled={!playable}
                   onClick={() => playCell(index)}
@@ -690,6 +709,7 @@ function BotcheeGame() {
         <details className="botchee-customize">
           <summary>Customize your dice &amp; sound</summary>
           <div className="dice-color-controls" role="group" aria-label="Customize number colors">
+            <p className="botchee-customize-label">Number colors · picker and tray</p>
             {BOTCHEE_VALUES.map((value) => (
               <label key={value}>
                 <span>Die {value}</span>
@@ -702,6 +722,23 @@ function BotcheeGame() {
                     colors[value - 1] = event.target.value;
                     setDiceStyle({ ...diceStyle, colors });
                   }}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="dice-color-controls player-color-controls" role="group" aria-label="Customize player colors">
+            <p className="botchee-customize-label">Placed dice · player colors</p>
+            {(["human", "bot"] as const).map((player) => (
+              <label key={player}>
+                <span>{player === "human" ? "Your dice" : "Bot dice"}</span>
+                <input
+                  type="color"
+                  value={diceStyle.playerColors[player]}
+                  aria-label={`Choose the board color for ${player === "human" ? "your" : "the bot's"} dice`}
+                  onChange={(event) => setDiceStyle({
+                    ...diceStyle,
+                    playerColors: { ...diceStyle.playerColors, [player]: event.target.value },
+                  })}
                 />
               </label>
             ))}
