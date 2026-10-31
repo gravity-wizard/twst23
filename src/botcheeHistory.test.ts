@@ -21,15 +21,16 @@ describe("local game history", () => {
       log("a", "points", "lost", "no-legal-moves"),
       log("b", "flips", "abandoned"),
       log("c", "fic-fac-foe", "won"),
+      log("d", "fic-fac-foe", "draw", "no-legal-moves"),
     ]);
 
     expect(stats).toEqual({
-      totalGames: 3,
-      completedGames: 2,
+      totalGames: 4,
+      completedGames: 3,
       abandonedGames: 1,
       activeGames: 0,
       botches: 1,
-      byMode: { points: 1, "fic-fac-foe": 1, flips: 1 },
+      byMode: { points: 1, "fic-fac-foe": 2, flips: 1 },
     });
   });
 

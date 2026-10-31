@@ -39,7 +39,12 @@ export function summarizeGameLogs(logs: readonly GameLog[]): BackgroundStats {
     completedGames: stats.completedGames + (log.status === "abandoned" || log.status === "playing" ? 0 : 1),
     abandonedGames: stats.abandonedGames + (log.status === "abandoned" ? 1 : 0),
     activeGames: stats.activeGames + (log.status === "playing" ? 1 : 0),
-    botches: stats.botches + (log.status === "botched" || log.endReason === "no-legal-moves" ? 1 : 0),
+    botches: stats.botches + (
+      log.status === "botched" ||
+      (log.mode === "points" && log.endReason === "no-legal-moves")
+        ? 1
+        : 0
+    ),
     byMode: { ...stats.byMode, [log.mode]: stats.byMode[log.mode] + 1 },
   }), {
     totalGames: 0,
