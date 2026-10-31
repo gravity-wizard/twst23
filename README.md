@@ -15,9 +15,9 @@ npm run build
 
 The GitHub Actions workflow in `.github/workflows/pages.yml` builds and publishes the app to `https://gravity-wizard.github.io/twst23/` when changes are pushed to `main` or the current game branch. The repository's Pages site must use **GitHub Actions** as its build and deployment source. The build already includes the `/twst23/` project-site base path; local development continues to use `/`.
 
-## Embed on Twisted23.com (WordPress)
+## Twisted23.com WordPress page
 
-After the GitHub Pages deployment finishes, add a **Custom HTML** block to the WordPress page where the game should appear and paste:
+The game is embedded on the published [`/play/` page](https://www.twisted23.com/play/) using a WordPress Custom HTML block:
 
 ```html
 <iframe
