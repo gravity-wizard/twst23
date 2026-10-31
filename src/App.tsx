@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import BotcheeGame from "./BotcheeGame";
 import {
   BOARD_CELLS,
   createGame,
@@ -31,7 +32,7 @@ function formatTime(milliseconds: number): string {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${tenths}`;
 }
 
-function App() {
+function TwistedGame() {
   const saved = useMemo(() => readSavedData(), []);
   const [preferences, setPreferences] = useState<Preferences>(saved.preferences);
   const [game, setGame] = useState<PuzzleState>(() => createGame(saved.preferences.mode));
@@ -128,11 +129,12 @@ function App() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Twisted 23 home">
+        <a className="brand" href="./" aria-label="Twisted 23 home">
           <span className="brand-mark" aria-hidden="true">23</span>
           <span>TWISTED <strong>23</strong></span>
         </a>
         <span className="topbar-note">A clever little shuffle</span>
+        <a className="game-link" href="#/botchee">Botchee 4×4</a>
       </header>
 
       <section className="game-card" aria-labelledby="game-title">
@@ -278,6 +280,18 @@ function App() {
       </footer>
     </main>
   );
+}
+
+function App() {
+  const [route, setRoute] = useState(() => window.location.hash);
+
+  useEffect(() => {
+    const updateRoute = () => setRoute(window.location.hash);
+    window.addEventListener("hashchange", updateRoute);
+    return () => window.removeEventListener("hashchange", updateRoute);
+  }, []);
+
+  return route === "#/botchee" ? <BotcheeGame /> : <TwistedGame />;
 }
 
 export default App;
