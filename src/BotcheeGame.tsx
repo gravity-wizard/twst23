@@ -25,6 +25,7 @@ import {
   type BotLevel,
   type EloRecord,
 } from "./botcheeEngine";
+import { mixAdditiveColors } from "./botcheeColors";
 import {
   addGameLog,
   summarizeGameLogs,
@@ -58,7 +59,7 @@ const SOUND_KEY = "botchee.sound.v1";
 const DICE_STYLE_KEY = "botchee.dice-style.v1";
 const GAME_LOG_KEY = "botchee.game-logs.v1";
 const GAME_LOG_LIMIT = 50;
-export const BOTCHEE_VERSION = "0.5.0";
+export const BOTCHEE_VERSION = "0.5.1";
 const DEFAULT_DICE_STYLE: DiceStyle = {
   colors: ["#70a7d8", "#e69b72", "#81cdb0", "#ecc56f"],
   playerColors: { human: "#43c47b", bot: "#f1c75b" },
@@ -335,6 +336,10 @@ function BotcheeGame() {
     [game.board, game.owners],
   );
   const humanTurn = game.turn === "human";
+  const additiveStashColor = mixAdditiveColors(
+    diceStyle.playerColors.human,
+    diceStyle.playerColors.bot,
+  );
   const ratingRecord = mode === "points" ? records.pointsElo : records.ficFacFoeElo;
   const effectiveBotLevel = autoLevel ? getAdaptiveBotLevel(ratingRecord.rating) : botLevel;
   const backgroundStats = useMemo(() => summarizeGameLogs(gameLogs), [gameLogs]);
@@ -772,50 +777,59 @@ function BotcheeGame() {
         {mode !== "flips" && (
           <div className="botchee-dice-tray botchee-stash">
             <div className="tray-heading">
-              <span>One-row stash · {game.stash.filter((die) => die.owner === null).length} dice left</span>
+              <span>Four stacks · {game.stash.filter((die) => die.owner === null).length} dice left</span>
               <span>{selectedValue === null ? "Choose a die" : `Selected ${selectedValue}`}</span>
             </div>
-            <div className="botchee-stash-list" role="group" aria-label="Choose one of the 16 dice in the stash">
-              {game.stash.map((die) => {
-                const playable = mode === "points"
-                  ? legalPointMoves.some((move) => move.value === die.face)
-                  : legalPatternMoves.some((move) => move.value === die.face);
-                const available = die.owner === null;
-                const selected = game.selectedDieId === die.id;
-                const color = die.owner
-                  ? diceStyle.playerColors[die.owner]
-                  : selected && humanTurn
-                    ? diceStyle.playerColors.human
-                    : diceStyle.colors[die.face - 1];
+            <div className="botchee-stash-list" role="group" aria-label="Four stacks of four dice">
+              {BOTCHEE_VALUES.map((face) => {
+                const stack = game.stash.filter((die) => die.face === face);
+                const availableCount = stack.filter((die) => die.owner === null).length;
                 return (
-                  <button
-                    key={die.id}
-                    type="button"
-                    className={[
-                      "stash-die",
-                      `dice-shape-${diceStyle.shape}`,
-                      available ? "" : "is-played",
-                      selected ? "is-selected" : "",
-                      `die-value-${die.face}`,
-                    ].filter(Boolean).join(" ")}
-                    style={{
-                      "--die-color": diceStyle.colors[die.face - 1],
-                      "--player-color": color,
-                    } as CSSProperties}
-                    aria-label={`Die ${die.face}, stash position ${die.id + 1}${available ? "" : `, played by ${die.owner}`}${selected ? ", selected" : ""}`}
-                    aria-pressed={selected}
-                    disabled={game.status !== "playing" || !humanTurn || !available || !playable}
-                    onClick={() => chooseStashDie(die.id)}
-                  >
-                    {die.face}
-                  </button>
+                  <div className="stash-stack" role="group" aria-label={`Face ${face} stack, ${availableCount} dice available`} key={face}>
+                    {stack.map((die, stackIndex) => {
+                      const playable = mode === "points"
+                        ? legalPointMoves.some((move) => move.value === die.face)
+                        : legalPatternMoves.some((move) => move.value === die.face);
+                      const available = die.owner === null;
+                      const selected = game.selectedDieId === die.id;
+                      const color = die.owner
+                        ? diceStyle.playerColors[die.owner]
+                        : selected && humanTurn
+                          ? diceStyle.playerColors.human
+                          : additiveStashColor;
+                      return (
+                        <button
+                          key={die.id}
+                          type="button"
+                          className={[
+                            "stash-die",
+                            `dice-shape-${diceStyle.shape}`,
+                            available ? "" : "is-played",
+                            selected ? "is-selected" : "",
+                            `die-value-${die.face}`,
+                          ].filter(Boolean).join(" ")}
+                          style={{
+                            "--die-color": diceStyle.colors[die.face - 1],
+                            "--player-color": color,
+                            "--stash-color": additiveStashColor,
+                          } as CSSProperties}
+                          aria-label={`Die ${die.face}, stack position ${stackIndex + 1} of 4${available ? "" : `, played by ${die.owner}`}${selected ? ", selected" : ""}`}
+                          aria-pressed={selected}
+                          disabled={game.status !== "playing" || !humanTurn || !available || !playable}
+                          onClick={() => chooseStashDie(die.id)}
+                        >
+                          {die.face}
+                        </button>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </div>
             <small>
               {mode === "points"
-                ? "Choose a die, then a legal square. Each die is worth its face value; complete a row or column for +5, or a box for +7. A single move can earn all three bonuses. Swipe the stash to see all 16."
-                : "Choose a die, then a legal square. No repeated number in any row, column, or 2×2 box; three claimed squares in a line win. Swipe the stash to see all 16."}
+                ? "Choose a die from one of the four face stacks, then a legal square. Each die is worth its face value; complete a row or column for +5, or a box for +7. A single move can earn all three bonuses."
+                : "Choose a die from one of the four face stacks, then a legal square. No repeated number in any row, column, or 2×2 box; three claimed squares in a line win."}
             </small>
           </div>
         )}
@@ -984,7 +998,7 @@ function BotcheeGame() {
         <details className="botchee-customize">
           <summary>Customize your dice &amp; sound</summary>
           <div className="dice-color-controls" role="group" aria-label="Customize number colors">
-            <p className="botchee-customize-label">Number colors · picker and tray</p>
+            <p className="botchee-customize-label">Number colors · board</p>
             {BOTCHEE_VALUES.map((value) => (
               <label key={value}>
                 <span>Die {value}</span>

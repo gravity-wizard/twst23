@@ -325,26 +325,35 @@
 .botchee-stash-list {
   margin: 10px -2px 2px;
   padding: 2px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.stash-stack {
+  min-width: 0;
   display: flex;
-  gap: 7px;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  scrollbar-color: rgb(164 231 202 / 38%) transparent;
-  scrollbar-width: thin;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 2px;
+  border: 1px solid rgb(226 244 236 / 15%);
+  border-radius: 12px;
+  background: rgb(11 22 33 / 25%);
 }
 
 .stash-die {
   flex: 0 0 44px;
-  width: 44px;
+  width: min(100%, 48px);
   height: 44px;
   padding: 0;
   border: 1px solid rgb(226 244 236 / 25%);
   border-radius: 10px;
   background:
     linear-gradient(145deg, rgb(255 255 255 / 20%), transparent 60%),
-    var(--die-color, #d8cdb5);
+    color-mix(in srgb, var(--stash-color) 57%, transparent);
   box-shadow: inset 1px 1px rgb(255 255 255 / 38%), 0 2px 5px rgb(0 0 0 / 20%);
-  color: #172735;
+  color: color-mix(in srgb, var(--die-color, #d8cdb5) 70%, #172735);
   cursor: pointer;
   font-size: 15px;
   font-weight: 800;
@@ -357,6 +366,7 @@
     linear-gradient(145deg, rgb(255 255 255 / 20%), transparent 60%),
     color-mix(in srgb, var(--player-color) 57%, transparent);
   border-color: color-mix(in srgb, var(--player-color) 82%, white);
+  color: #172735;
 }
 
 .stash-die.is-selected {

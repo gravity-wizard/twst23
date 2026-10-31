@@ -53,20 +53,20 @@ function BotcheeHelp() {
           <h3>Flips</h3>
           <p>Choose a die from the tray, optionally flip it to cycle its face from 1 to 4, then place it legally. Fill the grid to solve it. Each flip and placement counts as one move.</p>
           <h3>The stash colors</h3>
-          <p>The one-row stash has 16 dice, four per face. Selecting a die previews your player color; after placement it remains tinted with that player’s customizable color. Tiles use 57% color opacity, and each board square still contains only one die.</p>
+          <p>The stash has four face positions, each holding a vertical stack of four dice. Untouched dice use a translucent additive mix of both player colors. Selecting a die previews your color; after placement it remains tinted with that player’s customizable color. Stash and board colors use 57% opacity, and each board square still contains only one die.</p>
         </section>
 
         <section id="tutorial">
           <h2>Quick tutorial</h2>
           <ol>
             <li>Pick a mode and start a round.</li>
-            <li>In Play for Points or Fic-Fac-Foe, choose one of the unplayed dice in the stash row. In Flips, select a tray die.</li>
+            <li>In Play for Points or Fic-Fac-Foe, choose one of the unplayed dice from one of the four face stacks. In Flips, select a tray die.</li>
             <li>Tap a highlighted empty square to place the die. Flips also lets you rotate its face before placement.</li>
             <li>Use the score, remaining dice and turn indicator to plan the next move. Open “Customize your dice &amp; sound” to set player colors.</li>
             <li>Open “Local game history &amp; statistics” to review recent move logs or export them for debugging.</li>
           </ol>
         </section>
-        <p className="botchee-local-note">Guide for Botchee preview v0.5.0.</p>
+        <p className="botchee-local-note">Guide for Botchee preview v0.5.1.</p>
       </article>
     </main>
   );
