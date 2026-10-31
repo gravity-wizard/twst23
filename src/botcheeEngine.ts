@@ -15,6 +15,10 @@ export interface Die {
   readonly face: number;
 }
 
+export interface StashDie extends Die {
+  readonly owner: BotcheePlayer | null;
+}
+
 export interface BotcheeState {
   readonly mode: BotcheeMode;
   readonly botLevel: BotLevel;
@@ -22,6 +26,7 @@ export interface BotcheeState {
   readonly owners: readonly (BotcheePlayer | null)[];
   readonly scores: Readonly<Record<BotcheePlayer, number>>;
   readonly tray: readonly Die[];
+  readonly stash: readonly StashDie[];
   readonly selectedDieId: number | null;
   readonly turn: BotcheePlayer;
   readonly status: BotcheeStatus;
@@ -94,6 +99,11 @@ export function createBotcheeGame(
     owners: Array(BOTCHEE_BOARD_SIZE).fill(null),
     scores: { human: 0, bot: 0 },
     tray: [],
+    stash: Array.from({ length: BOTCHEE_BOARD_SIZE }, (_, id) => ({
+      id,
+      face: Math.floor(id / 4) + 1,
+      owner: null,
+    })),
     selectedDieId: null,
     turn: "human",
     status: "ready",
@@ -168,22 +178,52 @@ export function getLegalPatternMoves(
   });
 }
 
-export function getPointMoveScore(board: readonly number[], move: PointMove): number {
-  if (!isLegalNumber(board, move.index, move.value)) return 0;
+export interface PointMoveBreakdown {
+  readonly dieValue: number;
+  readonly rowBonus: number;
+  readonly columnBonus: number;
+  readonly boxBonus: number;
+  readonly total: number;
+}
+
+export function getPointMoveBreakdown(
+  board: readonly number[],
+  move: PointMove,
+): PointMoveBreakdown {
+  const noScore = { dieValue: 0, rowBonus: 0, columnBonus: 0, boxBonus: 0, total: 0 };
+  if (!isLegalNumber(board, move.index, move.value)) return noScore;
   const next = [...board];
   next[move.index] = move.value;
   const boxIndex = Math.floor(Math.floor(move.index / 8) * 2 + (move.index % 4 >= 2 ? 1 : 0));
-  const regions = [
-    BOTCHEE_ROWS[Math.floor(move.index / 4)],
-    BOTCHEE_COLUMNS[move.index % 4],
-    BOTCHEE_BOXES[boxIndex],
-  ];
-  const bonuses = [5, 5, 7];
-  return move.value + regions.reduce(
-    (total, region, regionIndex) =>
-      total + (region.every((cell) => next[cell] !== 0) ? bonuses[regionIndex] : 0),
-    0,
-  );
+  const rowBonus = BOTCHEE_ROWS[Math.floor(move.index / 4)].every((cell) => next[cell] !== 0) ? 5 : 0;
+  const columnBonus = BOTCHEE_COLUMNS[move.index % 4].every((cell) => next[cell] !== 0) ? 5 : 0;
+  const boxBonus = BOTCHEE_BOXES[boxIndex].every((cell) => next[cell] !== 0) ? 7 : 0;
+  return {
+    dieValue: move.value,
+    rowBonus,
+    columnBonus,
+    boxBonus,
+    total: move.value + rowBonus + columnBonus + boxBonus,
+  };
+}
+
+export function getPointMoveScore(board: readonly number[], move: PointMove): number {
+  return getPointMoveBreakdown(board, move).total;
+}
+
+function markStashDie(
+  stash: readonly StashDie[],
+  selectedDieId: number | null,
+  face: number,
+  owner: BotcheePlayer,
+): readonly StashDie[] {
+  const exactIndex = stash.findIndex((die) =>
+    die.owner === null && die.face === face && die.id === selectedDieId);
+  const dieIndex = exactIndex >= 0
+    ? exactIndex
+    : stash.findIndex((die) => die.owner === null && die.face === face);
+  if (dieIndex < 0) return stash;
+  return stash.map((die, index) => index === dieIndex ? { ...die, owner } : die);
 }
 
 function endPointsGame(
@@ -229,10 +269,15 @@ export function playPointMove(
   board[index] = value;
   owners[index] = state.turn;
   const scores = { ...state.scores, [state.turn]: state.scores[state.turn] + points };
+  const stash = markStashDie(state.stash, state.selectedDieId, value, state.turn);
   const moves = state.moves + 1;
 
   if (board.every((cell) => cell !== 0) || getLegalPointMoves(board).length === 0) {
-    return endPointsGame(state, board, owners, scores, moves, nowMs);
+    return {
+      ...endPointsGame(state, board, owners, scores, moves, nowMs),
+      stash,
+      selectedDieId: null,
+    };
   }
 
   return {
@@ -240,6 +285,8 @@ export function playPointMove(
     board,
     owners,
     scores,
+    stash,
+    selectedDieId: null,
     turn: state.turn === "human" ? "bot" : "human",
     moves,
   };
@@ -276,6 +323,7 @@ export function playPatternMove(
   const owners = [...state.owners];
   board[index] = value;
   owners[index] = state.turn;
+  const stash = markStashDie(state.stash, state.selectedDieId, value, state.turn);
   const moves = state.moves + 1;
 
   if (hasThreeInARow(owners, state.turn)) {
@@ -283,6 +331,8 @@ export function playPatternMove(
       ...state,
       board,
       owners,
+      stash,
+      selectedDieId: null,
       moves,
       status: state.turn === "human" ? "won" : "lost",
       endReason: "three-in-a-row",
@@ -296,6 +346,8 @@ export function playPatternMove(
       ...state,
       board,
       owners,
+      stash,
+      selectedDieId: null,
       moves,
       status: "draw",
       endReason: board.every((cell) => cell !== 0) ? "board-full" : "no-legal-moves",
@@ -308,6 +360,8 @@ export function playPatternMove(
     ...state,
     board,
     owners,
+    stash,
+    selectedDieId: null,
     turn: state.turn === "human" ? "bot" : "human",
     moves,
   };
@@ -339,6 +393,15 @@ export function isLegalPatternMove(
   ) return false;
   if (state.board.filter((placed) => placed === value).length >= 4) return false;
   return isLegalNumber(state.board, index, value);
+}
+
+export function selectStashDie(state: BotcheeState, dieId: number): BotcheeState {
+  if (
+    (state.mode !== "points" && state.mode !== "fic-fac-foe") ||
+    state.status !== "playing" ||
+    state.stash.find((die) => die.id === dieId)?.owner !== null
+  ) return state;
+  return { ...state, selectedDieId: dieId };
 }
 
 export function flipSelectedDie(state: BotcheeState): BotcheeState {

@@ -11,6 +11,7 @@ import {
   getBotcheeElapsedMs,
   getLegalPointMoves,
   getLegalPatternMoves,
+  getPointMoveBreakdown,
   getPointMoveScore,
   hasFourInARow,
   hasThreeInARow,
@@ -20,6 +21,7 @@ import {
   playPatternMove,
   playPointMove,
   selectDie,
+  selectStashDie,
   flipSelectedDie,
   startBotcheeGame,
   updateElo,
@@ -63,6 +65,13 @@ describe("Points mode", () => {
     };
     const move = { kind: "points" as const, index: 15, value: 1 };
     expect(getPointMoveScore(board, move)).toBe(18);
+    expect(getPointMoveBreakdown(board, move)).toEqual({
+      dieValue: 1,
+      rowBonus: 5,
+      columnBonus: 5,
+      boxBonus: 7,
+      total: 18,
+    });
 
     const next = playPointMove(state, move.index, move.value, 20);
     expect(next.board).toEqual(SOLVED_BOARD);
@@ -105,6 +114,41 @@ describe("Points mode", () => {
     const move = chooseBotMove(state, () => 0);
     expect(move).toEqual({ kind: "points", index: 15, value: 1 });
     if (move?.kind === "points") expect(getPointMoveScore(board, move)).toBe(18);
+  });
+
+  it("tracks a 16-die stash and changes a selected die to the player color after placement", () => {
+    const ready = createBotcheeGame("points");
+    expect(ready.stash).toHaveLength(16);
+    expect(ready.stash.filter((die) => die.face === 1)).toHaveLength(4);
+    const state = startBotcheeGame(ready, 0);
+    const selected = selectStashDie(state, 0);
+    expect(selected.selectedDieId).toBe(0);
+
+    const placed = playPointMove(selected, 0, 1, 10);
+    expect(placed.stash.find((die) => die.id === 0)?.owner).toBe("human");
+    expect(placed.selectedDieId).toBeNull();
+    expect(placed.turn).toBe("bot");
+  });
+
+  it("awards the level-2 bot by points when it botches before completing any region", () => {
+    const board = [0, 0, 3, 2, 1, 3, 4, 0, 4, 2, 0, 3, 3, 0, 2, 1];
+    const state = {
+      ...startBotcheeGame(createBotcheeGame("points", 2), 0),
+      board,
+      turn: "bot" as const,
+      scores: { human: 0, bot: 10 },
+    };
+
+    const move = chooseBotMove(state, () => 0);
+    expect(move).toEqual({ kind: "points", index: 1, value: 4 });
+    if (!move || move.kind !== "points") throw new Error("Expected the only legal bot move.");
+    const next = playPointMove(state, move.index, move.value, 10);
+    expect(next.status).toBe("lost");
+    expect(next.endReason).toBe("no-legal-moves");
+    expect(next.scores).toEqual({ human: 0, bot: 14 });
+    expect(next.board.some((value) => value === 0)).toBe(true);
+    expect([...BOTCHEE_ROWS, ...BOTCHEE_COLUMNS, ...BOTCHEE_BOXES]
+      .some((region) => region.every((index) => next.board[index] !== 0))).toBe(false);
   });
 });
 

@@ -8,12 +8,14 @@ import {
   getBotcheeElapsedMs,
   getLegalPointMoves,
   getLegalPatternMoves,
+  getPointMoveBreakdown,
   hasThreeInARow,
   isLegalNumber,
   isLegalPatternMove,
   playFlipsMove,
   playPatternMove,
   playPointMove,
+  selectStashDie,
   selectDie,
   flipSelectedDie,
   startBotcheeGame,
@@ -23,6 +25,12 @@ import {
   type BotLevel,
   type EloRecord,
 } from "./botcheeEngine";
+import {
+  addGameLog,
+  summarizeGameLogs,
+  type GameLog,
+  type GameLogAction,
+} from "./botcheeHistory";
 import "./botchee.css";
 
 interface LocalRecords {
@@ -48,10 +56,12 @@ const LEVEL_KEY = "botchee.bot-level.v1";
 const AUTO_LEVEL_KEY = "botchee.auto-level.v1";
 const SOUND_KEY = "botchee.sound.v1";
 const DICE_STYLE_KEY = "botchee.dice-style.v1";
-export const BOTCHEE_VERSION = "0.4.2";
+const GAME_LOG_KEY = "botchee.game-logs.v1";
+const GAME_LOG_LIMIT = 50;
+export const BOTCHEE_VERSION = "0.5.0";
 const DEFAULT_DICE_STYLE: DiceStyle = {
   colors: ["#70a7d8", "#e69b72", "#81cdb0", "#ecc56f"],
-  playerColors: { human: "#91d7b6", bot: "#e5a188" },
+  playerColors: { human: "#43c47b", bot: "#f1c75b" },
   shape: "rounded",
 };
 const EMPTY_RECORDS: LocalRecords = {
@@ -195,6 +205,53 @@ function readRecords(): { records: LocalRecords; warning: string | null } {
   }
 }
 
+function readGameLogs(): { logs: readonly GameLog[]; warning: string | null } {
+  try {
+    const saved = window.localStorage.getItem(GAME_LOG_KEY);
+    if (!saved) return { logs: [], warning: null };
+    const value: unknown = JSON.parse(saved);
+    if (!Array.isArray(value)) throw new Error("Saved game history has an invalid format.");
+    const logs = value.filter((entry): entry is GameLog => {
+      if (!entry || typeof entry !== "object") return false;
+      const log = entry as Record<string, unknown>;
+      const score = log.scores as Record<string, unknown> | null;
+      return typeof log.id === "string" &&
+        typeof log.startedAtMs === "number" &&
+        typeof log.endedAtMs === "number" &&
+        Number.isInteger(log.botLevel) && [0, 1, 2].includes(Number(log.botLevel)) &&
+        (log.mode === "points" || log.mode === "fic-fac-foe" || log.mode === "flips") &&
+        ["ready", "playing", "won", "lost", "draw", "solved", "botched", "abandoned"].includes(String(log.status)) &&
+        Number.isInteger(log.moves) && Number(log.moves) >= 0 &&
+        typeof log.elapsedMs === "number" && Number.isFinite(log.elapsedMs) &&
+        !!score && typeof score.human === "number" && typeof score.bot === "number" &&
+        Array.isArray(log.actions) &&
+        log.actions.every((action) => {
+          if (!action || typeof action !== "object") return false;
+          const entry = action as Record<string, unknown>;
+          const breakdown = entry.score;
+          return (entry.player === "human" || entry.player === "bot") &&
+            (entry.kind === "place" || entry.kind === "flip") &&
+            (entry.index === undefined || Number.isInteger(entry.index)) &&
+            (entry.dieId === undefined || Number.isInteger(entry.dieId)) &&
+            (entry.fromValue === undefined || Number.isInteger(entry.fromValue)) &&
+            (entry.value === undefined || Number.isInteger(entry.value)) &&
+            (breakdown === undefined || (
+              !!breakdown &&
+              typeof breakdown === "object" &&
+              ["dieValue", "rowBonus", "columnBonus", "boxBonus", "total"].every((key) =>
+                typeof (breakdown as Record<string, unknown>)[key] === "number" &&
+                Number.isFinite((breakdown as Record<string, number>)[key]))
+            ));
+        });
+    }).map((entry) => entry.status === "playing" ? { ...entry, status: "abandoned" as const } : entry)
+      .slice(0, GAME_LOG_LIMIT);
+    return { logs, warning: null };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "unknown storage error";
+    return { logs: [], warning: `Local game history could not be read: ${reason}` };
+  }
+}
+
 function formatTime(milliseconds: number): string {
   const totalSeconds = Math.floor(milliseconds / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -227,11 +284,19 @@ function resultText(state: BotcheeState): string {
   if (state.status === "solved") {
     return `Solved in ${state.moves} moves and ${formatTime(state.elapsedMs)}.`;
   }
-  if (state.status === "draw") return "No legal moves remain. The round is a draw.";
+  if (state.status === "draw") {
+    if (state.mode === "points") {
+      const ending = state.endReason === "no-legal-moves" ? " No legal moves remained." : " The board filled.";
+      return `Points tied, ${state.scores.human}–${state.scores.bot}.${ending}`;
+    }
+    return "No legal moves remain. The round is a draw.";
+  }
   if (state.mode === "points") {
     const winner = state.status === "won" ? "You" : "The bot";
-    const reason = state.endReason === "no-legal-moves" ? " after the puzzle botched" : "";
-    return `${winner} win${winner === "You" ? "" : "s"}${reason}, ${state.scores.human}–${state.scores.bot}.`;
+    const outcome = state.endReason === "no-legal-moves"
+      ? " Puzzle ended with no legal moves (botch)."
+      : " Board filled.";
+    return `${winner} win${winner === "You" ? "" : "s"} on points, ${state.scores.human}–${state.scores.bot}.${outcome}`;
   }
   return state.status === "won" ? `You won in ${state.moves} moves.` : `The bot won in ${state.moves} moves.`;
 }
@@ -240,24 +305,27 @@ function BotcheeGame() {
   const savedSettings = useMemo(readSettings, []);
   const savedRecords = useMemo(readRecords, []);
   const savedDiceStyle = useMemo(readDiceStyle, []);
+  const savedGameLogs = useMemo(readGameLogs, []);
   const [mode, setMode] = useState<BotcheeMode>(savedSettings.mode);
   const [botLevel, setBotLevel] = useState<BotLevel>(savedSettings.botLevel);
   const [autoLevel, setAutoLevel] = useState(savedSettings.autoLevel);
   const [soundEnabled, setSoundEnabled] = useState(savedSettings.soundEnabled);
   const [game, setGame] = useState(() => createBotcheeGame(mode, botLevel));
-  const [selectedValue, setSelectedValue] = useState<number | null>(
-    mode === "fic-fac-foe" ? null : 1,
-  );
+  const [selectedValue, setSelectedValue] = useState<number | null>(null);
   const [diceStyle, setDiceStyle] = useState(savedDiceStyle.style);
   const [records, setRecords] = useState(savedRecords.records);
+  const [gameLogs, setGameLogs] = useState<readonly GameLog[]>(savedGameLogs.logs);
   const [storageMessage, setStorageMessage] = useState<string | null>(
-    savedSettings.warning ?? savedRecords.warning ?? savedDiceStyle.warning,
+    savedSettings.warning ?? savedRecords.warning ?? savedDiceStyle.warning ?? savedGameLogs.warning,
   );
   const [soundMessage, setSoundMessage] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("Choose a game mode and start a round.");
   const [flippingDieId, setFlippingDieId] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const previousStatus = useRef(game.status);
+  const roundStartedAt = useRef<number | null>(null);
+  const roundId = useRef<string | null>(null);
+  const gameActions = useRef<GameLogAction[]>([]);
 
   const elapsedMs = getBotcheeElapsedMs(game, now);
   const selectedDie = game.tray.find((die) => die.id === game.selectedDieId) ?? null;
@@ -269,6 +337,7 @@ function BotcheeGame() {
   const humanTurn = game.turn === "human";
   const ratingRecord = mode === "points" ? records.pointsElo : records.ficFacFoeElo;
   const effectiveBotLevel = autoLevel ? getAdaptiveBotLevel(ratingRecord.rating) : botLevel;
+  const backgroundStats = useMemo(() => summarizeGameLogs(gameLogs), [gameLogs]);
 
   useEffect(() => {
     if (game.status !== "playing") return;
@@ -321,13 +390,23 @@ function BotcheeGame() {
       const next = move.kind === "points"
         ? playPointMove(game, move.index, move.value, Date.now())
         : playPatternMove(game, move.index, move.value, Date.now());
-      commitGame(next);
+      const score = move.kind === "points"
+        ? getPointMoveBreakdown(game.board, move)
+        : undefined;
+      commitGame(next, {
+        player: "bot",
+        kind: "place",
+        index: move.index,
+        dieId: game.stash.find((die) => die.owner === null && die.face === move.value)?.id,
+        value: move.value,
+        ...(score ? { score } : {}),
+      });
       setAnnouncement(next.status !== "playing"
         ? resultText(next)
         : move.kind === "points"
           ? `Bot placed ${move.value} for ${next.scores.bot - game.scores.bot} points.`
           : `Bot placed ${move.value} in square ${move.index + 1}.`);
-      if (move.kind === "pattern") setSelectedValue(null);
+      setSelectedValue(null);
     }, 420);
     return () => window.clearTimeout(timeoutId);
   }, [game]);
@@ -372,42 +451,101 @@ function BotcheeGame() {
     }
   }
 
-  function commitGame(next: BotcheeState) {
+  function persistGameLog(next: BotcheeState, status: GameLog["status"] = next.status, keepOpen = false) {
+    const endedAtMs = Date.now();
+    const startedAtMs = roundStartedAt.current ?? next.startedAtMs ?? endedAtMs - next.elapsedMs;
+    const log: GameLog = {
+      id: roundId.current ?? `${startedAtMs}-${endedAtMs}`,
+      startedAtMs,
+      endedAtMs,
+      mode: next.mode,
+      botLevel: next.botLevel,
+      status,
+      endReason: next.endReason,
+      moves: next.moves,
+      elapsedMs: next.status === "playing" ? getBotcheeElapsedMs(next, endedAtMs) : next.elapsedMs,
+      scores: next.scores,
+      actions: [...gameActions.current],
+    };
+    const updatedLogs = addGameLog(gameLogs, log, GAME_LOG_LIMIT);
+    setGameLogs(updatedLogs);
+    if (!keepOpen) {
+      gameActions.current = [];
+      roundStartedAt.current = null;
+      roundId.current = null;
+    }
+    try {
+      window.localStorage.setItem(GAME_LOG_KEY, JSON.stringify(updatedLogs));
+      setStorageMessage(null);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "unknown storage error";
+      setStorageMessage(`Local game history could not be saved: ${reason}`);
+    }
+  }
+
+  function commitGame(next: BotcheeState, action?: GameLogAction) {
     if (next === game) return;
+    if (action) gameActions.current = [...gameActions.current, action];
     setGame(next);
-    if (next.status !== "playing" && next.status !== "ready") saveFinishedRecord(next);
+    if (next.status !== "playing" && next.status !== "ready") {
+      saveFinishedRecord(next);
+      persistGameLog(next);
+    } else if (action) {
+      persistGameLog(next, "playing", true);
+    }
   }
 
   function startRound() {
     const startedAt = Date.now();
+    if (game.status === "playing" && roundStartedAt.current !== null) persistGameLog(game, "abandoned");
+    else gameActions.current = [];
     const next = startBotcheeGame(createBotcheeGame(mode, getBotLevelForMode(mode)), startedAt);
+    roundStartedAt.current = startedAt;
+    roundId.current = `${startedAt}-${Math.random().toString(36).slice(2, 8)}`;
     setFlippingDieId(null);
     setGame(next);
     setNow(startedAt);
-    setSelectedValue(mode === "fic-fac-foe" ? null : 1);
+    setSelectedValue(null);
     setAnnouncement(`${MODES.find((entry) => entry.id === mode)?.label} started.`);
   }
 
   function chooseMode(nextMode: BotcheeMode) {
+    if (game.status === "playing" && roundStartedAt.current !== null) persistGameLog(game, "abandoned");
+    else gameActions.current = [];
     setFlippingDieId(null);
     setMode(nextMode);
     setGame(createBotcheeGame(nextMode, getBotLevelForMode(nextMode)));
-    setSelectedValue(nextMode === "fic-fac-foe" ? null : 1);
+    setSelectedValue(null);
     setAnnouncement(`${MODES.find((entry) => entry.id === nextMode)?.label} selected. Start a round when ready.`);
   }
 
   function chooseLevel(value: string) {
     if (value === "auto") {
       setAutoLevel(true);
+      if (game.status === "playing" && roundStartedAt.current !== null) persistGameLog(game, "abandoned");
       setGame(createBotcheeGame(mode, getAdaptiveBotLevel(ratingRecord.rating)));
+      setSelectedValue(null);
       setAnnouncement(`Adaptive level selected. Your ${ratingRecord.rating} rating sets the bot level.`);
     } else {
       const level = Number(value) as BotLevel;
       setAutoLevel(false);
       setBotLevel(level);
+      if (game.status === "playing" && roundStartedAt.current !== null) persistGameLog(game, "abandoned");
       setGame(createBotcheeGame(mode, level));
+      setSelectedValue(null);
       setAnnouncement(`Bot level ${level} selected.`);
     }
+  }
+
+  function chooseStashDie(dieId: number) {
+    if (!humanTurn || game.status !== "playing") return;
+    const die = game.stash.find((candidate) => candidate.id === dieId);
+    if (!die || die.owner !== null) return;
+    const next = selectStashDie(game, dieId);
+    if (next === game) return;
+    setGame(next);
+    setSelectedValue(die.face);
+    setAnnouncement(`Die ${die.face} selected. It will take your color when placed.`);
   }
 
   function playCell(index: number) {
@@ -420,8 +558,26 @@ function BotcheeGame() {
           ? playFlipsMove(game, index, Date.now())
           : game;
     if (next === game) return;
-    commitGame(next);
-    if (game.mode === "fic-fac-foe") setSelectedValue(null);
+    const action: GameLogAction = game.mode === "flips"
+      ? {
+          player: "human",
+          kind: "place",
+          index,
+          value: selectedDie?.face,
+          dieId: selectedDie?.id,
+        }
+      : {
+          player: "human",
+          kind: "place",
+          index,
+          ...(game.selectedDieId === null ? {} : { dieId: game.selectedDieId }),
+          value: selectedValue ?? undefined,
+          ...(game.mode === "points" && selectedValue !== null
+            ? { score: getPointMoveBreakdown(game.board, { kind: "points", index, value: selectedValue }) }
+            : {}),
+        };
+    commitGame(next, action);
+    setSelectedValue(null);
     setAnnouncement(next.status === "playing"
       ? game.mode === "points"
         ? `You placed ${selectedValue}. Your score is ${next.scores.human}.`
@@ -434,7 +590,14 @@ function BotcheeGame() {
   function flipDie() {
     const flippedDieId = game.selectedDieId;
     const next = flipSelectedDie(game);
-    commitGame(next);
+    const flippedDie = next.tray.find((die) => die.id === selectedDie?.id);
+    commitGame(next, selectedDie ? {
+      player: "human",
+      kind: "flip",
+      dieId: selectedDie.id,
+      fromValue: selectedDie.face,
+      value: flippedDie?.face,
+    } : undefined);
     if (next !== game) {
       setFlippingDieId(flippedDieId);
       const die = next.tray.find((candidate) => candidate.id === next.selectedDieId);
@@ -448,12 +611,42 @@ function BotcheeGame() {
   function isCellPlayable(index: number): boolean {
     if (game.status !== "playing" || !humanTurn) return false;
     if (game.mode === "points") {
-      return selectedValue !== null && isLegalNumber(game.board, index, selectedValue);
+      return selectedValue !== null && game.selectedDieId !== null &&
+        isLegalNumber(game.board, index, selectedValue);
     }
     if (game.mode === "fic-fac-foe") {
-      return selectedValue !== null && isLegalPatternMove(game, index, selectedValue);
+      return selectedValue !== null && game.selectedDieId !== null &&
+        isLegalPatternMove(game, index, selectedValue);
     }
     return selectedDie !== null && isLegalNumber(game.board, index, selectedDie.face);
+  }
+
+  function exportGameLogs() {
+    const blob = new Blob([JSON.stringify({ version: BOTCHEE_VERSION, exportedAt: new Date().toISOString(), games: gameLogs }, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "botchee-game-logs.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function clearGameLogs() {
+    if (!window.confirm("Delete all locally saved Botchee game logs?")) return;
+    setGameLogs([]);
+    gameActions.current = [];
+    if (roundStartedAt.current !== null) {
+      roundId.current = `${roundStartedAt.current}-after-clear-${Date.now()}`;
+    }
+    try {
+      window.localStorage.removeItem(GAME_LOG_KEY);
+      setStorageMessage(null);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "unknown storage error";
+      setStorageMessage(`Local game history could not be cleared: ${reason}`);
+    }
   }
 
   function cellLabel(index: number): string {
@@ -577,37 +770,52 @@ function BotcheeGame() {
         </div>
 
         {mode !== "flips" && (
-          <div className="botchee-number-picker" role="group" aria-label="Choose a die value">
-            <span>{mode === "points" ? "Choose a number" : "Choose the number for your next turn"}</span>
-            <div>
-              {BOTCHEE_VALUES.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={`die-value-${value} dice-shape-${diceStyle.shape} ${selectedValue === value ? "is-selected" : ""}`}
-                  aria-pressed={selectedValue === value}
-                  style={{ "--die-color": diceStyle.colors[value - 1] } as CSSProperties}
-                  aria-label={`Choose ${value}${(mode === "points"
-                    ? legalPointMoves.some((move) => move.value === value)
-                    : legalPatternMoves.some((move) => move.value === value)) ? "" : ", no legal square"}`}
-                  onClick={() => setSelectedValue(value)}
-                  disabled={game.status !== "playing" || !humanTurn || !(mode === "points"
-                    ? legalPointMoves.some((move) => move.value === value)
-                    : legalPatternMoves.some((move) => move.value === value))}
-                >
-                  {value}
-                </button>
-              ))}
+          <div className="botchee-dice-tray botchee-stash">
+            <div className="tray-heading">
+              <span>One-row stash · {game.stash.filter((die) => die.owner === null).length} dice left</span>
+              <span>{selectedValue === null ? "Choose a die" : `Selected ${selectedValue}`}</span>
+            </div>
+            <div className="botchee-stash-list" role="group" aria-label="Choose one of the 16 dice in the stash">
+              {game.stash.map((die) => {
+                const playable = mode === "points"
+                  ? legalPointMoves.some((move) => move.value === die.face)
+                  : legalPatternMoves.some((move) => move.value === die.face);
+                const available = die.owner === null;
+                const selected = game.selectedDieId === die.id;
+                const color = die.owner
+                  ? diceStyle.playerColors[die.owner]
+                  : selected && humanTurn
+                    ? diceStyle.playerColors.human
+                    : diceStyle.colors[die.face - 1];
+                return (
+                  <button
+                    key={die.id}
+                    type="button"
+                    className={[
+                      "stash-die",
+                      `dice-shape-${diceStyle.shape}`,
+                      available ? "" : "is-played",
+                      selected ? "is-selected" : "",
+                      `die-value-${die.face}`,
+                    ].filter(Boolean).join(" ")}
+                    style={{
+                      "--die-color": diceStyle.colors[die.face - 1],
+                      "--player-color": color,
+                    } as CSSProperties}
+                    aria-label={`Die ${die.face}, stash position ${die.id + 1}${available ? "" : `, played by ${die.owner}`}${selected ? ", selected" : ""}`}
+                    aria-pressed={selected}
+                    disabled={game.status !== "playing" || !humanTurn || !available || !playable}
+                    onClick={() => chooseStashDie(die.id)}
+                  >
+                    {die.face}
+                  </button>
+                );
+              })}
             </div>
             <small>
               {mode === "points"
-                ? game.status === "playing"
-                  ? selectedValue !== null && legalPointMoves.some((move) => move.value === selectedValue)
-                    ? `${selectedValue} points, plus 5 for a row or column and 7 for a 2×2 box.`
-                    : selectedValue === null ? "Choose a number first." : `No legal placement for ${selectedValue}.`
-                  : "Fill a row, column, or 2×2 box to score bonus points."
-                : `${selectedValue === null && game.status === "playing" && humanTurn ? "Choose a number first. " : ""}Remaining dice: ${BOTCHEE_VALUES.map((value) =>
-                  `${value}: ${4 - game.board.filter((tile) => tile === value).length}`).join(" · ")}. No repeats in any row, column, or 2×2 box.`}
+                ? "Choose a die, then a legal square. Each die is worth its face value; complete a row or column for +5, or a box for +7. A single move can earn all three bonuses. Swipe the stash to see all 16."
+                : "Choose a die, then a legal square. No repeated number in any row, column, or 2×2 box; three claimed squares in a line win. Swipe the stash to see all 16."}
             </small>
           </div>
         )}
@@ -670,8 +878,10 @@ function BotcheeGame() {
               type="button"
               className="botchee-secondary"
               onClick={() => {
+                if (roundStartedAt.current !== null) persistGameLog(game, "abandoned");
                 const reset = createBotcheeGame(mode, getBotLevelForMode(mode));
                 setGame(reset);
+                setSelectedValue(null);
                 setAnnouncement("Round paused. Start a new game when ready.");
               }}
             >
@@ -682,10 +892,12 @@ function BotcheeGame() {
 
         <p className="botchee-rule-note">
           {mode === "points"
-            ? "Swift rules: no repeats in any row, column, or 2×2 corner box. Score the die value plus region bonuses."
+            ? "Play for Points: die values plus region bonuses; botching can end the round."
             : mode === "fic-fac-foe"
-              ? "Fic-Fac-Foe: take turns choosing numbers 1–4. Sudoku rules apply, with only four of each number. Claim any three adjacent squares in a line to win."
-              : "Flips: complete a valid 4×4 number grid. Each flip cycles the selected die through 1, 2, 3, 4."}
+              ? "Fic-Fac-Foe: Sudoku-legal placements; claim three consecutive squares in a line."
+              : "Flips: change a die’s face and solve the valid 4×4 grid."}
+          {" "}
+          <a href="#faq">FAQ · rules · tutorial</a>
         </p>
         {mode !== "flips" && (
           <section className="botchee-rating" aria-label={`${MODES.find((entry) => entry.id === mode)?.label} local rating`}>
@@ -715,6 +927,59 @@ function BotcheeGame() {
             {records.flipsBestTimeMs === null ? "—" : formatTime(records.flipsBestTimeMs)}
           </p>
         )}
+        <details className="botchee-history">
+          <summary>Local game history &amp; statistics</summary>
+          <p>
+            Recent {backgroundStats.totalGames} games logged (50 kept) · {backgroundStats.completedGames} completed ·{" "}
+            {backgroundStats.activeGames} in progress · {backgroundStats.abandonedGames} abandoned · {backgroundStats.botches} botches
+          </p>
+          <p className="botchee-history-modes">
+            Points {backgroundStats.byMode.points} · Fic-Fac-Foe {backgroundStats.byMode["fic-fac-foe"]} · Flips {backgroundStats.byMode.flips}
+          </p>
+          {gameLogs.length === 0 ? (
+            <small>No games logged yet. Finished, botched, and abandoned rounds are recorded here.</small>
+          ) : (
+            <ol className="botchee-history-list">
+              {gameLogs.slice(0, 5).map((log) => (
+                <li key={log.id}>
+                  <strong>{MODES.find((entry) => entry.id === log.mode)?.label}</strong>
+                  {" · "}
+                  {log.status === "abandoned" ? "Abandoned" : log.status === "playing" ? "In progress" : log.status}
+                  {log.mode === "points" ? ` · ${log.scores.human}–${log.scores.bot}` : ""}
+                  {" · "}
+                  {log.moves} moves
+                  <details>
+                    <summary>{log.actions.length} logged actions</summary>
+                    <ol>
+                      {log.actions.map((action, index) => (
+                        <li key={`${log.id}-${index}`}>
+                          {action.player} {action.kind}
+                          {action.fromValue === undefined
+                            ? action.value === undefined ? "" : ` ${action.value}`
+                            : ` ${action.fromValue} → ${action.value ?? "?"}`}
+                          {action.dieId === undefined ? "" : ` · die ${action.dieId + 1}`}
+                          {action.index === undefined ? "" : ` at square ${action.index + 1}`}
+                          {action.score && action.score.total > action.score.dieValue
+                            ? ` · ${action.score.dieValue} + ${action.score.rowBonus} row + ${action.score.columnBonus} column + ${action.score.boxBonus} box = ${action.score.total}`
+                            : ""}
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                </li>
+              ))}
+            </ol>
+          )}
+          <div className="botchee-history-actions">
+            <button type="button" className="botchee-secondary" onClick={exportGameLogs} disabled={gameLogs.length === 0}>
+              Export logs
+            </button>
+            <button type="button" className="botchee-secondary" onClick={clearGameLogs} disabled={gameLogs.length === 0}>
+              Delete logs
+            </button>
+          </div>
+          <small>Saved only in this browser; no gameplay or background statistics are sent to a server.</small>
+        </details>
         <p className="botchee-local-note">Local play only · results stay on this device</p>
         <details className="botchee-customize">
           <summary>Customize your dice &amp; sound</summary>

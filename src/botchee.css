@@ -283,17 +283,17 @@
 }
 
 .botchee-cell.is-bot {
-  border: 3px double #c98267;
+  border: 3px double color-mix(in srgb, var(--player-color) 85%, white);
 }
 
 .botchee-cell.is-human {
-  border: 3px solid #d9f3e5;
+  border: 3px solid color-mix(in srgb, var(--player-color) 85%, white);
 }
 
 .botchee-cell.has-value {
   background:
     linear-gradient(150deg, rgb(255 255 255 / 22%), transparent 58%),
-    var(--player-color, var(--die-color, #d8cdb5));
+    color-mix(in srgb, var(--player-color, var(--die-color, #d8cdb5)) 57%, transparent);
 }
 
 .botchee-cell.dice-shape-square,
@@ -316,6 +316,64 @@
   border: 1px solid var(--line);
   border-radius: 15px;
   background: rgb(11 22 33 / 24%);
+}
+
+.botchee-stash {
+  min-width: 0;
+}
+
+.botchee-stash-list {
+  margin: 10px -2px 2px;
+  padding: 2px;
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: rgb(164 231 202 / 38%) transparent;
+  scrollbar-width: thin;
+}
+
+.stash-die {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgb(226 244 236 / 25%);
+  border-radius: 10px;
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 20%), transparent 60%),
+    var(--die-color, #d8cdb5);
+  box-shadow: inset 1px 1px rgb(255 255 255 / 38%), 0 2px 5px rgb(0 0 0 / 20%);
+  color: #172735;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+  touch-action: manipulation;
+}
+
+.stash-die.is-played,
+.stash-die.is-selected {
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 20%), transparent 60%),
+    color-mix(in srgb, var(--player-color) 57%, transparent);
+  border-color: color-mix(in srgb, var(--player-color) 82%, white);
+}
+
+.stash-die.is-selected {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.stash-die:disabled {
+  cursor: default;
+}
+
+.stash-die:disabled:not(.is-played):not(.is-selected) {
+  opacity: 0.55;
+}
+
+.stash-die.dice-shape-square {
+  border-radius: 5px;
 }
 
 .botchee-number-picker > span,
@@ -513,6 +571,111 @@
 .botchee-rule-note {
   max-width: 430px;
   margin: 14px auto 0;
+}
+
+.botchee-rule-note a {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.botchee-history {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgb(11 22 33 / 25%);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.botchee-history summary {
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.botchee-history > p {
+  margin: 9px 0 0;
+}
+
+.botchee-history-modes {
+  color: var(--mint);
+}
+
+.botchee-history-list {
+  max-height: 260px;
+  margin: 9px 0;
+  padding-left: 20px;
+  overflow: auto;
+}
+
+.botchee-history-list > li {
+  padding: 5px 0;
+}
+
+.botchee-history-list details {
+  margin-top: 4px;
+}
+
+.botchee-history-list details ol {
+  max-height: 140px;
+  padding-left: 20px;
+  overflow: auto;
+}
+
+.botchee-history-actions {
+  margin: 8px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.botchee-history-actions .botchee-secondary {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 11px;
+}
+
+.botchee-help section {
+  margin-top: 24px;
+  scroll-margin-top: 20px;
+}
+
+.botchee-help h1 {
+  margin: 0;
+  font-size: clamp(24px, 6vw, 36px);
+}
+
+.botchee-help h2 {
+  margin: 0 0 12px;
+  color: var(--mint);
+}
+
+.botchee-help h3 {
+  margin: 18px 0 5px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.botchee-help p,
+.botchee-help li {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.botchee-help-nav {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.botchee-help-nav a {
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--amber);
+  font-size: 12px;
 }
 
 .botchee-local-note {

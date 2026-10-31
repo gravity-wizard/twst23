@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import BotcheeGame from "./BotcheeGame";
+import BotcheeHelp from "./BotcheeHelp";
 import {
   BOARD_CELLS,
   createGame,
@@ -291,6 +292,9 @@ function App() {
     return () => window.removeEventListener("hashchange", updateRoute);
   }, []);
 
+  if (route === "#/botchee/help" || route === "#faq" || route === "#rules" || route === "#tutorial") {
+    return <BotcheeHelp />;
+  }
   return route === "#/botchee" ? <BotcheeGame /> : <TwistedGame />;
 }
 
