@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import BotcheeGame from "./BotcheeGame";
 import BotcheeHelp from "./BotcheeHelp";
+import GameTown from "./GameTown";
+import HangmanGame from "./HangmanGame";
 import {
   BOARD_CELLS,
   createGame,
@@ -135,7 +137,10 @@ function TwistedGame() {
           <span>TWISTED <strong>23</strong></span>
         </a>
         <span className="topbar-note">A clever little shuffle</span>
-        <a className="game-link" href="#/botchee">Botchee 4×4</a>
+        <nav className="game-nav" aria-label="Game destinations">
+          <a href="#/town">Game Town</a>
+          <a className="game-link" href="#/botchee">Botchee 4×4</a>
+        </nav>
       </header>
 
       <section className="game-card" aria-labelledby="game-title">
@@ -295,6 +300,8 @@ function App() {
   if (route === "#/botchee/help" || route === "#faq" || route === "#rules" || route === "#tutorial") {
     return <BotcheeHelp />;
   }
+  if (route === "#/town") return <GameTown />;
+  if (route === "#/hangman") return <HangmanGame />;
   return route === "#/botchee" ? <BotcheeGame /> : <TwistedGame />;
 }
 

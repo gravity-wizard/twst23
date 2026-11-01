@@ -672,7 +672,10 @@ function BotcheeGame() {
           <span className="botchee-brand-mark" aria-hidden="true">B4</span>
           <span>BOTCHEE <strong>4×4</strong></span>
         </a>
-        <a className="botchee-back-link" href="./">Twisted 23</a>
+        <nav className="botchee-nav" aria-label="Game destinations">
+          <a className="botchee-back-link" href="#/town">Game Town</a>
+          <a className="botchee-back-link" href="./">Twisted 23</a>
+        </nav>
       </header>
 
       <section className="botchee-card" aria-labelledby="botchee-title">
