@@ -132,7 +132,7 @@ function TwistedGame() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <a className="brand" href="./" aria-label="Twisted 23 home">
+        <a className="brand" href="https://www.twisted23.com/" aria-label="Twisted23.com home">
           <span className="brand-mark" aria-hidden="true">23</span>
           <span>TWISTED <strong>23</strong></span>
         </a>

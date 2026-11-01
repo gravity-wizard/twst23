@@ -668,7 +668,7 @@ function BotcheeGame() {
   return (
     <main className="botchee-shell">
       <header className="botchee-topbar">
-        <a className="botchee-brand" href="./" aria-label="Twisted 23 home">
+        <a className="botchee-brand" href="https://www.twisted23.com/" aria-label="Twisted23.com home">
           <span className="botchee-brand-mark" aria-hidden="true">B4</span>
           <span>BOTCHEE <strong>4×4</strong></span>
         </a>
