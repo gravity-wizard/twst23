@@ -1,0 +1,661 @@
+/* ==========================================================================
+   Top Hat Puzzle (2007 Vintage Flash) & Top Hat Sudoku (Modern Recreation)
+   Subdomains: tophatpuzzle.twisted23.com & tophatsudoku.twisted23.com
+   ========================================================================== */
+
+:root {
+  --bg-page: #eef2f6;
+  --bg-card: #ffffff;
+  --text-main: #1d2733;
+  --text-muted: #526071;
+  --accent-blue: #0077cc;
+  --accent-royal: #0a2a99;
+  --border-color: #cbd5e1;
+  --banner-bg: linear-gradient(180deg, #e2e8f0 0%, #f8fafc 100%);
+  --shadow-soft: 0 6px 20px rgba(15, 23, 42, 0.08);
+  --font-sans: 'Trebuchet MS', 'Lucida Grande', Verdana, Arial, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+body.theme-modern {
+  --bg-page: #0f172a;
+  --bg-card: #1e293b;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent-blue: #38bdf8;
+  --accent-royal: #818cf8;
+  --border-color: #334155;
+  --banner-bg: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.5;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.page-wrap {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: max(18px, env(safe-area-inset-top)) 16px max(48px, env(safe-area-inset-bottom));
+}
+
+/* FreeGamesNews 2007 Welcome Banner */
+.fgn-welcome-banner {
+  background: var(--banner-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.fgn-banner-left {
+  flex: 1 1 560px;
+}
+
+.fgn-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.fgn-pill {
+  background: #0077cc;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.fgn-pill.elo-pill {
+  background: #0f766e;
+}
+
+.fgn-welcome-banner h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  color: var(--text-main);
+}
+
+.fgn-welcome-banner p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.fgn-welcome-banner a {
+  color: var(--accent-blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.fgn-welcome-banner a:hover {
+  text-decoration: underline;
+}
+
+/* Theme Switcher (TopHatPuzzle Classic vs TopHatSudoku Modern) */
+.edition-switcher {
+  display: flex;
+  background: rgba(148, 163, 184, 0.2);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  gap: 4px;
+}
+
+.edition-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 8px 13px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.edition-btn.active {
+  background: var(--bg-card);
+  color: var(--accent-blue);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* Main 2-Column Layout */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 920px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* Top Control Bar inside Game Card */
+.game-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.SegmentedGroup {
+  display: inline-flex;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.seg-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 6px 11px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border-right: 1px solid var(--border-color);
+}
+
+.seg-btn:last-child {
+  border-right: none;
+}
+
+.seg-btn.active {
+  background: var(--accent-blue);
+  color: #ffffff;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+}
+
+.timer-badge {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(0, 119, 204, 0.1);
+  color: var(--accent-blue);
+  border: 1px solid rgba(0, 119, 204, 0.25);
+}
+
+.elo-live-chip {
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(15, 118, 110, 0.12);
+  color: #0d9488;
+}
+
+body.theme-modern .elo-live-chip {
+  color: #2dd4bf;
+}
+
+/* Vintage 2007 Flash Frame */
+.board-frame {
+  border: 2px solid #111827;
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+body.theme-modern .board-frame {
+  border: 1px solid #334155;
+  background: #0f172a;
+  border-radius: 12px;
+}
+
+#board-svg {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+/* Interactive Keypad (1-6 + Clear + Notes + Check) */
+.keypad-section {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.digit-pad {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.digit-btn {
+  padding: 11px 0;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-page);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+
+.digit-btn:hover {
+  background: var(--accent-blue);
+  color: #fff;
+}
+
+.digit-btn:active {
+  transform: scale(0.96);
+}
+
+.digit-btn.armed {
+  background: var(--accent-blue);
+  color: #ffffff;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35);
+}
+
+/* Informative Popup Modal for TopHatPuzzle.com / TopHatSudoku.com */
+.info-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  z-index: 9999;
+}
+
+.info-modal-backdrop[hidden] {
+  display: none;
+}
+
+.info-modal {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90dvh;
+  overflow-y: auto;
+  margin: auto;
+  padding: 20px 22px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.info-modal h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+
+.info-modal p,
+.info-modal li {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.info-modal ul {
+  margin: 8px 0 14px;
+  padding-left: 18px;
+}
+
+.digit-btn.clear-btn {
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.btn {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-page);
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  border-color: var(--accent-blue);
+}
+
+.btn-primary {
+  background: var(--accent-blue);
+  color: #ffffff;
+  border-color: var(--accent-blue);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+.btn.active-toggle {
+  background: #f59e0b;
+  color: #fff;
+  border-color: #d97706;
+}
+
+/* Feedback Banner below board */
+.feedback-box {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: var(--bg-page);
+}
+
+@keyframes cellPop {
+  0% { transform: scale(0.82); opacity: 0.5; }
+  60% { transform: scale(1.14); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(420px) rotate(540deg); opacity: 0; }
+}
+
+.cell-pop-anim {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cellPop 0.24s ease-out;
+}
+
+.confetti-piece {
+  animation: confettiFall 2.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.feedback-box.success {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: #10b981;
+  color: #065f46;
+}
+
+body.theme-modern .feedback-box.success {
+  color: #6ee7b7;
+}
+
+.feedback-box.error {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+body.theme-modern .feedback-box.error {
+  color: #fca5a5;
+}
+
+/* Right Column: Region Explorer, Vintage Info, ELO Leaderboard & Visitor Form */
+.side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card p.small-copy {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 12-Region Interactive Legend Pills */
+.region-pills {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.region-pill {
+  padding: 6px 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-page);
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s ease;
+}
+
+.region-pill:hover,
+.region-pill.active {
+  background: var(--accent-blue);
+  color: #fff;
+  border-color: var(--accent-blue);
+}
+
+/* ELO Leaderboard Table */
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  margin-top: 6px;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 7px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.leaderboard-table tr.player-row {
+  background: rgba(0, 119, 204, 0.1);
+  font-weight: 700;
+}
+
+.rank-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+/* FreeGamesNews Visitor Submission Form */
+.visitor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.visitor-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.visitor-form input[type="text"],
+.visitor-form select,
+.visitor-form textarea {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-page);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.checkbox-row {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+  color: var(--text-main) !important;
+}
+
+.fgn-copy-box {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 6px;
+  background: var(--bg-page);
+  border: 1px dashed var(--border-color);
+  font-size: 12px;
+}
+
+.fgn-copy-box textarea {
+  width: 100%;
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-family: monospace;
+}
+
+/* Twisted23 Parlour Top Navigation Bar */
+.parlour-topbar {
+  width: 100%;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.parlour-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.parlour-home-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--accent-blue);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 12.5px;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.parlour-home-btn:hover {
+  opacity: 0.9;
+}
+
+.parlour-brand {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+}
+
+.parlour-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.parlour-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.parlour-links a:hover {
+  color: var(--accent-blue);
+}
+

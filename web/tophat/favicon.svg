@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#ffffff" stroke="#0b2595" stroke-width="4"/>
+  <!-- Classic Top Hat silhouette -->
+  <rect x="19" y="14" width="26" height="24" rx="3" fill="#111827"/>
+  <rect x="19" y="31" width="26" height="5" fill="#0077cc"/>
+  <rect x="10" y="38" width="44" height="6" rx="3" fill="#111827"/>
+  <!-- Small diamond pip -->
+  <polygon points="32,47 39,53 32,59 25,53" fill="#0b2595"/>
+</svg>
