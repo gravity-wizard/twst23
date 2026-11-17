@@ -2,6 +2,9 @@ User-agent: *
 Allow: /
 Allow: /backgammon/
 Allow: /hangman/
+Allow: /about
+Allow: /contact
+Allow: /terms
 
 Content-Signal: search=yes, ai-input=yes, ai-train=no
 Sitemap: https://twisted23.com/sitemap.xml

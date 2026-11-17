@@ -1,17 +1,24 @@
 # Twisted23 Parlour & Spatial Games
 
-> Twisted23 Parlour is a public STEM spatial reasoning and mathematics parlour founded by Gary Francis Stout in partnership with Gravity Wizards, Inc. (Anchorage & Palmer, Alaska). Featuring authentic 3D-in-2D orthographic dice games, 24-Tile shape puzzles, Backgammon 36-Roll Lab, and CameLcase cryptography.
+> Twisted23 Parlour (twisted23.com) is an open STEM spatial reasoning and mathematics pavilion founded by Gary Francis Stout in partnership with Gravity Wizards, Inc. (Anchorage & Palmer, Alaska). Featuring authentic 3D-in-2D orthographic dice games, 24-Tile shape puzzles, Backgammon 36-Roll Lab, and CameLcase cryptography.
 
 ## Games & Parlour Labs
 - [Twisted23 Parlour Lounge](https://twisted23.com/): 24-Tile Shape board and live 3D-in-2D orthographic rolling dice.
 - [Backgammon 36-Roll Lab](https://twisted23.com/backgammon/): Full-fidelity Backgammon with bilateral doubling cube, Gammon/Backgammon scoring, AxLe-locked dice variants, Pass & Play (HvH), and calibrated Night0WL Bot AI.
 - [CameLcase Hangman](https://twisted23.com/hangman/): Cryptographic word puzzles utilizing CameLcase and Base-38 ident architecture.
+- [Central LearningLab](https://twisted23.com/LearningLab/): Foundation lessons on case sensitivity and the 24-state 3D-in-2D die engine.
 - [Gravity Wizards Main Hub](https://gravitywizards.com/): FOBB STEM Flight Kits & GPADA Gravity Powered Air Derbies.
-- [Sitemap](https://twisted23.com/sitemap.xml): XML sitemap of all playable parlour routes.
+- [Sitemap](https://twisted23.com/sitemap.xml): XML sitemap of all public routes.
 
-## Trust & Ecosystem Links
-- Founder: Gary Francis Stout
-- Contact & Press: mailto:juniper@slogfrog.com | mailto:gary@gravitywizards.com
+## Trust, Policies & Contact
+- [About Twisted23](https://twisted23.com/about): Mission, thesis, and 3D-in-2D orthographic geometry background.
+- [Contact & Inquiries](https://twisted23.com/contact): Direct founder and press communications.
+- [Terms & Privacy Policy](https://twisted23.com/terms): Fair-use educational gaming and user privacy terms.
+- Founder & Inventor: Gary Francis Stout
+- Direct Founder Email: mailto:gary@gravitywizards.com
+- Press & Outreach Email: mailto:juniper@slogfrog.com
+- Phone: tel:+19077959515 (+1-907-795-9515)
+- Location: Anchorage & Palmer, Alaska, USA
 - Partner Innovation Hub: https://gravitywizards.com
 - Base-38 Time Ident System: https://base38.now62.com/
 - YouTube Channel: https://www.youtube.com/@gpada4270

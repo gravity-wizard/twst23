@@ -5,14 +5,27 @@ DirectoryIndex index.html
 RewriteEngine On
 RewriteBase /
 
-# Redirect missing legacy /is23pbHL/ to home
+# 1. HTTP Link Header pointing to agent-readable Markdown documentation
+<IfModule mod_headers.c>
+  Header append Link '<https://twisted23.com/llms.txt>; rel="alternate"; type="text/markdown"'
+</IfModule>
+
+# 2. Markdown Negotiation: If client requests text/markdown or ?format=md on homepage, serve llms.txt
+RewriteCond %{HTTP:Accept} text/markdown [NC,OR]
+RewriteCond %{QUERY_STRING} format=md [NC,OR]
+RewriteCond %{HTTP_USER_AGENT} (ClaudeBot|GPTBot|ChatGPT|Anthropic|PerplexityBot|Perplexity|Cohere|DeepSeek|Google-Extended) [NC]
+RewriteRule ^$ /llms.txt [L]
+
+# 3. Redirect missing legacy /is23pbHL/ to home
 Redirect 301 /is23pbHL/ /
 Redirect 301 /is23pbHL /
 
-# Add standard UTF-8 charset
+# 4. Standard UTF-8 charset
 AddDefaultCharset UTF-8
 AddCharset UTF-8 .html .css .js .json .svg .webmanifest
 
-# Ensure clean MIME types
+# 5. Ensure clean MIME types
 AddType application/javascript js
 AddType image/svg+xml svg
+AddType text/plain txt
+AddType application/xml xml
