@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Lost in the 24th Dimension | Twisted23</title>
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <style>
+    :root {
+      --bg: #070d18;
+      --card-bg: #0f1c32;
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.4);
+      --cyan: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --border-gold: rgba(245, 158, 11, 0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
+      padding-bottom: 3rem;
+    }
+    header {
+      width: 100%;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    header a.brand { color: var(--accent); text-decoration: none; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.05em; }
+    .btn-home {
+      background: #1e293b;
+      color: var(--cyan) !important;
+      padding: 0.4rem 0.95rem;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .btn-home:hover { background: #334155; border-color: var(--cyan); }
+
+    main {
+      max-width: 860px;
+      width: 100%;
+      padding: 0 1.25rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 404 GLOW BADGE */
+    .badge-404 {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--accent);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid var(--border-gold);
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fff 0%, #cbd5e1 50%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .error-title {
+      font-size: 1.4rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .error-desc {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* INTERACTIVE 3D DIE TUMBLER CANVAS */
+    .die-stage {
+      background: var(--card-bg);
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(245, 158, 11, 0.08);
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .die-stage:hover {
+      border-color: var(--accent);
+    }
+    canvas#dieCanvas {
+      width: 160px;
+      height: 160px;
+    }
+    .die-hint {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--cyan);
+      font-weight: 700;
+      font-family: ui-monospace, monospace;
+    }
+
+    /* PARLOUR TABLES DIRECTORY */
+    .section-title {
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: 800;
+      margin-bottom: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .tables-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      margin-bottom: 2.5rem;
+    }
+    .table-portal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+    .table-portal-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5), 0 0 20px rgba(245, 158, 11, 0.2);
+    }
+    .portal-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .portal-name { font-weight: 800; font-size: 1.1rem; color: #fff; margin-bottom: 0.25rem; }
+    .portal-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.4; }
+
+    .btn-return-home {
+      background: var(--accent);
+      color: #000;
+      font-weight: 900;
+      font-size: 1.1rem;
+      padding: 0.85rem 2.2rem;
+      border-radius: 9999px;
+      text-decoration: none;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-return-home:hover {
+      background: #fbbf24;
+      transform: scale(1.04);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="brand">TWISTED23</a>
+    <a href="/" class="btn-home">🏠 Return to Lounge</a>
+  </header>
+
+  <main>
+    <div class="badge-404">🎲 ERROR 404 • VOID SPACE #24</div>
+    <h1>404</h1>
+    <div class="error-title">You Have Slid Into The 24th Dimension</div>
+    <p class="error-desc">
+      The table or path you are looking for has slipped off the grid. It's just an accidental twist in the permutation matrix. Tap the tumbling die below to roll your way back into the parlour!
+    </p>
+
+    <!-- Interactive Tumbling 3D Die Canvas -->
+    <div class="die-stage" id="dieStage" title="Click to tumble the 3D die!">
+      <canvas id="dieCanvas" width="320" height="320"></canvas>
+      <div class="die-hint" id="dieStatus">🎲 Tap Die to Roll • Rolled: 5</div>
+    </div>
+
+    <div class="section-title">✨ Jump Directly Into a Parlour Game</div>
+    <div class="tables-grid">
+      <a href="/slider/" class="table-portal-card">
+        <div class="portal-icon">🌀</div>
+        <div class="portal-name">Twisted 23 Slider</div>
+        <div class="portal-desc">Our signature 24-space puzzle. Slide 1, 2, or 3 tiles into order.</div>
+      </a>
+
+      <a href="/backgammon/" class="table-portal-card">
+        <div class="portal-icon">🎲</div>
+        <div class="portal-name">Authentic Backgammon</div>
+        <div class="portal-desc">Classic 24-point board, doubling cube, and 3D-in-2D dice bot.</div>
+      </a>
+
+      <a href="/hangman/" class="table-portal-card">
+        <div class="portal-icon">🦉</div>
+        <div class="portal-name">CameLcase Hangman</div>
+        <div class="portal-desc">Protect Night0WL's 6 feathers from Shannon entropy decay.</div>
+      </a>
+
+      <a href="/flippingdice/" class="table-portal-card">
+        <div class="portal-icon">✨</div>
+        <div class="portal-name">Flipping Dice Blitz</div>
+        <div class="portal-desc">Multi-axial rolling dice mechanics and precision timing.</div>
+      </a>
+    </div>
+
+    <a href="/" class="btn-return-home">🏠 Return to Main Parlour Lounge</a>
+  </main>
+
+  <script>
+    // Interactive 3D Orthographic Die Tumbler on HTML5 Canvas
+    const canvas = document.getElementById('dieCanvas');
+    const ctx = canvas.getContext('2d');
+    let angleX = 0.55;
+    let angleY = 0.75;
+    let angleZ = 0.2;
+    let velX = 0.04;
+    let velY = 0.05;
+    let currentPip = 5;
+    let isRolling = false;
+
+    // Define cube vertices
+    const size = 68;
+    const vertices = [
+      [-size, -size, -size],
+      [ size, -size, -size],
+      [ size,  size, -size],
+      [-size,  size, -size],
+      [-size, -size,  size],
+      [ size, -size,  size],
+      [ size,  size,  size],
+      [-size,  size,  size]
+    ];
+
+    // Faces: vertex indices, normal, face value (1-6)
+    const faces = [
+      { verts: [0, 1, 2, 3], val: 1, color: '#f8fafc', pips: [[0, 0]] }, // Back
+      { verts: [5, 4, 7, 6], val: 6, color: '#f8fafc', pips: [[-0.5,-0.6], [0.5,-0.6], [-0.5,0], [0.5,0], [-0.5,0.6], [0.5,0.6]] }, // Front
+      { verts: [4, 0, 3, 7], val: 2, color: '#f8fafc', pips: [[-0.5,-0.5], [0.5,0.5]] }, // Left
+      { verts: [1, 5, 6, 2], val: 5, color: '#f8fafc', pips: [[-0.5,-0.5], [0.5,-0.5], [0,0], [-0.5,0.5], [0.5,0.5]] }, // Right
+      { verts: [4, 5, 1, 0], val: 3, color: '#f8fafc', pips: [[-0.5,-0.5], [0,0], [0.5,0.5]] }, // Top
+      { verts: [3, 2, 6, 7], val: 4, color: '#f8fafc', pips: [[-0.5,-0.5], [0.5,-0.5], [-0.5,0.5], [0.5,0.5]] }  // Bottom
+    ];
+
+    function rotatePoint(p, ax, ay, az) {
+      let [x, y, z] = p;
+      // Rot X
+      let y1 = y * Math.cos(ax) - z * Math.sin(ax);
+      let z1 = y * Math.sin(ax) + z * Math.cos(ax);
+      // Rot Y
+      let x2 = x * Math.cos(ay) + z1 * Math.sin(ay);
+      let z2 = -x * Math.sin(ay) + z1 * Math.cos(ay);
+      // Rot Z
+      let x3 = x2 * Math.cos(az) - y1 * Math.sin(az);
+      let y3 = x2 * Math.sin(az) + y1 * Math.cos(az);
+      return [x3, y3, z2];
+    }
+
+    function renderDie() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      // Transform all vertices
+      const transVerts = vertices.map(v => rotatePoint(v, angleX, angleY, angleZ));
+
+      // Calculate z-depth for each face and sort painter's algorithm
+      const renderedFaces = faces.map(f => {
+        const poly = f.verts.map(i => transVerts[i]);
+        // Normal via cross product (p1 - p0) x (p2 - p0)
+        const v0 = poly[0], v1 = poly[1], v2 = poly[2];
+        const ax = v1[0] - v0[0], ay = v1[1] - v0[1], az = v1[2] - v0[2];
+        const bx = v2[0] - v0[0], by = v2[1] - v0[1], bz = v2[2] - v0[2];
+        const nz = ax * by - ay * bx; // Z component of normal (pointing towards viewer)
+        const avgZ = (poly[0][2] + poly[1][2] + poly[2][2] + poly[3][2]) / 4;
+        return { face: f, poly, nz, avgZ };
+      });
+
+      // Sort back to front
+      renderedFaces.sort((a, b) => a.avgZ - b.avgZ);
+
+      renderedFaces.forEach(({ face, poly, nz }) => {
+        if (nz <= 0) return; // Backface culling
+
+        // Lighting calculation based on normal
+        const light = Math.max(0.5, Math.min(1.0, 0.7 + (nz / 14000) * 0.3));
+
+        ctx.beginPath();
+        ctx.moveTo(cx + poly[0][0], cy + poly[0][1]);
+        for (let i = 1; i < 4; i++) {
+          ctx.lineTo(cx + poly[i][0], cy + poly[i][1]);
+        }
+        ctx.closePath();
+
+        // Shading
+        const r = Math.floor(245 * light);
+        const g = Math.floor(158 * light);
+        const b = Math.floor(11 * light);
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+
+        // Draw pips on face
+        // Center of face
+        const fcx = (poly[0][0] + poly[1][0] + poly[2][0] + poly[3][0]) / 4;
+        const fcy = (poly[0][1] + poly[1][1] + poly[2][1] + poly[3][1]) / 4;
+
+        // Pip offsets
+        face.pips.forEach(([px, py]) => {
+          const uX = (poly[1][0] - poly[0][0]) * 0.5;
+          const uY = (poly[1][1] - poly[0][1]) * 0.5;
+          const vX = (poly[3][0] - poly[0][0]) * 0.5;
+          const vY = (poly[3][1] - poly[0][1]) * 0.5;
+
+          const pipPosX = cx + fcx + px * uX + py * vX;
+          const pipPosY = cy + fcy + px * uY + py * vY;
+
+          ctx.beginPath();
+          ctx.arc(pipPosX, pipPosY, 5, 0, Math.PI * 2);
+          ctx.fillStyle = '#0f172a';
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        });
+      });
+
+      // Update rotation
+      angleX += velX;
+      angleY += velY;
+
+      if (!isRolling) {
+        velX *= 0.985;
+        velY *= 0.985;
+        if (Math.abs(velX) < 0.005) velX = 0.006;
+        if (Math.abs(velY) < 0.005) velY = 0.008;
+      }
+
+      requestAnimationFrame(renderDie);
+    }
+
+    renderDie();
+
+    // Tumbling click trigger
+    document.getElementById('dieStage').onclick = () => {
+      isRolling = true;
+      velX = (Math.random() - 0.5) * 0.45;
+      velY = (Math.random() - 0.5) * 0.45;
+      const roll = Math.floor(Math.random() * 6) + 1;
+      currentPip = roll;
+      document.getElementById('dieStatus').textContent = `🎲 Tumbling... Rolled: ${roll}!`;
+
+      setTimeout(() => {
+        isRolling = false;
+        const tables = [
+          { name: 'Twisted 23 Slider', url: '/slider/' },
+          { name: 'Authentic Backgammon', url: '/backgammon/' },
+          { name: 'CameLcase Hangman', url: '/hangman/' },
+          { name: 'Flipping Dice Blitz', url: '/flippingdice/' }
+        ];
+        const picked = tables[Math.floor(Math.random() * tables.length)];
+        document.getElementById('dieStatus').textContent = `🎲 Rolled ${roll}! Parlour suggests: ${picked.name}`;
+      }, 900);
+    };
+  </script>
+</body>
+</html>

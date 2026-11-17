@@ -1,5 +1,6 @@
 # Twisted23 Apache Configuration
 DirectoryIndex index.html
+ErrorDocument 404 /404.html
 
 # Enable rewrite engine
 RewriteEngine On

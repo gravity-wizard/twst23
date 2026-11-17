@@ -592,6 +592,7 @@
       left: 50%;
       transform: translateX(-50%);
       animation: pulseTarget 1s infinite alternate ease-in-out;
+      pointer-events: none;
     }
     .pips-top .bg-point.legal-target::after { bottom: 12px; }
     .pips-bot .bg-point.legal-target::after { top: 12px; }
@@ -599,6 +600,19 @@
     @keyframes pulseTarget {
       0% { transform: translateX(-50%) scale(0.85); opacity: 0.75; }
       100% { transform: translateX(-50%) scale(1.25); opacity: 1; }
+    }
+
+    /* Movable Source Indicator */
+    .bg-point.selectable-source {
+      cursor: pointer;
+    }
+    .bg-point.selectable-source .checker:last-child {
+      box-shadow: 0 0 0 2.5px #f59e0b, 0 0 14px rgba(245, 158, 11, 0.7);
+      animation: pulseSelectable 1.4s infinite alternate ease-in-out;
+    }
+    @keyframes pulseSelectable {
+      0% { transform: scale(1); box-shadow: 0 0 0 2px #f59e0b, 0 0 8px rgba(245, 158, 11, 0.5); }
+      100% { transform: scale(1.08); box-shadow: 0 0 0 3px #fbbf24, 0 0 18px rgba(251, 191, 36, 0.95); }
     }
 
     /* In-Game Floating Notification Toast (Eliminates Browser Alert Modals) */
@@ -1349,17 +1363,33 @@
         if (hasAnyLegalMove(active)) {
           const moveWord = diceRemaining.length === 1 ? '1 move' : (diceRemaining.length + ' moves');
           const pName = active === 'white' ? (gameMode === 'hvh' ? 'Player 1 (White)' : 'You') : 'Player 2 (Red)';
-          logAction('Move complete! ' + pName + ' has ' + moveWord + ' left (' + diceRemaining.join(', ') + '). Click next checker.');
-          if (bar[active] > 0) selectSource('bar');
+          logAction('Move complete! ' + pName + ' has ' + moveWord + ' left (' + diceRemaining.join(', ') + ').');
+          
+          const movable = getMovableSources(active);
+          if (bar[active] > 0) {
+            selectSource('bar');
+            document.getElementById('statusHead').textContent = `🎲 Re-enter from Bar [${diceRemaining.join(', ')}]`;
+            document.getElementById('statusDesc').textContent = `Must enter from the bar. Tap a green target dot to enter.`;
+          } else if (movable.length > 0) {
+            selectSource(movable[0]);
+            document.getElementById('statusHead').textContent = `🎲 ${pName} — ${moveWord} Left [${diceRemaining.join(', ')}]`;
+            document.getElementById('statusDesc').textContent = `Point ${movable[0]} selected. Tap a green target dot to move, or select another checker.`;
+          } else {
+            renderBoard();
+          }
         } else {
           const nextName = (active === 'white' && gameMode === 'bot') ? 'Night0WL Bot' : (active === 'white' ? 'Player 2 (Red)' : 'Player 1 (White)');
           logAction('No legal moves remain for die [' + diceRemaining.join(', ') + ']. Passing turn to ' + nextName + '...');
+          document.getElementById('statusHead').textContent = `🎲 No Moves Left for [${diceRemaining.join(', ')}]`;
+          document.getElementById('statusDesc').textContent = `No legal moves possible. Passing turn to ${nextName}...`;
           diceRemaining = [];
           advanceTurn();
         }
       } else {
         const nextName = (active === 'white' && gameMode === 'bot') ? 'Night0WL Bot' : (active === 'white' ? 'Player 2 (Red)' : 'Player 1 (White)');
         logAction('Turn complete! Passing to ' + nextName + '...');
+        document.getElementById('statusHead').textContent = `Turn Complete`;
+        document.getElementById('statusDesc').textContent = `Passing turn to ${nextName}...`;
         advanceTurn();
       }
     }
@@ -1413,12 +1443,36 @@
       }
     }
 
+    // Find all points (or bar) that have legal moves for the given player
+    function getMovableSources(player) {
+      if (bar[player] > 0) {
+        return getLegalTargets(player, 'bar').length > 0 ? ['bar'] : [];
+      }
+      const sources = [];
+      for (let i = 1; i <= 24; i++) {
+        if (board[i].player === player && board[i].count > 0) {
+          if (getLegalTargets(player, i).length > 0) {
+            sources.push(i);
+          }
+        }
+      }
+      return sources;
+    }
+
     // Select Source and highlight valid targets
     function selectSource(src) {
       selectedSource = src;
       const targets = getLegalTargets(turn, src);
       legalMovesForSource = targets.map(t => t.dest);
       renderBoard();
+      const pName = turn === 'white' ? (gameMode === 'hvh' ? 'Player 1' : 'You') : (gameMode === 'hvh' ? 'Player 2' : 'Bot');
+      const srcName = src === 'bar' ? 'the Bar' : `Point ${src}`;
+      const targetCount = legalMovesForSource.length;
+      if (targetCount > 0) {
+        document.getElementById('statusDesc').textContent = `${srcName} selected (${targetCount} legal destination${targetCount > 1 ? 's' : ''}). Click a pulsating green target dot to move.`;
+      } else {
+        document.getElementById('statusDesc').textContent = `${srcName} has no legal moves with remaining dice [${diceRemaining.join(', ')}].`;
+      }
     }
 
     // Roll Dice Button Clicked
@@ -1435,7 +1489,6 @@
 
       const isDoubles = d1 === d2;
       diceRemaining = isDoubles ? [d1, d1, d1, d1] : [d1, d2];
-      renderBoard();
 
       const pLabel = active === 'white' ? (gameMode === 'hvh' ? 'Player 1 (White)' : 'You') : 'Player 2 (Red)';
       if (isDoubles) {
@@ -1447,12 +1500,25 @@
       if (!hasAnyLegalMove(active)) {
         const nextName = (active === 'white' && gameMode === 'bot') ? 'Night0WL Bot' : (active === 'white' ? 'Player 2' : 'Player 1');
         logAction('No legal moves possible for ' + d1 + ' & ' + d2 + '. Turn passes to ' + nextName + '.');
+        document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — No Legal Moves`;
+        document.getElementById('statusDesc').textContent = `No legal moves available. Turn passes to ${nextName}...`;
+        renderBoard();
         setTimeout(advanceTurn, 1400);
         return;
       }
 
+      // Auto-select or highlight movable checkers so board immediately responds
+      const movable = getMovableSources(active);
       if (bar[active] > 0) {
         selectSource('bar');
+        document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — Re-enter from Bar`;
+        document.getElementById('statusDesc').textContent = `Must enter from the bar. Tap a green target dot to enter.`;
+      } else if (movable.length > 0) {
+        selectSource(movable[0]);
+        document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — ${pLabel}'s Move`;
+        document.getElementById('statusDesc').textContent = `Point ${movable[0]} selected. Tap a green target dot to move, or click another glowing checker.`;
+      } else {
+        renderBoard();
       }
     };
 
@@ -1725,25 +1791,35 @@
         if (col) col.innerHTML = '';
         if (pointElements[i]) {
           pointElements[i].classList.remove('legal-target');
+          pointElements[i].classList.remove('selectable-source');
         }
       }
 
-      // Highlight legal targets
+      // Highlight legal targets and movable sources
       const active = turn;
       const isHumanTurn = (gameMode === 'hvh') || (gameMode === 'bot' && active === 'white');
 
       document.getElementById('trayWhite').classList.remove('highlight');
       document.getElementById('trayRed').classList.remove('highlight');
 
-      if (isHumanTurn && selectedSource !== null) {
-        const trayId = active === 'white' ? 'trayWhite' : 'trayRed';
-        legalMovesForSource.forEach(tgt => {
-          if (tgt === 'off') {
-            document.getElementById(trayId).classList.add('highlight');
-          } else if (pointElements[tgt]) {
-            pointElements[tgt].classList.add('legal-target');
+      if (isHumanTurn && diceRemaining.length > 0) {
+        const movable = getMovableSources(active);
+        movable.forEach(pt => {
+          if (pt !== 'bar' && pointElements[pt] && pt !== selectedSource) {
+            pointElements[pt].classList.add('selectable-source');
           }
         });
+
+        if (selectedSource !== null) {
+          const trayId = active === 'white' ? 'trayWhite' : 'trayRed';
+          legalMovesForSource.forEach(tgt => {
+            if (tgt === 'off') {
+              document.getElementById(trayId).classList.add('highlight');
+            } else if (pointElements[tgt]) {
+              pointElements[tgt].classList.add('legal-target');
+            }
+          });
+        }
       }
 
       // Render Checkers on Points
@@ -1763,6 +1839,11 @@
           if (isHumanTurn && active === player && selectedSource === i && c === displayCount - 1) {
             ch.classList.add('selected');
           }
+          // Direct click handler on checker ensures instant response
+          ch.onclick = (e) => {
+            e.stopPropagation();
+            onPointClicked(i);
+          };
           col.appendChild(ch);
         }
       }
@@ -1784,6 +1865,10 @@
         if (turn === 'red' && selectedSource === 'bar' && i === bar.red - 1) {
           ch.classList.add('selected');
         }
+        ch.onclick = (e) => {
+          e.stopPropagation();
+          if (turn === 'red' && diceRemaining.length > 0) selectSource('bar');
+        };
         barRedEl.appendChild(ch);
       }
 
@@ -1793,6 +1878,10 @@
         if (turn === 'white' && selectedSource === 'bar' && i === bar.white - 1) {
           ch.classList.add('selected');
         }
+        ch.onclick = (e) => {
+          e.stopPropagation();
+          if (turn === 'white' && diceRemaining.length > 0) selectSource('bar');
+        };
         barWhiteEl.appendChild(ch);
       }
 
