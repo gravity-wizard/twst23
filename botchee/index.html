@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Botchee 4×4 &amp; Xtreme (24-Tile Yacht &amp; FOBBs) &bull; Twisted23</title>
+  <link rel="canonical" href="https://www.twisted23.com/botchee/" />
+  <meta name="description" content="Roll and flip 5 Twisted23 3D-in-2D orthographic dice across the 4×4 and 24-Tile Botchee boards to lock Full Houses, Straights, and 5-of-a-Kind Botchee." />
+  <link rel="icon" type="image/png" href="../icon.png" />
+  <style>
+    :root {
+      --bg: #070d18;
+      --card: #0f1c32;
+      --card-2: #11223d;
+      --amber: #f59e0b;
+      --gold: #fbbf24;
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --pink: #ec4899;
+      --rose: #f43f5e;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #1e293b;
+      --wood-rim: #241309;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-image:
+        radial-gradient(ellipse at 25% 0%, rgba(245, 158, 11, 0.14) 0%, transparent 52%),
+        radial-gradient(ellipse at 85% 20%, rgba(56, 189, 248, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 55%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 5rem;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    header {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0.7rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      backdrop-filter: blur(8px);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.4rem 0.9rem;
+      border-radius: 9999px;
+      background: #1e293b;
+      color: var(--cyan);
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-decoration: none;
+      border: 1px solid #334155;
+      transition: all 0.15s;
+    }
+    .btn-home:hover { background: #334155; color: #fff; }
+    .brand {
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover, .nav-links a.current { color: #fff; }
+
+    main {
+      width: 100%;
+      max-width: 1140px;
+      padding: 1.1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .hud-card {
+      background: rgba(15, 28, 50, 0.92);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 16px;
+      padding: 0.85rem 1.2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.85rem;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+    .hud-title h1 {
+      font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #fbbf24, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.15;
+    }
+    .hud-sub {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 3px;
+    }
+    .hud-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.82rem;
+    }
+    .pill {
+      background: #0b1424;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      padding: 0.34rem 0.78rem;
+      color: #e2e8f0;
+      font-weight: 700;
+    }
+    .pill strong { color: var(--gold); }
+    .pill.em strong { color: var(--emerald); }
+    .pill.cy strong { color: var(--cyan); }
+
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .ctrl-btn {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 9999px;
+      padding: 0.48rem 0.95rem;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-btn:hover:not(:disabled) { border-color: var(--cyan); color: #fff; background: #263449; }
+    .ctrl-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .ctrl-btn.active { background: var(--cyan); color: #070d18; border-color: var(--cyan); }
+    .ctrl-btn.roll-btn {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: #090d16;
+      border-color: #fbbf24;
+      font-weight: 900;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+    }
+    .ctrl-btn.roll-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+    }
+
+    .arena-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+    @media (max-width: 920px) {
+      .arena-grid { grid-template-columns: 1fr; }
+    }
+
+    .board-panel {
+      background: rgba(15, 28, 50, 0.72);
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      padding: 1.2rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .stage-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem 0.25rem;
+    }
+    .wooden-frame {
+      background: linear-gradient(145deg, #4b2a17, #2b160a);
+      border: 6px solid var(--wood-rim);
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow:
+        0 24px 55px rgba(0, 0, 0, 0.72),
+        inset 0 2px 6px rgba(255, 215, 150, 0.18),
+        0 0 36px rgba(245, 158, 11, 0.12);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .wooden-frame.twisted { transform: rotate(-7deg); }
+
+    .board-grid {
+      display: grid;
+      gap: 7px;
+      background: #1a0d06;
+      padding: 11px;
+      border-radius: 15px;
+      border: 2px solid #5c331c;
+    }
+    .board-grid.mode-xtreme {
+      grid-template-columns: repeat(6, 58px);
+      grid-template-rows: repeat(6, 58px);
+    }
+    .board-grid.mode-4x4 {
+      grid-template-columns: repeat(4, 72px);
+      grid-template-rows: repeat(4, 72px);
+    }
+
+    .void-cell { width: 100%; height: 100%; pointer-events: none; }
+
+    .slot-btn {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 11px;
+      border: 2px solid rgba(217, 119, 6, 0.35);
+      background: linear-gradient(145deg, rgba(66, 36, 18, 0.85), rgba(34, 18, 9, 0.92));
+      color: rgba(251, 191, 36, 0.55);
+      font-weight: 800;
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+      transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .slot-btn.adjacent-target {
+      border-color: var(--emerald);
+      border-style: dashed;
+      background: rgba(16, 185, 129, 0.16);
+      color: var(--emerald);
+      cursor: pointer;
+      box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+    .slot-btn.adjacent-target:hover {
+      transform: scale(1.04);
+      background: rgba(16, 185, 129, 0.28);
+    }
+    .slot-btn.die-tile {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border: 2px solid #38bdf8;
+      box-shadow: 0 4px 0 #0284c7, 0 6px 14px rgba(56, 189, 248, 0.28);
+      padding: 2px;
+      cursor: pointer;
+    }
+    .slot-btn.die-tile.held {
+      border-color: var(--emerald);
+      box-shadow: 0 4px 0 #047857, 0 0 16px rgba(16, 185, 129, 0.45);
+    }
+    .slot-btn.die-tile.selected {
+      outline: 3px solid var(--gold);
+      outline-offset: 2px;
+    }
+    .wooden-frame.twisted .upright-inner {
+      transform: rotate(7deg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+    .die-tile canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .hold-badge {
+      position: absolute;
+      top: -6px;
+      right: -5px;
+      background: var(--emerald);
+      color: #052e16;
+      font-size: 0.62rem;
+      font-weight: 900;
+      padding: 1px 5px;
+      border-radius: 999px;
+      border: 1px solid #a7f3d0;
+      letter-spacing: 0.03em;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .die-tray-bar {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      background: #0b1424;
+      border: 1px solid #1e293b;
+      border-radius: 13px;
+      padding: 0.75rem;
+    }
+    .die-selector-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.45rem;
+    }
+    .die-chip {
+      background: #16233a;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .die-chip.selected { border-color: var(--gold); background: #232d42; }
+    .die-chip.held { border-color: var(--emerald); color: #6ee7b7; }
+
+    .flip-pad {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .flip-btn {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 0.36rem 0.7rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .flip-btn:hover:not(:disabled) { border-color: var(--amber); color: var(--gold); }
+    .flip-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    .hand-banner {
+      width: 100%;
+      text-align: center;
+      background: rgba(11, 20, 36, 0.9);
+      border: 1px solid #334155;
+      border-radius: 11px;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+    .hand-banner strong { color: var(--gold); }
+
+    /* Scorecard */
+    .scorecard-panel {
+      background: rgba(15, 28, 50, 0.9);
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .scorecard-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 0.55rem;
+    }
+    .scorecard-head h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--gold);
+    }
+    .scorecard-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    .scorecard-table th {
+      text-align: left;
+      color: var(--muted);
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.35rem 0.4rem;
+      border-bottom: 1px solid #1e293b;
+    }
+    .scorecard-table td {
+      padding: 0.42rem 0.4rem;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+    }
+    .cat-row {
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .cat-row.available:hover {
+      background: rgba(56, 189, 248, 0.14);
+    }
+    .cat-row.scored {
+      opacity: 0.75;
+      cursor: default;
+    }
+    .cat-name { font-weight: 700; color: #f1f5f9; }
+    .cat-hint { display: block; font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+    .cat-score {
+      text-align: right;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 800;
+      width: 72px;
+    }
+    .score-preview {
+      display: inline-block;
+      min-width: 34px;
+      text-align: center;
+      padding: 2px 7px;
+      border-radius: 7px;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: var(--gold);
+    }
+    .score-preview.zero {
+      background: rgba(148, 163, 184, 0.08);
+      border-color: rgba(148, 163, 184, 0.25);
+      color: var(--muted);
+    }
+    .score-locked {
+      color: var(--emerald);
+      font-weight: 900;
+    }
+    .summary-row td {
+      background: #0b1424;
+      font-weight: 800;
+      color: #cbd5e1;
+    }
+    .grand-row td {
+      background: rgba(16, 185, 129, 0.14);
+      color: #fff;
+      font-size: 0.96rem;
+      font-weight: 900;
+    }
+
+    .fobb-callout {
+      background: rgba(11, 20, 36, 0.78);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 0.7rem 0.85rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .fobb-callout a { color: var(--cyan); text-decoration: none; font-weight: 700; }
+    .fobb-callout a:hover { text-decoration: underline; }
+
+    @media (max-width: 540px) {
+      .board-grid.mode-xtreme {
+        grid-template-columns: repeat(6, 44px);
+        grid-template-rows: repeat(6, 44px);
+        gap: 5px;
+      }
+      .board-grid.mode-4x4 {
+        grid-template-columns: repeat(4, 58px);
+        grid-template-rows: repeat(4, 58px);
+        gap: 6px;
+      }
+      .wooden-frame { padding: 11px; border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <a href="../" class="btn-home">&#8592; Parlour Home</a>
+      <a href="./" class="brand">TWISTED23 // BOTCHEE 4×4 &amp; XTREME</a>
+    </div>
+    <nav class="nav-links">
+      <a href="../play/">▶️ Full Screen Play</a>
+      <a href="../slider/">🌀 24-Slider</a>
+      <a href="../tophat/">🎩 TopHatPuzzle</a>
+      <a href="../extreme/">💥 eXtreme 24-Cie</a>
+      <a href="../backgammon/">🎲 Backgammon</a>
+      <a href="../hangman/">🦉 Hangman</a>
+      <a href="../visitors/">🌍 Visitors</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hud-card">
+      <div class="hud-title">
+        <h1>Botchee 4×4 &amp; Xtreme &bull; 24-Tile Yacht &amp; FOBBs</h1>
+        <div class="hud-sub">Roll 5 live 3D-in-2D dice, lock holds, or orthographically roll a die onto adjacent wooden tiles to build Full Houses, Straights &amp; 5-of-a-Kind Botchee</div>
+      </div>
+      <div class="hud-pills">
+        <span class="pill">Round: <strong id="hudRound">1/13</strong></span>
+        <span class="pill cy">Rolls: <strong id="hudRolls">0/3</strong></span>
+        <span class="pill em">Flips Left: <strong id="hudFlips">2</strong></span>
+        <span class="pill">Score: <strong id="hudTotal">0</strong></span>
+        <span class="pill">Best: <strong id="hudBest">0</strong></span>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <button type="button" class="ctrl-btn roll-btn" id="btnRollDice">🎲 Roll Unlocked Dice (3 left)</button>
+      <button type="button" class="ctrl-btn active" id="btnModeXtreme">🎩 Botchee Xtreme (24-Tile)</button>
+      <button type="button" class="ctrl-btn" id="btnMode4x4">🟩 Botchee 4×4 (16-Tile)</button>
+      <button type="button" class="ctrl-btn active" id="btnTwist">🌀 Twist: -7°</button>
+      <button type="button" class="ctrl-btn" id="btnUnlockAll">🔓 Unlock All</button>
+      <button type="button" class="ctrl-btn" id="btnNewMatch">🔄 New 13-Round Match</button>
+    </div>
+
+    <div class="arena-grid">
+      <section class="board-panel" aria-label="Botchee 3D-in-2D Dice Board">
+        <div class="stage-wrap">
+          <div class="wooden-frame twisted" id="botcheeFrame">
+            <div class="board-grid mode-xtreme" id="botcheeGrid"></div>
+          </div>
+        </div>
+
+        <div class="die-tray-bar">
+          <div class="die-selector-row" id="dieChipRow"></div>
+          <div class="flip-pad">
+            <span style="font-size:0.78rem; color:var(--muted); font-weight:700; margin-right:4px;">3D Orthographic Flip Selected Die:</span>
+            <button type="button" class="flip-btn" id="flipUpBtn">⬆ Up</button>
+            <button type="button" class="flip-btn" id="flipDownBtn">⬇ Down</button>
+            <button type="button" class="flip-btn" id="flipLeftBtn">⬅ Left</button>
+            <button type="button" class="flip-btn" id="flipRightBtn">➡ Right</button>
+            <button type="button" class="flip-btn" id="toggleHoldBtn">🔒 Hold / Release</button>
+          </div>
+        </div>
+
+        <div class="hand-banner" id="handBanner">
+          Click <strong>🎲 Roll Unlocked Dice</strong> to begin Round 1! Click any die on the board to hold/select it, then click a highlighted green slot or flip button to roll its 3D face orthogonally.
+        </div>
+      </section>
+
+      <aside class="scorecard-panel" aria-label="Botchee 13-Category Scorecard">
+        <div class="scorecard-head">
+          <h2>🎯 Botchee Scorecard</h2>
+          <span style="font-size:0.78rem; color:var(--muted);" id="scorePrompt">Roll dice to preview points</span>
+        </div>
+        <table class="scorecard-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th style="text-align:right;">Points</th>
+            </tr>
+          </thead>
+          <tbody id="scorecardBody"></tbody>
+        </table>
+        <div class="fobb-callout">
+          <strong>GravityWizards FOBBs Bridge:</strong> Each die uses Twisted23's exact 24-state right-handed orthographic geometry (<code>TF = Top&middot;10 + Front</code> in <a href="../dice3d2d.js">dice3d2d.js</a>). Spatial flips physically rotate the die 90° across board slots—pairing tactile tabletop strategy with <a href="https://gravitywizards.com" target="_blank" rel="noopener">GravityWizards FOBB Flight Kits</a>.
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script type="module">
+    import {
+      DIRECTIONS,
+      VALID_TFS,
+      getEndTF,
+      renderDie2D,
+      SLog
+    } from '../dice3d2d.js';
+
+    const XTREME24_COORDS = [
+      [0, 2], [0, 3],
+      [1, 1], [1, 2], [1, 3], [1, 4],
+      [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5],
+      [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5],
+      [4, 1], [4, 2], [4, 3], [4, 4],
+      [5, 2], [5, 3]
+    ];
+
+    const GRID4X4_COORDS = [];
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 4; c++) GRID4X4_COORDS.push([r, c]);
+    }
+
+    const CATEGORIES = [
+      { id: 'ones', label: 'Aces (1s)', hint: 'Sum of all 1s', section: 'upper' },
+      { id: 'twos', label: 'Twos (2s)', hint: 'Sum of all 2s', section: 'upper' },
+      { id: 'threes', label: 'Threes (3s)', hint: 'Sum of all 3s', section: 'upper' },
+      { id: 'fours', label: 'Fours (4s)', hint: 'Sum of all 4s', section: 'upper' },
+      { id: 'fives', label: 'Fives (5s)', hint: 'Sum of all 5s', section: 'upper' },
+      { id: 'sixes', label: 'Sixes (6s)', hint: 'Sum of all 6s', section: 'upper' },
+      { id: 'threeKind', label: '3 of a Kind', hint: 'Sum of all 5 dice', section: 'lower' },
+      { id: 'fourKind', label: '4 of a Kind', hint: 'Sum of all 5 dice', section: 'lower' },
+      { id: 'fullHouse', label: 'Full House', hint: '3 + 2 matching • 25 pts', section: 'lower' },
+      { id: 'smStraight', label: 'Small Straight', hint: '4 in sequence • 30 pts', section: 'lower' },
+      { id: 'lgStraight', label: 'Large Straight', hint: '5 in sequence • 40 pts', section: 'lower' },
+      { id: 'botchee', label: 'BOTCHEE! (5-of-a-Kind)', hint: 'All 5 match • 50 pts', section: 'lower' },
+      { id: 'chance', label: 'Chance', hint: 'Sum of all 5 dice', section: 'lower' }
+    ];
+
+    const BEST_STORAGE_KEY = 'twst23_botchee_best_score';
+
+    let boardMode = 'xtreme'; // 'xtreme' | '4x4'
+    let twisted = true;
+    let round = 1;
+    let rollsUsed = 0;
+    let spatialFlipsLeft = 2;
+    let isAnimating = false;
+    let selectedDieIndex = 0;
+    let scores = {};
+    let bestScore = Number(localStorage.getItem(BEST_STORAGE_KEY) || 0) || 0;
+
+    // 5 live 3D-in-2D dice
+    let dice = [
+      { id: 0, tf: 12, slotXtreme: 7, slot4x4: 5, held: false, dir: DIRECTIONS.STOP, angle: 0 },
+      { id: 1, tf: 23, slotXtreme: 8, slot4x4: 6, held: false, dir: DIRECTIONS.STOP, angle: 0 },
+      { id: 2, tf: 35, slotXtreme: 10, slot4x4: 9, held: false, dir: DIRECTIONS.STOP, angle: 0 },
+      { id: 3, tf: 46, slotXtreme: 14, slot4x4: 10, held: false, dir: DIRECTIONS.STOP, angle: 0 },
+      { id: 4, tf: 51, slotXtreme: 15, slot4x4: 13, held: false, dir: DIRECTIONS.STOP, angle: 0 }
+    ];
+
+    const dieCanvases = new Map();
+    const gridEl = document.getElementById('botcheeGrid');
+    const frameEl = document.getElementById('botcheeFrame');
+
+    function getCoords() {
+      return boardMode === '4x4'
+        ? { rows: 4, cols: 4, coords: GRID4X4_COORDS, cls: 'mode-4x4' }
+        : { rows: 6, cols: 6, coords: XTREME24_COORDS, cls: 'mode-xtreme' };
+    }
+
+    function getDieSlot(die) {
+      return boardMode === '4x4' ? die.slot4x4 : die.slotXtreme;
+    }
+
+    function setDieSlot(die, idx) {
+      if (boardMode === '4x4') die.slot4x4 = idx;
+      else die.slotXtreme = idx;
+    }
+
+    function getTopFaces() {
+      return dice.map(d => Math.floor(d.tf / 10));
+    }
+
+    function evalCategory(catId, faces) {
+      const counts = [0, 0, 0, 0, 0, 0, 0];
+      let sum = 0;
+      for (const f of faces) {
+        counts[f]++;
+        sum += f;
+      }
+      const maxCount = Math.max(...counts);
+      const uniqueSorted = [...new Set(faces)].sort((a, b) => a - b);
+
+      switch (catId) {
+        case 'ones': return counts[1] * 1;
+        case 'twos': return counts[2] * 2;
+        case 'threes': return counts[3] * 3;
+        case 'fours': return counts[4] * 4;
+        case 'fives': return counts[5] * 5;
+        case 'sixes': return counts[6] * 6;
+        case 'threeKind': return maxCount >= 3 ? sum : 0;
+        case 'fourKind': return maxCount >= 4 ? sum : 0;
+        case 'fullHouse': {
+          const vals = counts.filter(c => c > 0);
+          return (vals.includes(3) && vals.includes(2)) || maxCount === 5 ? 25 : 0;
+        }
+        case 'smStraight': {
+          const s = uniqueSorted.join('');
+          return s.includes('1234') || s.includes('2345') || s.includes('3456') ? 30 : 0;
+        }
+        case 'lgStraight': {
+          const s = uniqueSorted.join('');
+          return s === '12345' || s === '23456' ? 40 : 0;
+        }
+        case 'botchee': return maxCount === 5 ? 50 : 0;
+        case 'chance': return sum;
+        default: return 0;
+      }
+    }
+
+    function detectHighlightHand(faces) {
+      if (evalCategory('botchee', faces) > 0) return '🔥 BOTCHEE! 5-of-a-Kind (50 pts)!';
+      if (evalCategory('lgStraight', faces) > 0) return '📈 Large Straight (40 pts)!';
+      if (evalCategory('smStraight', faces) > 0) return '📊 Small Straight (30 pts)!';
+      if (evalCategory('fullHouse', faces) > 0) return '🏠 Full House (25 pts)!';
+      if (evalCategory('fourKind', faces) > 0) return `🎯 Four of a Kind (${evalCategory('fourKind', faces)} pts)!`;
+      if (evalCategory('threeKind', faces) > 0) return `✨ Three of a Kind (${evalCategory('threeKind', faces)} pts)!`;
+      return `🎲 Top Faces: [${faces.join(' · ')}] — Sum ${faces.reduce((a, b) => a + b, 0)}`;
+    }
+
+    function computeTotals() {
+      let upperSum = 0;
+      let lowerSum = 0;
+      for (const c of CATEGORIES) {
+        if (scores[c.id] !== undefined) {
+          if (c.section === 'upper') upperSum += scores[c.id];
+          else lowerSum += scores[c.id];
+        }
+      }
+      const upperBonus = upperSum >= 63 ? 35 : 0;
+      const total = upperSum + upperBonus + lowerSum;
+      return { upperSum, upperBonus, lowerSum, total };
+    }
+
+    function drawAllDice() {
+      for (const die of dice) {
+        const cv = dieCanvases.get(die.id);
+        if (!cv) continue;
+        const ctx = cv.getContext('2d');
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        renderDie2D(ctx, {
+          x: 6,
+          y: 6,
+          size: 88,
+          tf: die.tf,
+          direction: die.dir,
+          angleDeg: die.angle,
+          showOrientationCompass: die.angle === 0
+        });
+      }
+    }
+
+    function renderBoard() {
+      const { rows, cols, coords, cls } = getCoords();
+      gridEl.className = `board-grid ${cls}`;
+      gridEl.innerHTML = '';
+
+      const coordToIdx = new Map();
+      coords.forEach(([r, c], i) => coordToIdx.set(`${r},${c}`, i));
+
+      const slotToDie = new Map();
+      dice.forEach((d, idx) => slotToDie.set(getDieSlot(d), idx));
+
+      const selDie = dice[selectedDieIndex];
+      const selSlot = getDieSlot(selDie);
+      const [selR, selC] = coords[selSlot];
+
+      const canSpatialMove = rollsUsed > 0 && spatialFlipsLeft > 0 && !selDie.held && !isAnimating;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const key = `${r},${c}`;
+          if (!coordToIdx.has(key)) {
+            const voidDiv = document.createElement('div');
+            voidDiv.className = 'void-cell';
+            gridEl.appendChild(voidDiv);
+            continue;
+          }
+
+          const slotIdx = coordToIdx.get(key);
+          const dieIdx = slotToDie.get(slotIdx);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+
+          if (dieIdx !== undefined) {
+            const die = dice[dieIdx];
+            btn.className = 'slot-btn die-tile'
+              + (die.held ? ' held' : '')
+              + (dieIdx === selectedDieIndex ? ' selected' : '');
+            btn.title = `Die ${dieIdx + 1} (Top ${Math.floor(die.tf / 10)}, Front ${die.tf % 10}) — Click to ${die.held ? 'Release' : 'Hold'}`;
+
+            if (die.held) {
+              const badge = document.createElement('span');
+              badge.className = 'hold-badge';
+              badge.textContent = 'HOLD';
+              btn.appendChild(badge);
+            }
+
+            const inner = document.createElement('div');
+            inner.className = 'upright-inner';
+            const cv = document.createElement('canvas');
+            cv.width = 100;
+            cv.height = 100;
+            inner.appendChild(cv);
+            btn.appendChild(inner);
+            dieCanvases.set(die.id, cv);
+
+            btn.addEventListener('click', () => onDieClick(dieIdx));
+          } else {
+            const dr = r - selR;
+            const dc = c - selC;
+            const isAdj = canSpatialMove && (Math.abs(dr) + Math.abs(dc) === 1);
+            btn.className = 'slot-btn' + (isAdj ? ' adjacent-target' : '');
+            if (isAdj) {
+              const arrow = dr === -1 ? '⬆' : dr === 1 ? '⬇' : dc === -1 ? '⬅' : '➡';
+              btn.innerHTML = `<span class="upright-inner">${arrow}</span>`;
+              btn.title = `Roll Die ${selectedDieIndex + 1} orthographically here`;
+              btn.addEventListener('click', () => {
+                const dir = dr === -1 ? DIRECTIONS.UP
+                  : dr === 1 ? DIRECTIONS.DOWN
+                  : dc === -1 ? DIRECTIONS.LEFT
+                  : DIRECTIONS.RIGHT;
+                flipSelectedDie(dir, slotIdx);
+              });
+            } else {
+              btn.innerHTML = `<span class="upright-inner">${slotIdx + 1}</span>`;
+            }
+          }
+          gridEl.appendChild(btn);
+        }
+      }
+
+      drawAllDice();
+      renderControlsAndChips();
+      renderScorecard();
+    }
+
+    function renderControlsAndChips() {
+      const chipRow = document.getElementById('dieChipRow');
+      chipRow.innerHTML = '';
+      dice.forEach((die, idx) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'die-chip'
+          + (idx === selectedDieIndex ? ' selected' : '')
+          + (die.held ? ' held' : '');
+        const top = Math.floor(die.tf / 10);
+        const front = die.tf % 10;
+        chip.textContent = `D${idx + 1}: [${top}] F${front}${die.held ? ' 🔒' : ''}`;
+        chip.onclick = () => {
+          selectedDieIndex = idx;
+          renderBoard();
+        };
+        chipRow.appendChild(chip);
+      });
+
+      const matchFinished = round > CATEGORIES.length;
+      const rollsLeft = Math.max(0, 3 - rollsUsed);
+      const rollBtn = document.getElementById('btnRollDice');
+      rollBtn.disabled = isAnimating || rollsLeft === 0 || matchFinished;
+      rollBtn.textContent = matchFinished
+        ? '🏁 Match Complete'
+        : `🎲 Roll Unlocked Dice (${rollsLeft} left)`;
+
+      const canFlip = !isAnimating && !matchFinished && rollsUsed > 0 && spatialFlipsLeft > 0 && !dice[selectedDieIndex].held;
+      document.getElementById('flipUpBtn').disabled = !canFlip;
+      document.getElementById('flipDownBtn').disabled = !canFlip;
+      document.getElementById('flipLeftBtn').disabled = !canFlip;
+      document.getElementById('flipRightBtn').disabled = !canFlip;
+      document.getElementById('toggleHoldBtn').disabled = isAnimating || matchFinished || rollsUsed === 0;
+
+      const { total } = computeTotals();
+      document.getElementById('hudRound').textContent = `${Math.min(round, CATEGORIES.length)}/${CATEGORIES.length}`;
+      document.getElementById('hudRolls').textContent = `${rollsUsed}/3`;
+      document.getElementById('hudFlips').textContent = String(spatialFlipsLeft);
+      document.getElementById('hudTotal').textContent = String(total);
+      document.getElementById('hudBest').textContent = String(bestScore);
+    }
+
+    function renderScorecard() {
+      const tbody = document.getElementById('scorecardBody');
+      tbody.innerHTML = '';
+      const faces = getTopFaces();
+      const { upperSum, upperBonus, total } = computeTotals();
+      const canScore = rollsUsed > 0 && !isAnimating;
+
+      const addSectionRows = (section) => {
+        CATEGORIES.filter(c => c.section === section).forEach(cat => {
+          const tr = document.createElement('tr');
+          const already = scores[cat.id] !== undefined;
+          tr.className = 'cat-row ' + (already ? 'scored' : (canScore ? 'available' : ''));
+          const pts = already ? scores[cat.id] : (canScore ? evalCategory(cat.id, faces) : null);
+
+          let scoreCellHtml = '—';
+          if (already) {
+            scoreCellHtml = `<span class="score-locked">${pts}</span>`;
+          } else if (pts !== null) {
+            scoreCellHtml = `<span class="score-preview ${pts === 0 ? 'zero' : ''}">${pts}</span>`;
+          }
+
+          tr.innerHTML = `
+            <td>
+              <span class="cat-name">${cat.label}</span>
+              <span class="cat-hint">${cat.hint}</span>
+            </td>
+            <td class="cat-score">${scoreCellHtml}</td>
+          `;
+          if (!already && canScore) {
+            tr.onclick = () => claimCategory(cat.id);
+          }
+          tbody.appendChild(tr);
+        });
+      };
+
+      addSectionRows('upper');
+
+      const upperTr = document.createElement('tr');
+      upperTr.className = 'summary-row';
+      upperTr.innerHTML = `
+        <td>Upper Subtotal / Bonus (+35 at 63+)</td>
+        <td class="cat-score">${upperSum} ${upperBonus ? '+35' : `(${Math.max(0, 63 - upperSum)} to go)`}</td>
+      `;
+      tbody.appendChild(upperTr);
+
+      addSectionRows('lower');
+
+      const totalTr = document.createElement('tr');
+      totalTr.className = 'grand-row';
+      totalTr.innerHTML = `
+        <td>GRAND TOTAL</td>
+        <td class="cat-score">${total}</td>
+      `;
+      tbody.appendChild(totalTr);
+
+      document.getElementById('scorePrompt').textContent =
+        round > CATEGORIES.length
+          ? `Final Score: ${total} pts`
+          : (canScore ? 'Click any open row to bank points' : 'Roll dice to preview points');
+    }
+
+    function onDieClick(dieIdx) {
+      if (isAnimating) return;
+      selectedDieIndex = dieIdx;
+      if (rollsUsed > 0 && round <= CATEGORIES.length) {
+        dice[dieIdx].held = !dice[dieIdx].held;
+      }
+      renderBoard();
+    }
+
+    function animateRollQueue(targets, onDone) {
+      isAnimating = true;
+      renderControlsAndChips();
+      const dirs = [DIRECTIONS.UP, DIRECTIONS.DOWN, DIRECTIONS.LEFT, DIRECTIONS.RIGHT];
+      let step = 0;
+      const maxSteps = 8;
+
+      const tick = () => {
+        step++;
+        for (const die of targets) {
+          if (step < maxSteps) {
+            die.tf = VALID_TFS[Math.floor(Math.random() * VALID_TFS.length)];
+            die.dir = dirs[Math.floor(Math.random() * dirs.length)];
+            die.angle = (step % 2 === 0) ? 35 : 55;
+          } else {
+            die.tf = VALID_TFS[Math.floor(Math.random() * VALID_TFS.length)];
+            die.dir = DIRECTIONS.STOP;
+            die.angle = 0;
+          }
+        }
+        drawAllDice();
+        if (step < maxSteps) {
+          setTimeout(tick, 55);
+        } else {
+          isAnimating = false;
+          onDone();
+        }
+      };
+      tick();
+    }
+
+    function rollUnlockedDice() {
+      if (isAnimating || rollsUsed >= 3 || round > CATEGORIES.length) return;
+      const unlocked = dice.filter(d => !d.held);
+      if (unlocked.length === 0) {
+        document.getElementById('handBanner').innerHTML =
+          '🔒 All 5 dice are held! Unlock at least one die or claim a category on the Scorecard.';
+        return;
+      }
+      rollsUsed++;
+      animateRollQueue(unlocked, () => {
+        renderBoard();
+        document.getElementById('handBanner').innerHTML =
+          `<strong>Roll ${rollsUsed}/3:</strong> ${detectHighlightHand(getTopFaces())}`;
+      });
+    }
+
+    function flipSelectedDie(dir, targetSlotIdx = null) {
+      if (isAnimating || rollsUsed === 0 || spatialFlipsLeft <= 0 || round > CATEGORIES.length) return;
+      const die = dice[selectedDieIndex];
+      if (!die || die.held) return;
+
+      isAnimating = true;
+      if (targetSlotIdx !== null) {
+        setDieSlot(die, targetSlotIdx);
+      }
+      die.dir = dir;
+      die.angle = 6;
+      spatialFlipsLeft--;
+
+      const stepFlip = () => {
+        die.angle += 10;
+        if (die.angle >= 90) {
+          die.tf = getEndTF(die.tf, die.dir);
+          die.angle = 0;
+          die.dir = DIRECTIONS.STOP;
+          isAnimating = false;
+          renderBoard();
+          document.getElementById('handBanner').innerHTML =
+            `<strong>Spatial Flip (${spatialFlipsLeft} left):</strong> Die ${selectedDieIndex + 1} rolled to Top ${Math.floor(die.tf / 10)}! ${detectHighlightHand(getTopFaces())}`;
+          return;
+        }
+        drawAllDice();
+        requestAnimationFrame(stepFlip);
+      };
+      requestAnimationFrame(stepFlip);
+    }
+
+    function claimCategory(catId) {
+      if (isAnimating || rollsUsed === 0 || scores[catId] !== undefined || round > CATEGORIES.length) return;
+      const faces = getTopFaces();
+      const pts = evalCategory(catId, faces);
+      scores[catId] = pts;
+      const cat = CATEGORIES.find(c => c.id === catId);
+
+      const { total } = computeTotals();
+      if (total > bestScore) {
+        bestScore = total;
+        localStorage.setItem(BEST_STORAGE_KEY, String(bestScore));
+      }
+
+      round++;
+      rollsUsed = 0;
+      spatialFlipsLeft = 2;
+      dice.forEach(d => { d.held = false; });
+
+      renderBoard();
+
+      if (round > CATEGORIES.length) {
+        document.getElementById('handBanner').innerHTML =
+          `🏆 <strong>Match Complete! Final Botchee Score: ${total} pts</strong> (Best: ${bestScore} pts). Click <strong>New 13-Round Match</strong> to play again!`;
+      } else {
+        document.getElementById('handBanner').innerHTML =
+          `✅ Scored <strong>${pts} pts</strong> in <strong>${cat.label}</strong>! Roll unlocked dice for Round ${round}/13.`;
+      }
+    }
+
+    function startNewMatch() {
+      if (isAnimating) return;
+      round = 1;
+      rollsUsed = 0;
+      spatialFlipsLeft = 2;
+      scores = {};
+      dice.forEach((d, i) => {
+        d.held = false;
+        d.dir = DIRECTIONS.STOP;
+        d.angle = 0;
+        d.tf = [12, 23, 35, 46, 51][i];
+        d.slotXtreme = [7, 8, 10, 14, 15][i];
+        d.slot4x4 = [5, 6, 9, 10, 13][i];
+      });
+      selectedDieIndex = 0;
+      renderBoard();
+      document.getElementById('handBanner').textContent =
+        'New 13-Round Botchee match ready! Click Roll Unlocked Dice to begin Round 1.';
+    }
+
+    document.getElementById('btnRollDice').onclick = rollUnlockedDice;
+    document.getElementById('btnModeXtreme').onclick = () => {
+      boardMode = 'xtreme';
+      document.getElementById('btnModeXtreme').classList.add('active');
+      document.getElementById('btnMode4x4').classList.remove('active');
+      renderBoard();
+    };
+    document.getElementById('btnMode4x4').onclick = () => {
+      boardMode = '4x4';
+      document.getElementById('btnMode4x4').classList.add('active');
+      document.getElementById('btnModeXtreme').classList.remove('active');
+      renderBoard();
+    };
+    document.getElementById('btnTwist').onclick = () => {
+      twisted = !twisted;
+      frameEl.classList.toggle('twisted', twisted);
+      const btn = document.getElementById('btnTwist');
+      btn.classList.toggle('active', twisted);
+      btn.textContent = twisted ? '🌀 Twist: -7°' : '⬜ Twist: 0°';
+    };
+    document.getElementById('btnUnlockAll').onclick = () => {
+      dice.forEach(d => { d.held = false; });
+      renderBoard();
+    };
+    document.getElementById('btnNewMatch').onclick = startNewMatch;
+
+    document.getElementById('flipUpBtn').onclick = () => flipSelectedDie(DIRECTIONS.UP);
+    document.getElementById('flipDownBtn').onclick = () => flipSelectedDie(DIRECTIONS.DOWN);
+    document.getElementById('flipLeftBtn').onclick = () => flipSelectedDie(DIRECTIONS.LEFT);
+    document.getElementById('flipRightBtn').onclick = () => flipSelectedDie(DIRECTIONS.RIGHT);
+    document.getElementById('toggleHoldBtn').onclick = () => {
+      if (rollsUsed > 0 && round <= CATEGORIES.length && !isAnimating) {
+        dice[selectedDieIndex].held = !dice[selectedDieIndex].held;
+        renderBoard();
+      }
+    };
+
+    renderBoard();
+    SLog('Botchee 4x4 & Xtreme initialized');
+  </script>
+  <script src="/visitors-widget.js"></script>
+</body>
+</html>

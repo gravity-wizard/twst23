@@ -96,6 +96,7 @@ function map_table_name(string $path): string {
     $p = strtolower(trim($path));
     if ($p === '' || $p === '/' || $p === '/index.html') return 'Parlour Lounge';
     if (strpos($p, '/play') === 0) return 'Play Parlour';
+    if (strpos($p, '/botchee') === 0) return 'Botchee Table';
     if (strpos($p, '/backgammon') === 0) return 'Backgammon 3D';
     if (strpos($p, '/slider') === 0) return 'Twisted 23 Slider';
     if (strpos($p, '/tophat') === 0) return 'FGN TopHatPuzzle';
