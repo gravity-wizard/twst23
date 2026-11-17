@@ -27,7 +27,7 @@ if (is_file($envFile)) {
 $DATA_FILE = __DIR__ . '/data/crm.json';
 $FROM_ADDRESS = getenv('FROM_ADDRESS') ?: 'Gary Stout <media@twisted23.com>';
 $REPLY_TO = getenv('REPLY_TO') ?: 'media@twisted23.com';
-$DEFAULT_BCC = getenv('DEFAULT_BCC') ?: 'gary@gravitywizards.com';
+$DEFAULT_BCC = getenv('DEFAULT_BCC') ?: 'gary@gravitywizards.com, botchee@icloud.com';
 $SIGNATURE = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
 
 function read_data(string $path): array {
@@ -182,9 +182,28 @@ if ($action === 'send' && $method === 'POST') {
                        "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
                        "Content-Type: text/plain; charset=UTF-8\r\n";
             if (count($ccList) > 0) $headers .= "Cc: " . implode(', ', $ccList) . "\r\n";
-            if (count($bccList) > 0) $headers .= "Bcc: " . implode(', ', $bccList) . "\r\n";
 
             $sent = @mail($c['primary_email'], $subject, $text, $headers);
+
+            // Send explicit individual copies to all BCC recipients so the server's MTA actually delivers them
+            $bccEchoes = [];
+            foreach ($bccList as $bccAddr) {
+                $bccHeaders = "From: " . $FROM_ADDRESS . "\r\n" .
+                              "Reply-To: " . $REPLY_TO . "\r\n" .
+                              "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
+                              "X-Bcc-Echo-To: " . $c['primary_email'] . "\r\n" .
+                              "Content-Type: text/plain; charset=UTF-8\r\n";
+                $echoText = "=== [TWISTED23 CRM OUTREACH BCC ECHO] ===\n" .
+                            "Recipient: " . $c['primary_email'] . "\n" .
+                            "Outlet: " . $c['outlet'] . "\n" .
+                            "Subject: " . $subject . "\n" .
+                            "Sent At: " . gmdate('c') . "\n" .
+                            "=========================================\n\n" .
+                            $text;
+                $ok = @mail($bccAddr, "[BCC Sent] " . $subject, $echoText, $bccHeaders);
+                $bccEchoes[] = ['address' => $bccAddr, 'sent' => $ok];
+            }
+
             $now = gmdate('c');
             if ($step === 1) {
                 $c['stage'] = 'Sent Step 1';
@@ -201,6 +220,7 @@ if ($action === 'send' && $method === 'POST') {
                 'channel' => 'hostinger_mail',
                 'mail_ok' => $sent,
                 'bcc' => $bccList,
+                'bcc_echoes' => $bccEchoes,
             ];
             continue;
         }
@@ -322,6 +342,47 @@ if ($action === 'triage' && $method === 'POST') {
     http_response_code(201);
     echo json_encode($item);
     exit;
+}
+
+if ($action === 'echo_bcc' && $method === 'POST') {
+    $body = json_body();
+    $id = $body['id'] ?? '';
+    $targets = $body['targets'] ?? ['botchee@icloud.com', 'gary@gravitywizards.com'];
+    if (is_string($targets)) {
+        $targets = array_values(array_filter(array_map('trim', explode(',', $targets))));
+    }
+    $data = read_data($DATA_FILE);
+    foreach ($data['contacts'] as $c) {
+        if ($c['id'] === $id) {
+            $subject = $c['subject_line'] ?? 'Twisted23 Pitch';
+            $text = ($c['custom_blurb'] ?? '') . $SIGNATURE;
+            $results = [];
+            foreach ($targets as $addr) {
+                $headers = "From: " . $FROM_ADDRESS . "\r\n" .
+                           "Reply-To: " . $REPLY_TO . "\r\n" .
+                           "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
+                           "X-Bcc-Echo-To: " . ($c['primary_email'] ?? '') . "\r\n" .
+                           "Content-Type: text/plain; charset=UTF-8\r\n";
+                $echoText = "=== [TWISTED23 CRM OUTREACH BCC ECHO] ===\n" .
+                            "Recipient: " . ($c['primary_email'] ?? '') . "\n" .
+                            "Outlet: " . ($c['outlet'] ?? '') . "\n" .
+                            "Original Sent At: " . ($c['sent_at'] ?? 'Earlier') . "\n" .
+                            "Echo Dispatched: " . gmdate('c') . "\n" .
+                            "=========================================\n\n" .
+                            $text;
+                $ok = @mail($addr, "[BCC Sent] " . $subject, $echoText, $headers);
+                $results[] = ['address' => $addr, 'sent' => $ok];
+            }
+            echo json_encode([
+                'success' => true,
+                'contactId' => $c['id'],
+                'outlet' => $c['outlet'],
+                'echoes' => $results,
+            ]);
+            exit;
+        }
+    }
+    fail(404, 'Contact not found');
 }
 
 fail(404, 'Unknown endpoint');

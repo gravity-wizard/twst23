@@ -130,7 +130,7 @@ function openDrawer(id) {
   $('#drawer-title').textContent = c.outlet;
   $('#d-stage').value = c.stage;
   $('#d-cc').value = c.cc_email || '';
-  $('#d-bcc').value = c.bcc_email || 'gary@gravitywizards.com';
+  $('#d-bcc').value = c.bcc_email || 'gary@gravitywizards.com, botchee@icloud.com';
   $('#d-subject').value = c.subject_line || '';
   $('#d-blurb').value = c.custom_blurb || '';
   $('#d-notes').value = c.notes || '';
@@ -306,7 +306,7 @@ function openSendStep1Dispatcher(contactId) {
 
   const to = c.primary_email || '';
   const cc = c.cc_email || '';
-  const bcc = c.bcc_email || 'gary@gravitywizards.com';
+  const bcc = c.bcc_email || 'gary@gravitywizards.com, botchee@icloud.com';
   const subject = c.subject_line || 'Twisted23 & Flipping Dice';
   const blurb = c.custom_blurb || '';
   const signature = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
@@ -352,17 +352,13 @@ function openSendStep1Dispatcher(contactId) {
           </button>
         </div>
 
-        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px;">
-          ${hasResend ? `
-            <button id="btn-dispatch-resend" class="btn btn-primary btn-sm" type="button">
-              🚀 Dispatch via Resend Cloud API
-            </button>
-          ` : `
-            <div style="font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span class="status-pill status-warn" style="font-size:0.72rem;">Resend API Key Not Configured</span>
-              <span>Use <strong>Launch in Mail App</strong> above to send directly with BCC.</span>
-            </div>
-          `}
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button id="btn-dispatch-server" class="btn btn-primary btn-sm" type="button">
+            ${hasResend ? '🚀 Dispatch via Resend Cloud API' : '🚀 Dispatch via Server Mail (with BCC Echo)'}
+          </button>
+          <button id="btn-echo-bcc-now" class="btn btn-secondary btn-sm" type="button">
+            ✉ Send BCC Echo to iCloud Now
+          </button>
         </div>
       </div>
     </div>
@@ -400,11 +396,30 @@ function openSendStep1Dispatcher(contactId) {
     });
   }
 
-  const resendBtn = $('#btn-dispatch-resend');
-  if (resendBtn) {
-    resendBtn.addEventListener('click', async () => {
+  const serverDispatchBtn = $('#btn-dispatch-server');
+  if (serverDispatchBtn) {
+    serverDispatchBtn.addEventListener('click', async () => {
       $('#modal-backdrop').hidden = true;
       runSendBatch([contactId], false);
+    });
+  }
+
+  const echoBccBtn = $('#btn-echo-bcc-now');
+  if (echoBccBtn) {
+    echoBccBtn.addEventListener('click', async () => {
+      echoBccBtn.disabled = true;
+      echoBccBtn.textContent = 'Dispatching Echo...';
+      try {
+        await api('api.php?action=echo_bcc', {
+          method: 'POST',
+          body: JSON.stringify({ id: contactId, targets: ['botchee@icloud.com', 'gary@gravitywizards.com'] }),
+        });
+        echoBccBtn.textContent = '✓ Echo Dispatched!';
+        showDrawerNotice('✓ BCC copy sent to botchee@icloud.com & gary@gravitywizards.com', 'ok');
+      } catch (err) {
+        echoBccBtn.disabled = false;
+        echoBccBtn.textContent = 'Echo failed: ' + err.message;
+      }
     });
   }
 }
@@ -419,6 +434,31 @@ if (saveBtnEl) {
   saveBtnEl.addEventListener('click', async (e) => {
     e.preventDefault();
     await handleSaveContact();
+  });
+}
+
+const echoDrawerBtnEl = $('#d-echo-bcc');
+if (echoDrawerBtnEl) {
+  echoDrawerBtnEl.addEventListener('click', async () => {
+    if (!activeContactId) return;
+    echoDrawerBtnEl.disabled = true;
+    echoDrawerBtnEl.textContent = 'Echoing...';
+    try {
+      await api('api.php?action=echo_bcc', {
+        method: 'POST',
+        body: JSON.stringify({ id: activeContactId, targets: ['botchee@icloud.com', 'gary@gravitywizards.com'] }),
+      });
+      echoDrawerBtnEl.textContent = '✓ Echo Sent!';
+      showDrawerNotice('✓ BCC copy dispatched to botchee@icloud.com & gary@gravitywizards.com', 'ok');
+      setTimeout(() => {
+        echoDrawerBtnEl.disabled = false;
+        echoDrawerBtnEl.textContent = 'Echo BCC to iCloud';
+      }, 2500);
+    } catch (err) {
+      echoDrawerBtnEl.disabled = false;
+      echoDrawerBtnEl.textContent = 'Echo failed';
+      showDrawerNotice(`Echo failed: ${err.message}`, 'warn');
+    }
   });
 }
 
@@ -451,7 +491,7 @@ $('#btn-add-contact').addEventListener('click', () => {
       <label class="field"><span>Outlet / Name</span><input id="nc-outlet" class="input" required /></label>
       <label class="field"><span>Primary Email</span><input id="nc-email" class="input" type="email" required /></label>
       <label class="field"><span>CC Email (optional)</span><input id="nc-cc" class="input" /></label>
-      <label class="field"><span>BCC Email (optional)</span><input id="nc-bcc" class="input" value="gary@gravitywizards.com" /></label>
+      <label class="field"><span>BCC Email (optional)</span><input id="nc-bcc" class="input" value="gary@gravitywizards.com, botchee@icloud.com" /></label>
       <label class="field"><span>Subject Line</span><input id="nc-subject" class="input" /></label>
       <label class="field"><span>Custom Blurb</span><textarea id="nc-blurb" class="textarea" rows="4"></textarea></label>
       <button class="btn btn-primary" type="submit">Save Contact</button>

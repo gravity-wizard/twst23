@@ -15,7 +15,7 @@
       "sent_at": "2026-11-11T18:21:11+00:00",
       "step_2_sent_at": null,
       "notes": "Sent Nov 11 from iCloud prior to Resend setup.",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C006",
@@ -32,7 +32,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C007",
@@ -49,7 +49,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C008",
@@ -66,7 +66,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C009",
@@ -83,7 +83,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C010",
@@ -100,7 +100,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C011",
@@ -117,7 +117,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C012",
@@ -128,13 +128,13 @@
       "angle": "Technical Deep Dive: Reverse-Engineering an Orphaned Flash DB & 24-State Cube Math",
       "subject_line": "Pitch / Tip: Tapping an orphaned Flash game's database to fix its non-unique solutions + 24-state 3D-in-2D die math",
       "custom_blurb": "Hi Kyle, Knowing your coverage of game preservation and technical puzzle design, I wanted to share how I tapped the orphaned backend database of the Flash game tophatpuzzle.com after its developer Domas disappeared\u2014rebuilding it with strict unique-solution validation\u2014and launched our 24-state 3D-in-2D Die Geometry Lab (https://flippingdice.twisted23.com) encoding all 24 cube orientations (TF = Top * 10 + Front) in 2D.",
-      "stage": "Queued",
-      "delivery_status": "Not Sent",
+      "stage": "Sent Step 1",
+      "delivery_status": "Sent (Hostinger Mail)",
       "resend_id": null,
-      "sent_at": null,
+      "sent_at": "2026-11-17T17:18:08+00:00",
       "step_2_sent_at": null,
-      "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "notes": "https://arstechnica.com/author/kyle-orland/\nFollowed on BLueSky\nArs Technica (Kyle Orland) (sent) Please check  noRX botchee@icloud.com ...",
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C013",
@@ -151,7 +151,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C014",
@@ -168,7 +168,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C015",
@@ -185,7 +185,7 @@
       "sent_at": null,
       "step_2_sent_at": null,
       "notes": "",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     },
     {
       "id": "GW-C016",
@@ -202,7 +202,7 @@
       "sent_at": "2026-11-15T18:10:00+00:00",
       "step_2_sent_at": null,
       "notes": "Tracking Ref: 2ncpqvjo9nlacojdnn5uafszo | https://www.freegamesnews.com/en/?p=2463",
-      "bcc_email": "gary@gravitywizards.com"
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
     }
   ],
   "derbies": [
