@@ -380,8 +380,10 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
         $data = read_data($DATA_FILE);
         $matched = false;
         foreach ($data['contacts'] as &$c) {
-            if (strtolower($c['email'] ?? '') === strtolower($fromEmail)) {
+            $cEmail = strtolower($c['primary_email'] ?? $c['email'] ?? '');
+            if ($cEmail === strtolower($fromEmail)) {
                 $c['delivery_status'] = 'Replied';
+                $c['stage'] = 'Received Reply';
                 $c['notes'] = ($c['notes'] ? $c['notes'] . " | " : "") . "[hMail: {$subject}] {$snippet}";
                 $c['updated_at'] = gmdate('c');
                 $matched = true;
