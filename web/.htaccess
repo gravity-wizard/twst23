@@ -1,0 +1,18 @@
+# Twisted23 Apache Configuration
+DirectoryIndex index.html
+
+# Enable rewrite engine
+RewriteEngine On
+RewriteBase /
+
+# Redirect missing legacy /is23pbHL/ to home
+Redirect 301 /is23pbHL/ /
+Redirect 301 /is23pbHL /
+
+# Add standard UTF-8 charset
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .html .css .js .json .svg .webmanifest
+
+# Ensure clean MIME types
+AddType application/javascript js
+AddType image/svg+xml svg
