@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Full Screen Play Parlour (24-Tile + 3D Dice) &bull; Twisted23</title>
+  <link rel="canonical" href="https://www.twisted23.com/play/" />
+  <meta name="description" content="Full Screen Play Parlour for Twisted23: slide wooden tiles and live 3D-in-2D orthographic dice inside the 24-Tile TopHat twisted frame, or switch to any table." />
+  <link rel="icon" type="image/png" href="../icon.png" />
+  <style>
+    :root {
+      --bg: #070d18;
+      --card: #0f1c32;
+      --amber: #f59e0b;
+      --gold: #fbbf24;
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --pink: #ec4899;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #1e293b;
+      --wood-frame: #3a2012;
+      --wood-rim: #241309;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.14) 0%, transparent 55%),
+        radial-gradient(ellipse at 15% 85%, rgba(245, 158, 11, 0.10) 0%, transparent 50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 4.5rem;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    header {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0.7rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      backdrop-filter: blur(8px);
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.4rem 0.9rem;
+      border-radius: 9999px;
+      background: #1e293b;
+      color: var(--cyan);
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-decoration: none;
+      border: 1px solid #334155;
+      transition: all 0.15s;
+    }
+    .btn-home:hover { background: #334155; color: #fff; }
+    .brand {
+      font-weight: 900;
+      font-size: 1.08rem;
+      letter-spacing: 0.04em;
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: #fff; }
+
+    main {
+      width: 100%;
+      max-width: 1080px;
+      padding: 1.1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+    }
+
+    .top-hud {
+      width: 100%;
+      background: rgba(15, 28, 50, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 14px;
+      padding: 0.75rem 1.15rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    }
+    .hud-title-group h1 {
+      font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #38bdf8, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.15;
+    }
+    .hud-sub {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+    .hud-metrics {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.84rem;
+    }
+    .metric-pill {
+      background: #0b1424;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      padding: 0.32rem 0.8rem;
+      color: #e2e8f0;
+      font-weight: 700;
+    }
+    .metric-pill strong { color: var(--gold); }
+
+    .controls-bar {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.55rem;
+    }
+    .ctrl-btn {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 9999px;
+      padding: 0.48rem 0.95rem;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-btn:hover { border-color: var(--cyan); color: #fff; background: #263449; }
+    .ctrl-btn.active {
+      background: var(--cyan);
+      color: #070d18;
+      border-color: var(--cyan);
+    }
+    .ctrl-btn.amber {
+      background: var(--amber);
+      color: #070d18;
+      border-color: var(--amber);
+    }
+    .ctrl-btn.amber:hover { background: var(--gold); }
+
+    /* Fullscreen Wood Stage */
+    .stage-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.6rem 0.5rem;
+      min-height: 460px;
+    }
+    .wooden-frame {
+      background: linear-gradient(145deg, #4b2a17, #2b160a);
+      border: 6px solid var(--wood-rim);
+      border-radius: 26px;
+      padding: 20px;
+      box-shadow:
+        0 26px 60px rgba(0, 0, 0, 0.72),
+        inset 0 2px 6px rgba(255, 215, 150, 0.18),
+        0 0 40px rgba(56, 189, 248, 0.14);
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .wooden-frame.twisted {
+      transform: rotate(-7deg);
+    }
+    .wooden-frame.diagonal {
+      transform: rotate(45deg);
+      margin: 3.2rem 0;
+    }
+    .board-grid {
+      display: grid;
+      gap: 7px;
+      background: #1a0d06;
+      padding: 12px;
+      border-radius: 16px;
+      border: 2px solid #5c331c;
+    }
+    .board-grid.shape-tophat {
+      grid-template-columns: repeat(6, 62px);
+      grid-template-rows: repeat(6, 62px);
+    }
+    .board-grid.shape-4x6 {
+      grid-template-columns: repeat(6, 66px);
+      grid-template-rows: repeat(4, 66px);
+    }
+    .board-grid.shape-6x4 {
+      grid-template-columns: repeat(4, 68px);
+      grid-template-rows: repeat(6, 68px);
+    }
+
+    .void-cell {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .wood-tile {
+      width: 100%;
+      height: 100%;
+      border-radius: 11px;
+      border: 2px solid #d97706;
+      background: linear-gradient(145deg, #fde68a, #f59e0b);
+      color: #1e1005;
+      font-weight: 900;
+      font-size: 1.35rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #92400e, 0 6px 12px rgba(0,0,0,0.45);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+    }
+    .wood-tile:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(145deg, #fef3c7, #fbbf24);
+    }
+    .wood-tile.correct {
+      border-color: #10b981;
+      box-shadow: 0 4px 0 #047857, 0 0 12px rgba(16, 185, 129, 0.35);
+    }
+    .wood-tile.die-slot {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      border-color: #38bdf8;
+      box-shadow: 0 4px 0 #0284c7, 0 6px 14px rgba(56, 189, 248, 0.3);
+      padding: 2px;
+    }
+    .wood-tile.empty-slot {
+      background: rgba(10, 6, 3, 0.65);
+      border: 2px dashed rgba(245, 158, 11, 0.25);
+      box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.75);
+      cursor: default;
+    }
+    .wood-tile.empty-slot:hover {
+      transform: none;
+    }
+    .wooden-frame.twisted .upright-inner {
+      transform: rotate(7deg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wooden-frame.diagonal .upright-inner {
+      transform: rotate(-45deg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wood-tile canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .status-banner {
+      width: 100%;
+      max-width: 720px;
+      text-align: center;
+      background: rgba(15, 28, 50, 0.85);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 0.7rem 1rem;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    .status-banner strong { color: var(--emerald); }
+
+    @media (max-width: 580px) {
+      .board-grid.shape-tophat {
+        grid-template-columns: repeat(6, 46px);
+        grid-template-rows: repeat(6, 46px);
+        gap: 5px;
+      }
+      .board-grid.shape-4x6 {
+        grid-template-columns: repeat(6, 48px);
+        grid-template-rows: repeat(4, 48px);
+        gap: 5px;
+      }
+      .board-grid.shape-6x4 {
+        grid-template-columns: repeat(4, 54px);
+        grid-template-rows: repeat(6, 54px);
+        gap: 5px;
+      }
+      .wood-tile { font-size: 1.05rem; border-radius: 8px; }
+      .wooden-frame { padding: 12px; border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <a href="../" class="btn-home">&#8592; Parlour Home</a>
+      <a href="./" class="brand">TWISTED23 // FULL SCREEN PLAY</a>
+    </div>
+    <nav class="nav-links">
+      <a href="../slider/">🌀 24-Slider</a>
+      <a href="../tophat/">🎩 TopHatPuzzle</a>
+      <a href="../extreme/">💥 eXtreme 24-Cie</a>
+      <a href="../backgammon/">🎲 Backgammon</a>
+      <a href="../hangman/">🦉 Hangman</a>
+      <a href="../flippingdice/">🐬 FlippingDice</a>
+      <a href="../visitors/">🌍 Visitors</a>
+    </nav>
+  </header>
+
+  <main id="playStageRoot">
+    <div class="top-hud">
+      <div class="hud-title-group">
+        <h1>Full Screen Play Parlour &bull; 24-Tile + 3D Dice</h1>
+        <div class="hud-sub">Slide 1–5 wooden tiles or roll live 3D-in-2D orthographic dice inside the twisted frame</div>
+      </div>
+      <div class="hud-metrics">
+        <span class="metric-pill">Shape: <strong id="hudShape">24-Tile TopHat</strong></span>
+        <span class="metric-pill">Moves: <strong id="hudMoves">0</strong></span>
+        <span class="metric-pill">Flips: <strong id="hudFlips">0</strong></span>
+        <span class="metric-pill">Time: <strong id="hudTimer">00:00</strong></span>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <button type="button" class="ctrl-btn active" id="btnShapeTopHat">🎩 24-Tile TopHat</button>
+      <button type="button" class="ctrl-btn" id="btnShape4x6">📐 4×6 Rect</button>
+      <button type="button" class="ctrl-btn" id="btnShape6x4">📏 6×4 Tall</button>
+      <button type="button" class="ctrl-btn active" id="btnTwistMode">🌀 Twist: -7°</button>
+      <button type="button" class="ctrl-btn amber" id="btnFlipDice">🎲 Flip Both Dice</button>
+      <button type="button" class="ctrl-btn" id="btnShuffle">🔀 Shuffle (24)</button>
+      <button type="button" class="ctrl-btn" id="btnReset">✨ Reset Solved</button>
+      <button type="button" class="ctrl-btn" id="btnFullscreen">⛶ Fullscreen</button>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="wooden-frame twisted" id="playWoodenFrame">
+        <div class="board-grid shape-tophat" id="playBoardGrid"></div>
+      </div>
+    </div>
+
+    <div class="status-banner" id="playStatus">
+      💡 Click any tile in the same row/column as the empty space (or use Arrow Keys / WASD) to slide! Sliding a 3D die rolls it in that direction; clicking a die anywhere flips it in place.
+    </div>
+  </main>
+
+  <script type="module">
+    import {
+      DIRECTIONS,
+      getEndTF,
+      renderDie2D,
+      SLog
+    } from '../dice3d2d.js';
+
+    const SHAPE24_COORDS = [
+      [0, 2], [0, 3],
+      [1, 1], [1, 2], [1, 3], [1, 4],
+      [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5],
+      [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5],
+      [4, 1], [4, 2], [4, 3], [4, 4],
+      [5, 2], [5, 3]
+    ];
+
+    const RECT4X6_COORDS = [];
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 6; c++) RECT4X6_COORDS.push([r, c]);
+    }
+
+    const RECT6X4_COORDS = [];
+    for (let r = 0; r < 6; r++) {
+      for (let c = 0; c < 4; c++) RECT6X4_COORDS.push([r, c]);
+    }
+
+    let currentShape = 'tophat'; // 'tophat' | '4x6' | '6x4'
+    let twistState = 'twisted';  // 'twisted' (-7°) | 'diagonal' (45°) | 'flat' (0°)
+    let movesCount = 0;
+    let flipsCount = 0;
+    let secondsElapsed = 0;
+    let timerStarted = false;
+    let timerHandle = null;
+
+    function createInitialSlots() {
+      return [
+        1, 2,
+        3, 4, 5, 6,
+        7, 8, { type: 'die', id: 'dieA', tf: 12, dir: DIRECTIONS.STOP, angle: 0, homeIdx: 8 }, 10, 11, 12,
+        13, 14, 15, { type: 'die', id: 'dieB', tf: 62, dir: DIRECTIONS.STOP, angle: 0, homeIdx: 15 }, 17, 18,
+        19, 20, 21, 22,
+        23, 0
+      ];
+    }
+
+    let slots = createInitialSlots();
+    const dieCanvases = {};
+    const gridEl = document.getElementById('playBoardGrid');
+    const frameEl = document.getElementById('playWoodenFrame');
+
+    function getLayout() {
+      if (currentShape === '4x6') return { rows: 4, cols: 6, coords: RECT4X6_COORDS, cls: 'shape-4x6', label: '4×6 Rectangle' };
+      if (currentShape === '6x4') return { rows: 6, cols: 4, coords: RECT6X4_COORDS, cls: 'shape-6x4', label: '6×4 Tall' };
+      return { rows: 6, cols: 6, coords: SHAPE24_COORDS, cls: 'shape-tophat', label: '24-Tile TopHat' };
+    }
+
+    function ensureTimer() {
+      if (timerStarted) return;
+      timerStarted = true;
+      timerHandle = setInterval(() => {
+        secondsElapsed++;
+        const m = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+        const s = String(secondsElapsed % 60).padStart(2, '0');
+        document.getElementById('hudTimer').textContent = `${m}:${s}`;
+      }, 1000);
+    }
+
+    function resetTimer() {
+      if (timerHandle) clearInterval(timerHandle);
+      timerHandle = null;
+      timerStarted = false;
+      secondsElapsed = 0;
+      document.getElementById('hudTimer').textContent = '00:00';
+    }
+
+    function isSolved() {
+      for (let i = 0; i < 23; i++) {
+        const item = slots[i];
+        if (typeof item === 'object' && item.type === 'die') {
+          if (item.homeIdx !== i) return false;
+        } else if (item !== i + 1) {
+          return false;
+        }
+      }
+      return slots[23] === 0;
+    }
+
+    function renderBoard() {
+      const { rows, cols, coords, cls, label } = getLayout();
+      gridEl.className = `board-grid ${cls}`;
+      gridEl.innerHTML = '';
+
+      const coordMap = new Map();
+      coords.forEach(([r, c], idx) => coordMap.set(`${r},${c}`, idx));
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const key = `${r},${c}`;
+          if (!coordMap.has(key)) {
+            const voidDiv = document.createElement('div');
+            voidDiv.className = 'void-cell';
+            gridEl.appendChild(voidDiv);
+            continue;
+          }
+          const idx = coordMap.get(key);
+          const item = slots[idx];
+          const btn = document.createElement('button');
+          btn.type = 'button';
+
+          if (item === 0) {
+            btn.className = 'wood-tile empty-slot';
+            btn.setAttribute('aria-label', 'Empty slot');
+          } else if (typeof item === 'object' && item.type === 'die') {
+            btn.className = 'wood-tile die-slot';
+            btn.title = 'Click to flip 3D die or slide along row/column to roll';
+            const inner = document.createElement('div');
+            inner.className = 'upright-inner';
+            const cv = document.createElement('canvas');
+            cv.width = 100;
+            cv.height = 100;
+            inner.appendChild(cv);
+            btn.appendChild(inner);
+            dieCanvases[item.id] = cv;
+            btn.addEventListener('click', () => handleTileClick(idx));
+          } else {
+            const matches = item === idx + 1;
+            btn.className = 'wood-tile' + (matches ? ' correct' : '');
+            btn.innerHTML = `<span class="upright-inner">${item}</span>`;
+            btn.addEventListener('click', () => handleTileClick(idx));
+          }
+          gridEl.appendChild(btn);
+        }
+      }
+
+      document.getElementById('hudShape').textContent = label;
+      document.getElementById('hudMoves').textContent = String(movesCount);
+      document.getElementById('hudFlips').textContent = String(flipsCount);
+      drawDice();
+    }
+
+    function drawDice() {
+      for (const item of slots) {
+        if (typeof item === 'object' && item.type === 'die') {
+          const cv = dieCanvases[item.id];
+          if (!cv) continue;
+          const ctx = cv.getContext('2d');
+          ctx.clearRect(0, 0, cv.width, cv.height);
+          renderDie2D(ctx, {
+            x: 6,
+            y: 6,
+            size: 88,
+            tf: item.tf,
+            direction: item.dir,
+            angleDeg: item.angle,
+            showOrientationCompass: item.angle === 0
+          });
+        }
+      }
+    }
+
+    function triggerDieFlip(dieObj, customDir = null) {
+      if (!dieObj || dieObj.angle > 0) return;
+      const dirs = [DIRECTIONS.RIGHT, DIRECTIONS.LEFT, DIRECTIONS.UP, DIRECTIONS.DOWN];
+      dieObj.dir = customDir || dirs[Math.floor(Math.random() * dirs.length)];
+      dieObj.angle = 5;
+      flipsCount++;
+      document.getElementById('hudFlips').textContent = String(flipsCount);
+    }
+
+    function trySlideLine(clickedIdx) {
+      const { coords } = getLayout();
+      const emptyIdx = slots.indexOf(0);
+      if (clickedIdx === emptyIdx || clickedIdx < 0 || clickedIdx >= 24) return false;
+
+      const [rClick, cClick] = coords[clickedIdx];
+      const [rEmpty, cEmpty] = coords[emptyIdx];
+      if (rClick !== rEmpty && cClick !== cEmpty) return false;
+
+      const coordToIdx = new Map();
+      coords.forEach(([r, c], i) => coordToIdx.set(`${r},${c}`, i));
+
+      const dr = Math.sign(rClick - rEmpty);
+      const dc = Math.sign(cClick - cEmpty);
+      const pathIndices = [emptyIdx];
+      let rr = rEmpty;
+      let cc = cEmpty;
+      while (rr !== rClick || cc !== cClick) {
+        rr += dr;
+        cc += dc;
+        const nextIdx = coordToIdx.get(`${rr},${cc}`);
+        if (nextIdx === undefined) return false; // Gap in 24-Tile TopHat shape blocks sliding across voids
+        pathIndices.push(nextIdx);
+      }
+
+      const rollDir = dc > 0 ? DIRECTIONS.LEFT
+        : dc < 0 ? DIRECTIONS.RIGHT
+        : dr > 0 ? DIRECTIONS.UP : DIRECTIONS.DOWN;
+
+      ensureTimer();
+      let rolledDie = false;
+      for (let i = 0; i < pathIndices.length - 1; i++) {
+        const dest = pathIndices[i];
+        const src = pathIndices[i + 1];
+        const moved = slots[src];
+        slots[dest] = moved;
+        if (typeof moved === 'object' && moved.type === 'die') {
+          triggerDieFlip(moved, rollDir);
+          rolledDie = true;
+        }
+      }
+      slots[clickedIdx] = 0;
+      movesCount++;
+      renderBoard();
+
+      const slidCount = pathIndices.length - 1;
+      const statusEl = document.getElementById('playStatus');
+      if (isSolved()) {
+        if (timerHandle) clearInterval(timerHandle);
+        statusEl.innerHTML = `<strong>Solved in ${movesCount} moves &amp; ${flipsCount} flips!</strong> Every tile &amp; die is aligned.`;
+      } else {
+        statusEl.textContent = rolledDie
+          ? `🎲 Slid ${slidCount} slot(s) and rolled 3D die into place! (Moves: ${movesCount})`
+          : `✨ Slid ${slidCount} wooden tile(s) cleanly into position!`;
+      }
+      return true;
+    }
+
+    function handleTileClick(clickedIdx) {
+      if (trySlideLine(clickedIdx)) return;
+      const item = slots[clickedIdx];
+      if (typeof item === 'object' && item.type === 'die') {
+        ensureTimer();
+        triggerDieFlip(item);
+        const nextTF = getEndTF(item.tf, item.dir);
+        document.getElementById('playStatus').textContent =
+          `🎲 Flipped 3D-in-2D die in place! Top face → ${Math.floor(nextTF / 10)}`;
+      } else {
+        document.getElementById('playStatus').textContent =
+          '💡 Pick a tile or die in the same continuous row/column as the empty space to slide (1–5 tiles).';
+      }
+    }
+
+    function shuffleBoard(steps = 24) {
+      const { coords } = getLayout();
+      for (let s = 0; s < steps; s++) {
+        const emptyIdx = slots.indexOf(0);
+        const [rE, cE] = coords[emptyIdx];
+        const neighbors = [];
+        coords.forEach(([r, c], idx) => {
+          if (Math.abs(r - rE) + Math.abs(c - cE) === 1) neighbors.push(idx);
+        });
+        const pick = neighbors[Math.floor(Math.random() * neighbors.length)];
+        slots[emptyIdx] = slots[pick];
+        slots[pick] = 0;
+      }
+      movesCount = 0;
+      flipsCount = 0;
+      resetTimer();
+      renderBoard();
+      document.getElementById('playStatus').textContent =
+        '🔀 Shuffled by valid legal slides (100% solvable parity preserved)!';
+    }
+
+    function setShape(shape) {
+      currentShape = shape;
+      document.getElementById('btnShapeTopHat').classList.toggle('active', shape === 'tophat');
+      document.getElementById('btnShape4x6').classList.toggle('active', shape === '4x6');
+      document.getElementById('btnShape6x4').classList.toggle('active', shape === '6x4');
+      renderBoard();
+    }
+
+    function cycleTwist() {
+      const btn = document.getElementById('btnTwistMode');
+      frameEl.classList.remove('twisted', 'diagonal');
+      if (twistState === 'twisted') {
+        twistState = 'diagonal';
+        frameEl.classList.add('diagonal');
+        btn.textContent = '💎 Twist: 45°';
+        btn.classList.add('active');
+      } else if (twistState === 'diagonal') {
+        twistState = 'flat';
+        btn.textContent = '⬜ Twist: 0°';
+        btn.classList.remove('active');
+      } else {
+        twistState = 'twisted';
+        frameEl.classList.add('twisted');
+        btn.textContent = '🌀 Twist: -7°';
+        btn.classList.add('active');
+      }
+    }
+
+    function animateDice() {
+      let dirty = false;
+      for (const item of slots) {
+        if (typeof item === 'object' && item.type === 'die' && item.angle > 0) {
+          dirty = true;
+          item.angle += 6;
+          if (item.angle >= 90) {
+            item.tf = getEndTF(item.tf, item.dir);
+            item.angle = 0;
+            item.dir = DIRECTIONS.STOP;
+          }
+        }
+      }
+      if (dirty) drawDice();
+      requestAnimationFrame(animateDice);
+    }
+
+    document.getElementById('btnShapeTopHat').onclick = () => setShape('tophat');
+    document.getElementById('btnShape4x6').onclick = () => setShape('4x6');
+    document.getElementById('btnShape6x4').onclick = () => setShape('6x4');
+    document.getElementById('btnTwistMode').onclick = cycleTwist;
+    document.getElementById('btnFlipDice').onclick = () => {
+      ensureTimer();
+      slots.forEach(it => {
+        if (typeof it === 'object' && it.type === 'die') triggerDieFlip(it);
+      });
+    };
+    document.getElementById('btnShuffle').onclick = () => shuffleBoard(24);
+    document.getElementById('btnReset').onclick = () => {
+      slots = createInitialSlots();
+      movesCount = 0;
+      flipsCount = 0;
+      resetTimer();
+      renderBoard();
+      document.getElementById('playStatus').textContent = '✨ Reset to solved order with 2 live 3D-in-2D dice.';
+    };
+
+    const fsBtn = document.getElementById('btnFullscreen');
+    fsBtn.onclick = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    };
+    document.addEventListener('fullscreenchange', () => {
+      fsBtn.classList.toggle('active', Boolean(document.fullscreenElement));
+      fsBtn.textContent = document.fullscreenElement ? '✕ Exit Fullscreen' : '⛶ Fullscreen';
+    });
+
+    // Keyboard sliding (Arrow keys + WASD)
+    window.addEventListener('keydown', (e) => {
+      const { coords } = getLayout();
+      const emptyIdx = slots.indexOf(0);
+      const [rE, cE] = coords[emptyIdx];
+      let dr = 0, dc = 0;
+      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') dr = 1;       // move tile from below UP into empty
+      else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') dr = -1;
+      else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') dc = 1;
+      else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') dc = -1;
+      else return;
+
+      e.preventDefault();
+      const targetIdx = coords.findIndex(([r, c]) => r === rE + dr && c === cE + dc);
+      if (targetIdx !== -1) trySlideLine(targetIdx);
+    });
+
+    renderBoard();
+    requestAnimationFrame(animateDice);
+    SLog('Full Screen Play Parlour initialized');
+  </script>
+  <script src="/visitors-widget.js"></script>
+</body>
+</html>
