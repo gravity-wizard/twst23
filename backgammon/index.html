@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backgammon 36-Roll Lab &bull; Twisted23 Parlour</title>
+  <link rel="canonical" href="https://twisted23.com/backgammon/" />
+  <meta name="description" content="Play authentic Backgammon with 36-Roll 3D-in-2D dice, AxLe-locked variants, bilateral Doubling Cube, Pass & Play (HvH), and calibrated Night0WL Bot AI." />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <style>
+    :root {
+      --bg: #070d18;
+      --card-bg: #0f1c32;
+      --board-wood: #3a2012;
+      --board-rim: #241309;
+      --board-felt: #113826;
+      --bar-wood: #2a160b;
+      --rail-wood: #2c170d;
+      --pip-ivory: #ede4d0;
+      --pip-walnut: #2b1910;
+      --gold-accent: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    header {
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .btn-main-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.4rem 0.85rem;
+      border-radius: 9999px;
+      background: #1e293b;
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-decoration: none;
+      border: 1px solid #334155;
+      transition: all 0.2s;
+    }
+    .btn-main-home:hover { background: #334155; color: #fff; transform: translateY(-1px); }
+    .brand {
+      font-weight: 900;
+      font-size: 1.15rem;
+      letter-spacing: 0.05em;
+      color: #f8fafc;
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 0.6rem; font-size: 0.85rem; align-items: center; flex-wrap: wrap; }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.06); }
+
+    main {
+      flex: 1;
+      padding: 1.25rem 1rem 2rem;
+      max-width: 1040px;
+      margin: 0 auto;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 900;
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 50%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Game HUD */
+    .game-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 0.85rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+    .turn-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.35rem 0.9rem;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+    }
+    .turn-badge.white {
+      background: #f8fafc;
+      color: #0f172a;
+      box-shadow: 0 0 14px rgba(255,255,255,0.4);
+    }
+    .turn-badge.red {
+      background: #ef4444;
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(239,68,68,0.5);
+    }
+    .pip-counter { font-size: 0.88rem; color: #94a3b8; font-weight: 700; font-family: ui-monospace, monospace; }
+    .pip-counter span { color: #f59e0b; font-weight: 800; }
+
+    /* Interactive Dice Bar */
+    .dice-action-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 0.85rem;
+      flex-wrap: wrap;
+      background: rgba(15, 28, 50, 0.6);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 0.6rem 1.2rem;
+      border-radius: 14px;
+    }
+    .dice-canvases {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .bg-canvas-die {
+      width: 76px;
+      height: 76px;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.6));
+      border-radius: 14px;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bg-canvas-die:hover { transform: translateY(-2px) scale(1.04); }
+    .dice-pills-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      min-width: 170px;
+      justify-content: center;
+    }
+    .die-pill {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #f59e0b;
+      border: 1.5px solid #f59e0b;
+      border-radius: 9999px;
+      padding: 0.35rem 0.85rem;
+      font-weight: 800;
+      font-family: ui-monospace, monospace;
+      font-size: 0.95rem;
+      box-shadow: 0 3px 10px rgba(245, 158, 11, 0.25);
+      animation: popIn 0.25s ease-out;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       THE 24-PIP TOURNAMENT BACKGAMMON BOARD
+       ========================================================================== */
+    .bg-board {
+      background: linear-gradient(145deg, #442413 0%, #2b160b 100%);
+      border: 12px solid var(--board-rim);
+      border-radius: 18px;
+      box-shadow: 0 25px 65px rgba(0,0,0,0.9), inset 0 2px 10px rgba(255,200,120,0.25), 0 0 0 2px rgba(255,255,255,0.06);
+      padding: 8px;
+      max-width: 960px;
+      margin: 0 auto 1.25rem;
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      gap: 6px;
+    }
+
+    /* Left Outer Rail: Doubling Cube Station */
+    .bg-rail-left {
+      width: 72px;
+      background: linear-gradient(180deg, #241309 0%, #1a0d06 100%);
+      border-radius: 10px;
+      border: 1.5px solid #3d2213;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 4px;
+      z-index: 10;
+    }
+    .cube-station-label {
+      font-size: 0.56rem;
+      font-weight: 900;
+      color: #b45309;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .doubling-cube {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
+      color: #0f172a;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.55rem;
+      font-weight: 900;
+      font-family: ui-monospace, monospace;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.7), inset 0 2px 4px rgba(255,255,255,0.9), inset 0 -2px 4px rgba(0,0,0,0.2);
+      border: 2px solid #cbd5e1;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .doubling-cube:hover {
+      transform: scale(1.08) rotate(3deg);
+      box-shadow: 0 8px 22px rgba(245, 158, 11, 0.4), inset 0 2px 4px rgba(255,255,255,1);
+      background: #fef08a;
+    }
+    .cube-owner-pill {
+      margin-top: 8px;
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      background: #0f172a;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+    .cube-owner-pill.white { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+    .cube-owner-pill.red { background: #ef4444; color: #fff; border-color: #f87171; }
+
+    /* Center Playfield (Number Rails + Felt) */
+    .bg-playfield {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Sleek Number Rails (Directly Above & Below Points) */
+    .bg-number-rail {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 28px;
+      background: rgba(20, 10, 5, 0.7);
+      border-radius: 6px;
+      padding: 0 4px;
+      margin: 2px 0;
+    }
+    .num-half {
+      flex: 1;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .num-bar-gap {
+      width: 54px;
+      font-size: 0.62rem;
+      font-weight: 900;
+      color: #92400e;
+      letter-spacing: 0.14em;
+      text-align: center;
+    }
+    .num-tag {
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      font-weight: 900;
+      color: #f59e0b;
+      background: #180d07;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 4px;
+      width: 24px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    /* Green Felt Playing Surface */
+    .bg-felt {
+      background: radial-gradient(circle at center, #164630 0%, var(--board-felt) 65%, #0b2418 100%);
+      border: 2px solid #0a1e14;
+      border-radius: 8px;
+      height: 440px;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 35px rgba(0,0,0,0.85);
+    }
+    .bg-half {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      padding: 0 2px;
+    }
+
+    /* Central Wooden Bar (Clean & Dedicated for Hit Checkers) */
+    .bg-bar {
+      width: 54px;
+      background: linear-gradient(90deg, #1b0e06 0%, #2e170b 50%, #1b0e06 100%);
+      border-left: 2px solid #0f0703;
+      border-right: 2px solid #0f0703;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      z-index: 10;
+      box-shadow: inset 0 0 16px rgba(0,0,0,0.9);
+    }
+    .bar-slot {
+      width: 48px;
+      height: 195px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 0;
+      border-radius: 8px;
+      transition: background 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .bar-slot.highlight {
+      background: rgba(245, 158, 11, 0.22);
+      border: 2px dashed #f59e0b;
+      cursor: pointer;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+    }
+    .bar-wood-divider {
+      width: 38px;
+      height: 12px;
+      background: #140b05;
+      border-radius: 4px;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .bar-label {
+      font-size: 0.65rem;
+      font-weight: 900;
+      color: #b45309;
+      letter-spacing: 0.1em;
+    }
+    .bar-checkers-list {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin-top: 4px;
+      width: 100%;
+    }
+
+    /* Right Outer Rail: Bear-off Trays */
+    .bg-rail-right {
+      width: 76px;
+      background: linear-gradient(180deg, #241309 0%, #1a0d06 100%);
+      border-radius: 10px;
+      border: 1.5px solid #3d2213;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 6px 4px;
+      z-index: 10;
+    }
+    .bearoff-tray {
+      width: 100%;
+      height: 210px;
+      background: rgba(0,0,0,0.5);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 2px;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .bearoff-tray.highlight {
+      border: 2px solid #34d399;
+      background: rgba(52, 211, 153, 0.25);
+      box-shadow: 0 0 20px rgba(52, 211, 153, 0.8);
+      cursor: pointer;
+      animation: pulseBearOff 1.2s infinite ease-in-out;
+    }
+    @keyframes pulseBearOff {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+    .bearoff-tag {
+      font-size: 0.65rem;
+      font-weight: 900;
+      color: #94a3b8;
+      letter-spacing: 0.08em;
+    }
+    .bearoff-count {
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: #f59e0b;
+      font-family: ui-monospace, monospace;
+    }
+    .bearoff-chips {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 3px;
+      padding: 4px 0;
+      overflow: hidden;
+    }
+    .bearoff-chip {
+      width: 58px;
+      height: 8px;
+      border-radius: 3px;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), 0 1px 3px rgba(0,0,0,0.7);
+      transition: all 0.25s ease-out;
+    }
+    .bearoff-chip.white {
+      background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 60%, #94a3b8 100%);
+      border: 1px solid #cbd5e1;
+    }
+    .bearoff-chip.red {
+      background: linear-gradient(180deg, #f87171 0%, #dc2626 60%, #991b1b 100%);
+      border: 1px solid #fca5a5;
+    }
+
+    /* 6 Points Rows */
+    .bg-pips-row {
+      display: flex;
+      height: 200px;
+      width: 100%;
+      position: relative;
+    }
+    .bg-point {
+      flex: 1;
+      height: 100%;
+      margin: 0 1px;
+      position: relative;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .bg-point:hover { filter: brightness(1.12); }
+
+    /* Elegant Tapered Triangles (Cream Ivory & Espresso Walnut) */
+    .pip-triangle {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      transition: opacity 0.2s, background 0.2s;
+    }
+    /* Top row triangles point DOWN */
+    .pips-top .pip-triangle {
+      top: 0;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+    /* Bottom row triangles point UP */
+    .pips-bot .pip-triangle {
+      bottom: 0;
+      clip-path: polygon(50% 0, 0 100%, 100% 100%);
+    }
+    .pip-triangle.light {
+      background: linear-gradient(180deg, #f7f1e5 0%, var(--pip-ivory) 70%, #d8caa9 100%);
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.15);
+    }
+    .pip-triangle.dark {
+      background: linear-gradient(180deg, #3d2319 0%, var(--pip-walnut) 70%, #1a0e08 100%);
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
+    }
+    .pips-bot .pip-triangle.light {
+      background: linear-gradient(0deg, #f7f1e5 0%, var(--pip-ivory) 70%, #d8caa9 100%);
+    }
+    .pips-bot .pip-triangle.dark {
+      background: linear-gradient(0deg, #3d2319 0%, var(--pip-walnut) 70%, #1a0e08 100%);
+    }
+
+    /* Checkers Container inside Point */
+    .checkers-col {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+    .pips-top .checkers-col {
+      top: 0;
+      flex-direction: column;
+      padding-top: 4px;
+    }
+    .pips-bot .checkers-col {
+      bottom: 0;
+      flex-direction: column-reverse;
+      padding-bottom: 4px;
+    }
+
+    /* Authentic 3D Backgammon Checkers (Concentric Dish Ring Design) */
+    .checker {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      position: relative;
+      margin: -9px 0;
+      pointer-events: auto;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: ui-monospace, monospace;
+      font-weight: 900;
+      font-size: 0.82rem;
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s;
+    }
+    .checker:active { transform: scale(0.95); }
+    .checker.white {
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, #f1f5f9 55%, #cbd5e1 100%);
+      box-shadow: inset 0 0 0 2px #e2e8f0, inset 0 0 0 4.5px rgba(0,0,0,0.12), inset 0 2px 4px rgba(255,255,255,0.9), 0 4px 8px rgba(0,0,0,0.55);
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+    }
+    .checker.red {
+      background: radial-gradient(circle at 35% 35%, #f87171 0%, #dc2626 55%, #991b1b 100%);
+      box-shadow: inset 0 0 0 2px #fca5a5, inset 0 0 0 4.5px rgba(0,0,0,0.22), inset 0 2px 4px rgba(255,255,255,0.5), 0 4px 8px rgba(0,0,0,0.65);
+      border: 1px solid #f87171;
+      color: #ffffff;
+    }
+    .checker.selected {
+      box-shadow: 0 0 0 3px #f59e0b, 0 0 20px #f59e0b, 0 8px 16px rgba(0,0,0,0.7) !important;
+      transform: translateY(-4px) scale(1.12);
+      z-index: 25 !important;
+    }
+
+    /* Target Indicators */
+    .bg-point.legal-target .pip-triangle {
+      filter: brightness(1.25);
+    }
+    .bg-point.legal-target::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #10b981;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 16px #10b981;
+      z-index: 10;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: pulseTarget 1s infinite alternate ease-in-out;
+    }
+    .pips-top .bg-point.legal-target::after { bottom: 12px; }
+    .pips-bot .bg-point.legal-target::after { top: 12px; }
+
+    @keyframes pulseTarget {
+      0% { transform: translateX(-50%) scale(0.85); opacity: 0.75; }
+      100% { transform: translateX(-50%) scale(1.25); opacity: 1; }
+    }
+
+    /* In-Game Floating Notification Toast (Eliminates Browser Alert Modals) */
+    .bg-toast {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(15, 23, 42, 0.95);
+      color: #f59e0b;
+      border: 1.5px solid #f59e0b;
+      border-radius: 9999px;
+      padding: 0.5rem 1.4rem;
+      font-weight: 800;
+      font-size: 0.88rem;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.85), 0 0 15px rgba(245, 158, 11, 0.4);
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bg-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Action Buttons & Modes */
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+    }
+    .mode-toggle-group {
+      display: inline-flex;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 9999px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .btn-mode {
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 0.4rem 0.95rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-mode:hover { color: #fff; }
+    .btn-mode.active {
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+    }
+    .btn-action {
+      background: #f59e0b;
+      color: #000;
+      font-weight: 900;
+      font-size: 0.92rem;
+      padding: 0.55rem 1.35rem;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+      transition: all 0.15s;
+    }
+    .btn-action:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.1); }
+    .btn-action:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-action.red {
+      background: #ef4444;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      font-weight: 700;
+      padding: 0.5rem 1.1rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-secondary:hover { background: #334155; border-color: #38bdf8; color: #fff; }
+
+    /* Status Log Box */
+    .status-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1.25rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.86rem;
+      max-width: 960px;
+      margin: 0 auto 1.5rem;
+      text-align: left;
+    }
+    .status-headline { color: #f59e0b; font-weight: 800; font-size: 0.95rem; margin-bottom: 3px; }
+    .status-sub { color: #94a3b8; line-height: 1.5; }
+
+    /* Overlays */
+    .victory-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .victory-overlay.open { display: flex; }
+    .victory-card {
+      background: #0f1c36;
+      border: 3px solid #f59e0b;
+      border-radius: 20px;
+      padding: 2.5rem;
+      text-align: center;
+      max-width: 480px;
+      box-shadow: 0 0 50px rgba(245, 158, 11, 0.6);
+    }
+    .victory-card h2 { font-size: 2.2rem; color: #f59e0b; margin-bottom: 0.5rem; }
+    .victory-card p { color: #cbd5e1; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; }
+
+    @media (max-width: 820px) {
+      .checker { width: 30px; height: 30px; margin: -7px 0; font-size: 0.7rem; }
+      .bg-felt { height: 380px; }
+      .bg-pips-row { height: 170px; }
+      .bg-rail-left { width: 62px; }
+      .doubling-cube { width: 44px; height: 44px; font-size: 1.25rem; }
+      .bg-rail-right { width: 64px; }
+      .bearoff-chip { width: 46px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <a href="https://www.twisted23.com/" class="btn-main-home">🏠 Home</a>
+      <a href="./" class="brand">BACKGAMMON 36-ROLL LAB</a>
+    </div>
+    <div class="nav-links">
+      <a href="https://www.twisted23.com/play/">Play Parlour</a>
+      <a href="https://slider.twisted23.com/">Slider</a>
+      <a href="https://tophat.twisted23.com/">TopHat</a>
+      <a href="https://botchee.twisted23.com/">Botchee</a>
+      <a href="https://hangman.twisted23.com/">Hangman</a>
+      <a href="https://flippingdice.twisted23.com/">FlippingDice</a>
+      <a href="LearningLab/">Backgammon Lab</a>
+    </div>
+  </header>
+
+  <main>
+    <h1>Backgammon 36-Roll Lab</h1>
+    <div class="sub">Functional Player (White) vs Night0WL Bot (Red) &bull; Standard 15-Checker Tournament Rules</div>
+
+    <!-- HUD Stats Bar -->
+    <div class="game-hud">
+      <div id="turnBadge" class="turn-badge white">⚪ YOUR TURN (WHITE)</div>
+      <div class="pip-counter">
+        WHITE PIPS: <span id="whitePipCount">167</span> &bull; RED PIPS: <span id="redPipCount">167</span>
+      </div>
+      <div class="pip-counter">
+        STAKES: <span id="hudStakes">1 PT</span> &bull; CUBE: <span id="hudCube">64</span>
+      </div>
+    </div>
+
+    <!-- Interactive Dice & Move Bar (Open Above Board) -->
+    <div class="dice-action-bar">
+      <button class="btn-action" id="btnRollDice">🎲 Roll Two 3D Dice</button>
+      <div class="dice-canvases">
+        <canvas class="bg-canvas-die" id="bgDie1" width="96" height="96"></canvas>
+        <canvas class="bg-canvas-die" id="bgDie2" width="96" height="96"></canvas>
+      </div>
+      <div class="dice-pills-wrap" id="dicePillsWrap">
+        <span style="color:#94a3b8; font-size:0.85rem; font-family:ui-monospace, monospace;">CLICK ROLL TO BEGIN</span>
+      </div>
+    </div>
+
+    <!-- The 24-Pip Backgammon Board -->
+    <div class="bg-board">
+      <!-- In-Game Non-blocking Floating Notification Toast -->
+      <div class="bg-toast" id="bgToast"></div>
+
+      <!-- Left Outer Rail: Dedicated Doubling Cube Station -->
+      <div class="bg-rail-left">
+        <div class="cube-station-label">DOUBLING<br>CUBE</div>
+        <div class="doubling-cube" id="cubeVal" title="Click to offer double!">64</div>
+        <div class="cube-owner-pill" id="cubeOwnerPill">NEUTRAL</div>
+      </div>
+
+      <!-- Playfield: Clear Number Rails + Luxury Felt -->
+      <div class="bg-playfield">
+        <!-- Top Number Rail: Always legible & visible above points -->
+        <div class="bg-number-rail top-numbers">
+          <div class="num-half">
+            <span class="num-tag" data-pt="13">13</span>
+            <span class="num-tag" data-pt="14">14</span>
+            <span class="num-tag" data-pt="15">15</span>
+            <span class="num-tag" data-pt="16">16</span>
+            <span class="num-tag" data-pt="17">17</span>
+            <span class="num-tag" data-pt="18">18</span>
+          </div>
+          <div class="num-bar-gap">BAR</div>
+          <div class="num-half">
+            <span class="num-tag" data-pt="19">19</span>
+            <span class="num-tag" data-pt="20">20</span>
+            <span class="num-tag" data-pt="21">21</span>
+            <span class="num-tag" data-pt="22">22</span>
+            <span class="num-tag" data-pt="23">23</span>
+            <span class="num-tag" data-pt="24">24</span>
+          </div>
+        </div>
+
+        <!-- Felt Playing Area -->
+        <div class="bg-felt">
+          <!-- Outer Board (Points 13-18 Top, 12-7 Bottom) -->
+          <div class="bg-half">
+            <div class="bg-pips-row pips-top" id="rowTopLeft"></div>
+            <div class="bg-pips-row pips-bot" id="rowBotLeft"></div>
+          </div>
+
+          <!-- Central Wooden Bar (Hit Checkers Only - Clean & Uncluttered) -->
+          <div class="bg-bar">
+            <div class="bar-slot" id="barRed" title="Red Checkers on Bar">
+              <span class="bar-label">RED BAR</span>
+              <div class="bar-checkers-list" id="barRedCheckers"></div>
+            </div>
+
+            <div class="bar-wood-divider"></div>
+
+            <div class="bar-slot" id="barWhite" title="White Checkers on Bar">
+              <div class="bar-checkers-list" id="barWhiteCheckers"></div>
+              <span class="bar-label">WHITE BAR</span>
+            </div>
+          </div>
+
+          <!-- Home Board (Points 19-24 Top, 6-1 Bottom) -->
+          <div class="bg-half">
+            <div class="bg-pips-row pips-top" id="rowTopRight"></div>
+            <div class="bg-pips-row pips-bot" id="rowBotRight"></div>
+          </div>
+        </div>
+
+        <!-- Bottom Number Rail: Always legible & visible below points -->
+        <div class="bg-number-rail bot-numbers">
+          <div class="num-half">
+            <span class="num-tag" data-pt="12">12</span>
+            <span class="num-tag" data-pt="11">11</span>
+            <span class="num-tag" data-pt="10">10</span>
+            <span class="num-tag" data-pt="9">9</span>
+            <span class="num-tag" data-pt="8">8</span>
+            <span class="num-tag" data-pt="7">7</span>
+          </div>
+          <div class="num-bar-gap">BAR</div>
+          <div class="num-half">
+            <span class="num-tag" data-pt="6">6</span>
+            <span class="num-tag" data-pt="5">5</span>
+            <span class="num-tag" data-pt="4">4</span>
+            <span class="num-tag" data-pt="3">3</span>
+            <span class="num-tag" data-pt="2">2</span>
+            <span class="num-tag" data-pt="1">1</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Outer Rail: Bear-off Trays -->
+      <div class="bg-rail-right">
+        <div class="bearoff-tray" id="trayRed" title="Red Borne-Off Checkers">
+          <span class="bearoff-tag">RED OFF</span>
+          <div class="bearoff-chips" id="chipsRedOff"></div>
+          <span class="bearoff-count" id="countRedOff">0/15</span>
+        </div>
+        <div class="bearoff-tray" id="trayWhite" title="White Borne-Off Checkers">
+          <span class="bearoff-tag">WHITE OFF</span>
+          <div class="bearoff-chips" id="chipsWhiteOff"></div>
+          <span class="bearoff-count" id="countWhiteOff">0/15</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Row -->
+    <div class="controls-row">
+      <div class="mode-toggle-group">
+        <button class="btn-mode active" id="btnModeBot">🤖 vs Night0WL Bot</button>
+        <button class="btn-mode" id="btnModeHvh">👥 Pass & Play (HvH)</button>
+      </div>
+      <button class="btn-secondary" id="btnDoubleCube">✖️ Offer Doubling Cube</button>
+      <button class="btn-secondary" id="btnNewGame">🔄 New Game</button>
+      <a href="LearningLab/" class="btn-secondary">🦉 36-Roll Equity Lab &rarr;</a>
+    </div>
+
+    <div class="status-box">
+      <div class="status-headline" id="statusHead">Welcome to Backgammon 36-Roll Lab!</div>
+      <div class="status-sub" id="statusDesc">
+        You are playing <strong>White</strong> (moving counter-clockwise from point 24 down to 1). 
+        The <strong>Night0WL Bot</strong> plays <strong>Red</strong> (moving clockwise from point 1 up to 24). 
+        Click <strong>Roll Two 3D Dice</strong> to start your turn!
+      </div>
+    </div>
+  </main>
+
+  <!-- Doubling Cube Modal (HvH) -->
+  <div class="victory-overlay" id="cubeModal">
+    <div class="victory-card" style="border-color: #38bdf8; box-shadow: 0 0 50px rgba(56, 189, 248, 0.5);">
+      <h2 id="cubeModalTitle" style="color: #38bdf8;">⚖️ DOUBLE OFFERED!</h2>
+      <p id="cubeModalDesc">Player 1 (White) has offered to double the stakes to 2 points. Player 2 (Red), do you accept or resign?</p>
+      <div style="display:flex; justify-content:center; gap:12px; margin-top:1rem;">
+        <button class="btn-action" id="btnAcceptDouble">✅ Accept Double</button>
+        <button class="btn-secondary" id="btnResignDouble" style="background:#dc2626; border-color:#ef4444; color:#fff;">🏳️ Resign Match</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory Dialog -->
+  <div class="victory-overlay" id="victoryModal">
+    <div class="victory-card">
+      <h2 id="victoryTitle">🏆 VICTORY!</h2>
+      <p id="victoryDesc">All 15 checkers borne off successfully!</p>
+      <button class="btn-action" id="btnPlayAgain">Play Again</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { renderDie2D, DIRECTIONS } from './dice3d2d.js';
+
+    // Map pip values (1..6) to valid 3D-in-2D Top*10+Front coordinate
+    const TF_MAP = { 1: 13, 2: 24, 3: 31, 4: 42, 5: 53, 6: 62 };
+
+    // Audio Clack Synthesizer
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    function playClack(freq = 460) {
+      initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.exponentialRampToValueAtTime(110, now + 0.07);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.085);
+    }
+
+    // In-game Floating Toast Notification
+    let toastTimeout = null;
+    function showToast(msg) {
+      const toast = document.getElementById('bgToast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.add('show');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3200);
+    }
+
+    // Backgammon State
+    let gameMode = 'bot';          // 'bot' or 'hvh'
+    let botElo = 'club';           // 'novice' (1100), 'club' (1550), 'gm' (2050)
+    let diceVariant = 'standard';  // 'standard' (1..6), 'axle_1_6' {2,3,4,5}, 'axle_3_4' {1,2,5,6}
+    let board = [];                // indices 1..24: { player: 'white'|'red'|null, count: number }
+    let bar = { white: 0, red: 0 };
+    let off = { white: 0, red: 0 };
+    let turn = 'white';            // 'white' or 'red'
+    let diceRemaining = [];
+    let selectedSource = null;
+    let legalMovesForSource = [];
+    let isBotMoving = false;
+    let cubeValue = 64;
+    let cubeOwner = null;          // null (neutral), 'white', 'red'
+
+    function getRandomDie() {
+      if (diceVariant === 'axle_1_6') {
+        const faces = [2, 3, 4, 5];
+        return faces[Math.floor(Math.random() * faces.length)];
+      } else if (diceVariant === 'axle_3_4') {
+        const faces = [1, 2, 5, 6];
+        return faces[Math.floor(Math.random() * faces.length)];
+      } else {
+        return Math.floor(Math.random() * 6) + 1;
+      }
+    }
+
+    function setDiceVariant(variant) {
+      diceVariant = variant;
+      document.getElementById('btnDiceStandard').classList.toggle('active', variant === 'standard');
+      document.getElementById('btnDiceAxle2345').classList.toggle('active', variant === 'axle_1_6');
+      document.getElementById('btnDiceAxle1256').classList.toggle('active', variant === 'axle_3_4');
+
+      const varNames = { standard: 'Standard 1–6', axle_1_6: 'AxLe [1–6] {2, 3, 4, 5}', axle_3_4: 'AxLe [3–4] {1, 2, 5, 6}' };
+      showToast(`🎲 Dice switched to ${varNames[variant]}`);
+      logAction(`Dice mode changed to <strong>${varNames[variant]}</strong>.`);
+      setupStandardBoard();
+    }
+
+    function setBotElo(elo) {
+      botElo = elo;
+      document.getElementById('btnEloNovice').classList.toggle('active', elo === 'novice');
+      document.getElementById('btnEloClub').classList.toggle('active', elo === 'club');
+      document.getElementById('btnEloGM').classList.toggle('active', elo === 'gm');
+
+      const eloNames = { novice: 'Novice (1100 ELO)', club: 'Club (1550 ELO)', gm: 'Night0WL Grandmaster (2050 ELO)' };
+      showToast(`🤖 Bot difficulty: ${eloNames[elo]}`);
+      logAction(`Night0WL Bot calibrated to <strong>${eloNames[elo]}</strong>.`);
+    }
+
+
+    function setupStandardBoard() {
+      board = Array(25).fill(null).map(() => ({ player: null, count: 0 }));
+      bar = { white: 0, red: 0 };
+      off = { white: 0, red: 0 };
+      turn = 'white';
+      diceRemaining = [];
+      selectedSource = null;
+      legalMovesForSource = [];
+      isBotMoving = false;
+      cubeValue = 64;
+      cubeOwner = null;
+
+      // White checkers (moving counter-clockwise towards home 1-6)
+      board[24] = { player: 'white', count: 2 };
+      board[13] = { player: 'white', count: 5 };
+      board[8]  = { player: 'white', count: 3 };
+      board[6]  = { player: 'white', count: 5 };
+
+      // Red checkers (moving clockwise towards home 19-24)
+      board[1]  = { player: 'red', count: 2 };
+      board[12] = { player: 'red', count: 5 };
+      board[17] = { player: 'red', count: 3 };
+      board[19] = { player: 'red', count: 5 };
+
+      renderBorneOffChips('white');
+      renderBorneOffChips('red');
+      updateCubeUI();
+      renderBoard();
+      updateHUD();
+      document.getElementById('btnRollDice').disabled = false;
+      document.getElementById('btnDoubleCube').disabled = false;
+      document.getElementById('statusHead').textContent = "Game Ready — White to Roll";
+      document.getElementById('statusDesc').textContent = "Click 'Roll Two 3D Dice' to roll.";
+    }
+
+    function updateCubeUI() {
+      const cubeEl = document.getElementById('cubeVal');
+      const pillEl = document.getElementById('cubeOwnerPill');
+      const hudCube = document.getElementById('hudCube');
+      const hudStakes = document.getElementById('hudStakes');
+
+      if (cubeEl) cubeEl.textContent = cubeValue;
+      if (hudCube) hudCube.textContent = cubeValue;
+      if (hudStakes) hudStakes.textContent = `${cubeValue === 64 ? 1 : cubeValue} PT`;
+
+      if (pillEl) {
+        pillEl.classList.remove('white', 'red');
+        if (cubeOwner === 'white') {
+          pillEl.classList.add('white');
+          pillEl.textContent = gameMode === 'hvh' ? 'P1 WHITE' : 'YOU';
+        } else if (cubeOwner === 'red') {
+          pillEl.classList.add('red');
+          pillEl.textContent = gameMode === 'hvh' ? 'P2 RED' : 'BOT';
+        } else {
+          pillEl.textContent = 'NEUTRAL';
+        }
+      }
+    }
+
+    // Render Physical Chips inside Bear-Off Trays
+    function renderBorneOffChips(player) {
+      const containerId = player === 'white' ? 'chipsWhiteOff' : 'chipsRedOff';
+      const countId = player === 'white' ? 'countWhiteOff' : 'countRedOff';
+      const container = document.getElementById(containerId);
+      const countEl = document.getElementById(countId);
+      if (countEl) countEl.textContent = `${off[player]}/15`;
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < off[player]; i++) {
+        const chip = document.createElement('div');
+        chip.className = `bearoff-chip ${player}`;
+        container.appendChild(chip);
+      }
+    }
+
+    // Build the 24 Point Elements in DOM
+    const pointElements = {};
+    function buildBoardDOM() {
+      const rowTL = document.getElementById('rowTopLeft');
+      const rowTR = document.getElementById('rowTopRight');
+      const rowBL = document.getElementById('rowBotLeft');
+      const rowBR = document.getElementById('rowBotRight');
+
+      rowTL.innerHTML = ''; rowTR.innerHTML = '';
+      rowBL.innerHTML = ''; rowBR.innerHTML = '';
+
+      function createPoint(num, isLight) {
+        const pt = document.createElement('div');
+        pt.className = 'bg-point';
+        pt.dataset.point = num;
+
+        const tri = document.createElement('div');
+        tri.className = 'pip-triangle ' + (isLight ? 'light' : 'dark');
+
+        const col = document.createElement('div');
+        col.className = 'checkers-col';
+        col.id = `col_${num}`;
+
+        pt.appendChild(tri);
+        pt.appendChild(col);
+
+        pt.onclick = () => onPointClicked(num);
+        pointElements[num] = pt;
+        return pt;
+      }
+
+      // Top Row Points:
+      // Alternating Ivory (light) and Walnut (dark)
+      // 13: Ivory, 14: Walnut, 15: Ivory, 16: Walnut, 17: Ivory, 18: Walnut
+      for (let i = 13; i <= 18; i++) rowTL.appendChild(createPoint(i, i % 2 !== 0));
+      // 19: Ivory, 20: Walnut, 21: Ivory, 22: Walnut, 23: Ivory, 24: Walnut
+      for (let i = 19; i <= 24; i++) rowTR.appendChild(createPoint(i, i % 2 !== 0));
+
+      // Bottom Row Points:
+      // Contrasting facing colors!
+      // 12: Walnut (opposite 13 Ivory), 11: Ivory, 10: Walnut, 9: Ivory, 8: Walnut, 7: Ivory
+      for (let i = 12; i >= 7; i--) rowBL.appendChild(createPoint(i, i % 2 !== 0));
+      // 6: Walnut (opposite 19 Ivory), 5: Ivory, 4: Walnut, 3: Ivory, 2: Walnut, 1: Ivory (opposite 24 Walnut)
+      for (let i = 6; i >= 1; i--) rowBR.appendChild(createPoint(i, i % 2 !== 0));
+
+      // Bar click handlers
+      document.getElementById('barWhite').onclick = () => {
+        if (turn === 'white' && bar.white > 0 && diceRemaining.length > 0) {
+          selectSource('bar');
+        }
+      };
+      document.getElementById('barRed').onclick = () => {
+        if (gameMode === 'hvh' && turn === 'red' && bar.red > 0 && diceRemaining.length > 0) {
+          selectSource('bar');
+        }
+      };
+
+      // Bear-off tray handlers
+      document.getElementById('trayWhite').onclick = () => {
+        if (turn === 'white' && selectedSource !== null && legalMovesForSource.includes('off')) {
+          onHumanMoveConfirmed(selectedSource, 'off');
+        }
+      };
+      document.getElementById('trayRed').onclick = () => {
+        if (gameMode === 'hvh' && turn === 'red' && selectedSource !== null && legalMovesForSource.includes('off')) {
+          onHumanMoveConfirmed(selectedSource, 'off');
+        }
+      };
+
+      // Doubling cube on rail click handler
+      document.getElementById('cubeVal').onclick = () => {
+        document.getElementById('btnDoubleCube').click();
+      };
+    }
+    buildBoardDOM();
+
+    // Calculate Pip Counts
+    function getPipCounts() {
+      let white = bar.white * 25;
+      let red = bar.red * 25;
+      for (let i = 1; i <= 24; i++) {
+        if (board[i].player === 'white') white += board[i].count * i;
+        if (board[i].player === 'red') red += board[i].count * (25 - i);
+      }
+      return { white, red };
+    }
+
+    // Check if player is eligible to bear off
+    function canBearOff(player) {
+      if (bar[player] > 0) return false;
+      if (player === 'white') {
+        for (let i = 7; i <= 24; i++) {
+          if (board[i].player === 'white' && board[i].count > 0) return false;
+        }
+        return true;
+      } else {
+        for (let i = 1; i <= 18; i++) {
+          if (board[i].player === 'red' && board[i].count > 0) return false;
+        }
+        return true;
+      }
+    }
+
+    // Legal Targets for a source point or bar
+    function getLegalTargets(player, source) {
+      const targets = [];
+      const opponent = player === 'white' ? 'red' : 'white';
+      const uniqueDice = Array.from(new Set(diceRemaining));
+
+      for (const d of uniqueDice) {
+        let dest = null;
+        if (source === 'bar') {
+          dest = player === 'white' ? (25 - d) : d;
+        } else {
+          dest = player === 'white' ? (source - d) : (source + d);
+        }
+
+        // Standard point destination
+        if (dest >= 1 && dest <= 24) {
+          const pt = board[dest];
+          if (pt.player === null || pt.player === player || pt.count === 1) {
+            targets.push({ dest: dest, dieUsed: d, exact: false });
+          }
+        } 
+        // Bear-off destination (Strictly only when all checkers are home)
+        else if (canBearOff(player)) {
+          if (player === 'white' && dest <= 0) {
+            if (source === d) {
+              targets.push({ dest: 'off', dieUsed: d, exact: true });
+            } else if (d > source) {
+              let higherCheckers = false;
+              for (let i = source + 1; i <= 6; i++) {
+                if (board[i].player === 'white' && board[i].count > 0) {
+                  higherCheckers = true;
+                  break;
+                }
+              }
+              if (!higherCheckers) {
+                targets.push({ dest: 'off', dieUsed: d, exact: false });
+              }
+            }
+          } else if (player === 'red' && dest >= 25) {
+            const dist = 25 - source;
+            if (dist === d) {
+              targets.push({ dest: 'off', dieUsed: d, exact: true });
+            } else if (d > dist) {
+              let higherCheckers = false;
+              for (let i = 19; i < source; i++) {
+                if (board[i].player === 'red' && board[i].count > 0) {
+                  higherCheckers = true;
+                  break;
+                }
+              }
+              if (!higherCheckers) {
+                targets.push({ dest: 'off', dieUsed: d, exact: false });
+              }
+            }
+          }
+        }
+      }
+      return targets;
+    }
+
+    // Check if player has ANY legal move available with current dice
+    function hasAnyLegalMove(player) {
+      if (diceRemaining.length === 0) return false;
+      if (bar[player] > 0) {
+        return getLegalTargets(player, 'bar').length > 0;
+      }
+      for (let i = 1; i <= 24; i++) {
+        if (board[i].player === player && board[i].count > 0) {
+          if (getLegalTargets(player, i).length > 0) return true;
+        }
+      }
+      return false;
+    }
+
+    // Apply Physical Checker Move
+    function applyCheckerMove(player, source, dest, dieUsed) {
+      const opponent = player === 'white' ? 'red' : 'white';
+      playClack(player === 'white' ? 520 : 380);
+
+      // Decrement from source
+      if (source === 'bar') {
+        bar[player]--;
+      } else {
+        board[source].count--;
+        if (board[source].count === 0) board[source].player = null;
+      }
+
+      // Add to destination
+      if (dest === 'off') {
+        off[player]++;
+        renderBorneOffChips(player);
+      } else {
+        // Hit opponent blot!
+        if (board[dest].player === opponent && board[dest].count === 1) {
+          bar[opponent]++;
+          board[dest].player = player;
+          board[dest].count = 1;
+          logAction(`💥 ${player.toUpperCase()} HIT ${opponent.toUpperCase()}'s blot on Point ${dest}! Sent to Bar!`);
+        } else {
+          board[dest].player = player;
+          board[dest].count++;
+        }
+      }
+
+      // Deduct used die from pool
+      const idx = diceRemaining.indexOf(dieUsed);
+      if (idx !== -1) diceRemaining.splice(idx, 1);
+    }
+
+    // Human Move Confirmed
+    function onHumanMoveConfirmed(source, dest) {
+      const active = turn;
+      const targets = getLegalTargets(active, source);
+      let match = null;
+
+      if (dest === 'off') {
+        const offTargets = targets.filter(t => t.dest === 'off');
+        if (offTargets.length === 0) return;
+        offTargets.sort((a, b) => {
+          if (a.exact && !b.exact) return -1;
+          if (!a.exact && b.exact) return 1;
+          return a.dieUsed - b.dieUsed;
+        });
+        match = offTargets[0];
+      } else {
+        match = targets.find(t => t.dest === dest);
+      }
+      if (!match) return;
+
+      applyCheckerMove(active, source, dest, match.dieUsed);
+
+      selectedSource = null;
+      legalMovesForSource = [];
+      renderBoard();
+      updateHUD();
+
+      // Check Victory
+      if (off[active] >= 15) {
+        showVictory(active);
+        return;
+      }
+
+      // Check remaining dice
+      if (diceRemaining.length > 0) {
+        if (hasAnyLegalMove(active)) {
+          const moveWord = diceRemaining.length === 1 ? '1 move' : (diceRemaining.length + ' moves');
+          const pName = active === 'white' ? (gameMode === 'hvh' ? 'Player 1 (White)' : 'You') : 'Player 2 (Red)';
+          logAction('Move complete! ' + pName + ' has ' + moveWord + ' left (' + diceRemaining.join(', ') + '). Click next checker.');
+          if (bar[active] > 0) selectSource('bar');
+        } else {
+          const nextName = (active === 'white' && gameMode === 'bot') ? 'Night0WL Bot' : (active === 'white' ? 'Player 2 (Red)' : 'Player 1 (White)');
+          logAction('No legal moves remain for die [' + diceRemaining.join(', ') + ']. Passing turn to ' + nextName + '...');
+          diceRemaining = [];
+          advanceTurn();
+        }
+      } else {
+        const nextName = (active === 'white' && gameMode === 'bot') ? 'Night0WL Bot' : (active === 'white' ? 'Player 2 (Red)' : 'Player 1 (White)');
+        logAction('Turn complete! Passing to ' + nextName + '...');
+        advanceTurn();
+      }
+    }
+
+    // Turn Advance Coordinator
+    function advanceTurn() {
+      if (turn === 'white') {
+        if (gameMode === 'bot') {
+          setTimeout(startBotTurn, 750);
+        } else {
+          setTimeout(startRedHumanTurn, 650);
+        }
+      } else {
+        setTimeout(startPlayerTurn, 650);
+      }
+    }
+
+    // Point Click Handler for Human
+    function onPointClicked(pointNum) {
+      if (isBotMoving || diceRemaining.length === 0) return;
+      if (gameMode === 'bot' && turn !== 'white') return;
+      const active = turn;
+
+      // If must enter from bar
+      if (bar[active] > 0) {
+        if (selectedSource === 'bar' && legalMovesForSource.includes(pointNum)) {
+          onHumanMoveConfirmed('bar', pointNum);
+        } else {
+          selectSource('bar');
+        }
+        return;
+      }
+
+      // Clicking destination point for selected checker
+      if (selectedSource !== null && legalMovesForSource.includes(pointNum)) {
+        onHumanMoveConfirmed(selectedSource, pointNum);
+        return;
+      }
+
+      // Clicking friendly checker: select it, OR second click directly executes bear off!
+      if (board[pointNum].player === active && board[pointNum].count > 0) {
+        if (selectedSource === pointNum && legalMovesForSource.includes('off')) {
+          onHumanMoveConfirmed(selectedSource, 'off');
+          return;
+        }
+        selectSource(pointNum);
+      } else {
+        selectedSource = null;
+        legalMovesForSource = [];
+        renderBoard();
+      }
+    }
+
+    // Select Source and highlight valid targets
+    function selectSource(src) {
+      selectedSource = src;
+      const targets = getLegalTargets(turn, src);
+      legalMovesForSource = targets.map(t => t.dest);
+      renderBoard();
+    }
+
+    // Roll Dice Button Clicked
+    document.getElementById('btnRollDice').onclick = () => {
+      if (isBotMoving || diceRemaining.length > 0) return;
+      if (gameMode === 'bot' && turn !== 'white') return;
+
+      const active = turn;
+      document.getElementById('btnRollDice').disabled = true;
+
+      const d1 = getRandomDie();
+      const d2 = getRandomDie();
+      renderDiceCanvases(d1, d2);
+
+      const isDoubles = d1 === d2;
+      diceRemaining = isDoubles ? [d1, d1, d1, d1] : [d1, d2];
+      renderBoard();
+
+      const pLabel = active === 'white' ? (gameMode === 'hvh' ? 'Player 1 (White)' : 'You') : 'Player 2 (Red)';
+      if (isDoubles) {
+        logAction('🎲 ' + pLabel + ' rolled DOUBLE ' + d1 + "s! You have 4 moves of " + d1 + '.');
+      } else {
+        logAction('🎲 ' + pLabel + ' rolled ' + d1 + ' and ' + d2 + '. You have 2 moves.');
+      }
+
+      if (!hasAnyLegalMove(active)) {
+        const nextName = (active === 'white' && gameMode === 'bot') ? 'Night0WL Bot' : (active === 'white' ? 'Player 2' : 'Player 1');
+        logAction('No legal moves possible for ' + d1 + ' & ' + d2 + '. Turn passes to ' + nextName + '.');
+        setTimeout(advanceTurn, 1400);
+        return;
+      }
+
+      if (bar[active] > 0) {
+        selectSource('bar');
+      }
+    };
+
+    // ==========================================
+    // NIGHT0WL AI BOT LOGIC
+    // ==========================================
+    function startBotTurn() {
+      if (gameMode !== 'bot') return;
+      turn = 'red';
+      isBotMoving = true;
+      selectedSource = null;
+      legalMovesForSource = [];
+      updateHUD();
+      renderBoard();
+
+      const btnRoll = document.getElementById('btnRollDice');
+      btnRoll.disabled = true;
+      btnRoll.className = 'btn-action';
+      btnRoll.textContent = '🤖 Bot Rolling...';
+      document.getElementById('btnDoubleCube').disabled = true;
+
+      document.getElementById('statusHead').textContent = "🤖 Night0WL Bot's Turn";
+      logAction('Night0WL Bot is rolling the dice...');
+
+      setTimeout(() => {
+        // Bot rolls dice
+        const d1 = getRandomDie();
+        const d2 = getRandomDie();
+        renderDiceCanvases(d1, d2);
+
+        const isDoubles = d1 === d2;
+        diceRemaining = isDoubles ? [d1, d1, d1, d1] : [d1, d2];
+        renderBoard();
+
+        if (isDoubles) {
+          logAction('🤖 Bot rolled DOUBLE ' + d1 + "s (4 moves)!");
+        } else {
+          logAction('🤖 Bot rolled ' + d1 + ' and ' + d2 + ' (2 moves).');
+        }
+
+        setTimeout(botStep, 750);
+      }, 550);
+    }
+
+    function botStep() {
+      if (turn !== 'red') return;
+
+      if (diceRemaining.length === 0 || !hasAnyLegalMove('red')) {
+        if (diceRemaining.length > 0) {
+          logAction('🤖 Bot has no legal moves for remaining dice.');
+        } else {
+          logAction('🤖 Bot completed its turn. Your turn!');
+        }
+        diceRemaining = [];
+        setTimeout(startPlayerTurn, 850);
+        return;
+      }
+
+      const candidates = [];
+      if (bar.red > 0) {
+        const targets = getLegalTargets('red', 'bar');
+        targets.forEach(t => candidates.push({ source: 'bar', dest: t.dest, dieUsed: t.dieUsed }));
+      } else {
+        for (let i = 1; i <= 24; i++) {
+          if (board[i].player === 'red' && board[i].count > 0) {
+            const targets = getLegalTargets('red', i);
+            targets.forEach(t => candidates.push({ source: i, dest: t.dest, dieUsed: t.dieUsed }));
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        logAction('🤖 Bot is blocked. Your turn!');
+        diceRemaining = [];
+        setTimeout(startPlayerTurn, 850);
+        return;
+      }
+
+      // Score moves according to Bot ELO Rating
+      candidates.forEach(cand => {
+        const { source, dest } = cand;
+        let score = 10;
+
+        if (botElo === 'novice') {
+          // Novice (1100 ELO): casual forward movement with random noise
+          score = (dest === 'off' ? 80 : dest) + Math.random() * 25;
+        } else if (botElo === 'club') {
+          // Club (1550 ELO): solid standard tactical play
+          if (dest === 'off') score += 120;
+          else {
+            if (board[dest].player === 'white' && board[dest].count === 1) score += 95; // Hit blot
+            if (board[dest].player === 'red' && board[dest].count === 1) score += 55;   // Secure point
+            score += Math.floor(dest * 1.5);
+            if (source !== 'bar' && board[source].count === 2) score -= 18; // Blot exposure penalty
+          }
+        } else {
+          // Grandmaster (2050 ELO): deep equity, prime construction, blot safety & escape
+          if (dest === 'off') score += 150;
+          else {
+            // High priority hitting blot in home board
+            if (board[dest].player === 'white' && board[dest].count === 1) {
+              score += dest >= 19 ? 135 : 105;
+            }
+            // Prime building: reward 3, 4, 5, 6-prime sequences
+            if (board[dest].player === 'red' && board[dest].count === 1) {
+              score += 70;
+              if (dest >= 16 && dest <= 22) score += 30; // Golden prime points
+            }
+            // Escaping deep back checkers from points 1 & 2
+            if (source === 1 || source === 2) score += 45;
+            // Progressive advance
+            score += Math.floor(dest * 1.8);
+            // Severe penalty for exposing blots in home quadrant
+            if (source !== 'bar' && board[source].count === 2) {
+              score -= (source >= 19 ? 35 : 15);
+            }
+          }
+        }
+        cand.score = score;
+      });
+
+      candidates.sort((a, b) => b.score - a.score);
+      const chosen = candidates[0];
+
+      applyCheckerMove('red', chosen.source, chosen.dest, chosen.dieUsed);
+      renderBoard();
+      updateHUD();
+
+      const srcStr = chosen.source === 'bar' ? 'Bar' : `Point ${chosen.source}`;
+      const dstStr = chosen.dest === 'off' ? 'Bear-off' : `Point ${chosen.dest}`;
+      logAction(`🤖 Bot moved checker from ${srcStr} to ${dstStr} (used ${chosen.dieUsed}).`);
+
+      if (off.red >= 15) {
+        showVictory('red');
+        return;
+      }
+
+      setTimeout(botStep, 650);
+    }
+
+    // Start Player 2 (Red Human) Turn
+    function startRedHumanTurn() {
+      turn = 'red';
+      isBotMoving = false;
+      diceRemaining = [];
+      selectedSource = null;
+      legalMovesForSource = [];
+      updateHUD();
+      renderBoard();
+
+      const btnRoll = document.getElementById('btnRollDice');
+      btnRoll.disabled = false;
+      btnRoll.className = 'btn-action red';
+      btnRoll.textContent = '🎲 Roll Red Dice (P2)';
+
+      const btnCube = document.getElementById('btnDoubleCube');
+      btnCube.disabled = false;
+
+      document.getElementById('statusHead').textContent = "🔴 PLAYER 2'S TURN (RED) — Roll the Dice";
+      document.getElementById('statusDesc').textContent = "Player 2, click 'Roll Red Dice' to roll and make your moves.";
+    }
+
+    // Start Player 1 (White) Turn
+    function startPlayerTurn() {
+      turn = 'white';
+      isBotMoving = false;
+      diceRemaining = [];
+      selectedSource = null;
+      legalMovesForSource = [];
+      updateHUD();
+      renderBoard();
+
+      const btnRoll = document.getElementById('btnRollDice');
+      btnRoll.disabled = false;
+      btnRoll.className = 'btn-action';
+      btnRoll.textContent = gameMode === 'hvh' ? '🎲 Roll White Dice (P1)' : '🎲 Roll Two 3D Dice';
+
+      const btnCube = document.getElementById('btnDoubleCube');
+      btnCube.disabled = false;
+
+      const p1Label = gameMode === 'hvh' ? "🟢 PLAYER 1'S TURN (WHITE)" : "🟢 YOUR TURN — Roll the Dice";
+      document.getElementById('statusHead').textContent = p1Label;
+      document.getElementById('statusDesc').textContent = gameMode === 'hvh' 
+        ? "Player 1, click 'Roll White Dice' to start your turn." 
+        : "Click 'Roll Two 3D Dice' to start your turn.";
+    }
+
+    // Doubling Cube Action
+    let pendingCubeDouble = null;
+
+    document.getElementById('btnDoubleCube').onclick = () => {
+      if (isBotMoving || diceRemaining.length > 0) {
+        showToast("⚠️ Double must be offered before rolling dice!");
+        return;
+      }
+      if (gameMode === 'bot' && turn !== 'white') return;
+
+      const active = turn;
+      const opponent = active === 'white' ? 'red' : 'white';
+
+      if (cubeOwner !== null && cubeOwner !== active) {
+        const ownerName = cubeOwner === 'white' ? 'White' : (gameMode === 'bot' ? 'Night0WL Bot' : 'Red');
+        showToast(`⚠️ ${ownerName} owns doubling cube! Only owner may redouble.`);
+        return;
+      }
+
+      playClack(640);
+      const nextVal = cubeValue === 64 ? 2 : (cubeValue * 2);
+
+      if (gameMode === 'bot') {
+        const { white, red } = getPipCounts();
+        if (red <= white + 14) {
+          cubeValue = nextVal;
+          cubeOwner = 'red';
+          updateCubeUI();
+          showToast(`🤖 Night0WL Bot ACCEPTS double to ${cubeValue} pts!`);
+          logAction(`🤖 Bot ACCEPTS your double! Stakes are now ${cubeValue} points. (Bot owns cube).`);
+        } else {
+          showToast(`🤖 Night0WL Bot DECLINES double and resigns!`);
+          logAction(`🤖 Bot DECLINES double and resigns! You win ${cubeValue} point(s)!`);
+          showVictory('white');
+        }
+      } else {
+        // HvH Bilateral Double Modal
+        pendingCubeDouble = { offering: active, receiving: opponent, nextVal };
+        const modal = document.getElementById('cubeModal');
+        const title = document.getElementById('cubeModalTitle');
+        const desc = document.getElementById('cubeModalDesc');
+
+        const offName = active === 'white' ? 'Player 1 (White)' : 'Player 2 (Red)';
+        const recName = opponent === 'white' ? 'Player 1 (White)' : 'Player 2 (Red)';
+
+        title.textContent = `⚖️ ${offName.toUpperCase()} OFFERS DOUBLE`;
+        desc.innerHTML = `<strong>${offName}</strong> has offered to double match stakes to <strong>${nextVal} points</strong>.<br><br><strong>${recName}</strong>, do you accept the challenge or resign?`;
+        modal.classList.add('open');
+      }
+    };
+
+    document.getElementById('btnAcceptDouble').onclick = () => {
+      if (!pendingCubeDouble) return;
+      const { receiving, nextVal } = pendingCubeDouble;
+      cubeValue = nextVal;
+      cubeOwner = receiving;
+      updateCubeUI();
+      
+      const recName = receiving === 'white' ? 'Player 1 (White)' : 'Player 2 (Red)';
+      showToast(`⚖️ ${recName} ACCEPTED double to ${cubeValue} pts!`);
+      logAction(`⚖️ ${recName} ACCEPTED the double! Stakes are now ${cubeValue} points.`);
+      playClack(680);
+
+      document.getElementById('cubeModal').classList.remove('open');
+      pendingCubeDouble = null;
+    };
+
+    document.getElementById('btnResignDouble').onclick = () => {
+      if (!pendingCubeDouble) return;
+      const { offering, receiving } = pendingCubeDouble;
+      document.getElementById('cubeModal').classList.remove('open');
+      pendingCubeDouble = null;
+      
+      const recName = receiving === 'white' ? 'Player 1 (White)' : 'Player 2 (Red)';
+      logAction(`🏳️ ${recName} declined the double and resigned match.`);
+      showVictory(offering);
+    };
+
+    // Render Board State
+    function renderBoard() {
+      for (let i = 1; i <= 24; i++) {
+        const col = document.getElementById(`col_${i}`);
+        if (col) col.innerHTML = '';
+        if (pointElements[i]) {
+          pointElements[i].classList.remove('legal-target');
+        }
+      }
+
+      // Highlight legal targets
+      const active = turn;
+      const isHumanTurn = (gameMode === 'hvh') || (gameMode === 'bot' && active === 'white');
+
+      document.getElementById('trayWhite').classList.remove('highlight');
+      document.getElementById('trayRed').classList.remove('highlight');
+
+      if (isHumanTurn && selectedSource !== null) {
+        const trayId = active === 'white' ? 'trayWhite' : 'trayRed';
+        legalMovesForSource.forEach(tgt => {
+          if (tgt === 'off') {
+            document.getElementById(trayId).classList.add('highlight');
+          } else if (pointElements[tgt]) {
+            pointElements[tgt].classList.add('legal-target');
+          }
+        });
+      }
+
+      // Render Checkers on Points
+      for (let i = 1; i <= 24; i++) {
+        const { player, count } = board[i];
+        if (!player || count <= 0) continue;
+
+        const col = document.getElementById(`col_${i}`);
+        const displayCount = Math.min(count, 5);
+
+        for (let c = 0; c < displayCount; c++) {
+          const ch = document.createElement('div');
+          ch.className = `checker ${player}`;
+          if (c === displayCount - 1 && count > 5) {
+            ch.textContent = `+${count - 4}`;
+          }
+          if (isHumanTurn && active === player && selectedSource === i && c === displayCount - 1) {
+            ch.classList.add('selected');
+          }
+          col.appendChild(ch);
+        }
+      }
+
+      // Render Bar Slots
+      const barRedEl = document.getElementById('barRedCheckers');
+      const barWhiteEl = document.getElementById('barWhiteCheckers');
+      barRedEl.innerHTML = '';
+      barWhiteEl.innerHTML = '';
+
+      const barRedSlot = document.getElementById('barRed');
+      const barWhiteSlot = document.getElementById('barWhite');
+      barRedSlot.classList.remove('highlight');
+      barWhiteSlot.classList.remove('highlight');
+
+      for (let i = 0; i < bar.red; i++) {
+        const ch = document.createElement('div');
+        ch.className = 'checker red';
+        if (turn === 'red' && selectedSource === 'bar' && i === bar.red - 1) {
+          ch.classList.add('selected');
+        }
+        barRedEl.appendChild(ch);
+      }
+
+      for (let i = 0; i < bar.white; i++) {
+        const ch = document.createElement('div');
+        ch.className = 'checker white';
+        if (turn === 'white' && selectedSource === 'bar' && i === bar.white - 1) {
+          ch.classList.add('selected');
+        }
+        barWhiteEl.appendChild(ch);
+      }
+
+      if (isHumanTurn) {
+        if (active === 'white' && bar.white > 0) {
+          barWhiteSlot.classList.add('highlight');
+        } else if (active === 'red' && bar.red > 0) {
+          barRedSlot.classList.add('highlight');
+        }
+      }
+
+      renderDicePills();
+    }
+
+    function renderDicePills() {
+      const wrap = document.getElementById('dicePillsWrap');
+      if (diceRemaining.length === 0) {
+        let msg = 'CLICK ROLL TO BEGIN';
+        if (gameMode === 'bot' && turn === 'red') msg = 'BOT ROLLING...';
+        else if (gameMode === 'hvh' && turn === 'red') msg = 'P2 (RED) TO ROLL';
+        else msg = 'P1 (WHITE) TO ROLL';
+        wrap.innerHTML = `<span style="color:#94a3b8; font-size:0.85rem; font-family:ui-monospace, monospace;">${msg}</span>`;
+        return;
+      }
+      wrap.innerHTML = '';
+      diceRemaining.forEach(d => {
+        const p = document.createElement('div');
+        p.className = 'die-pill';
+        p.textContent = `🎲 ${d}`;
+        wrap.appendChild(p);
+      });
+    }
+
+    // Update Top HUD
+    function updateHUD() {
+      const tb = document.getElementById('turnBadge');
+      if (turn === 'white') {
+        tb.className = 'turn-badge white';
+        tb.textContent = gameMode === 'hvh' ? '⚪ PLAYER 1 (WHITE)' : '⚪ YOUR TURN (WHITE)';
+      } else {
+        tb.className = 'turn-badge red';
+        tb.textContent = gameMode === 'hvh' ? '🔴 PLAYER 2 (RED)' : '🤖 NIGHT0WL BOT (RED)';
+      }
+      const { white, red } = getPipCounts();
+      document.getElementById('whitePipCount').textContent = white;
+      document.getElementById('redPipCount').textContent = red;
+    }
+
+    // Render 3D Dice Canvases
+    function renderDiceCanvases(d1, d2) {
+      playClack(turn === 'white' ? 520 : 380);
+      const cv1 = document.getElementById('bgDie1');
+      const cv2 = document.getElementById('bgDie2');
+      const ctx1 = cv1.getContext('2d');
+      const ctx2 = cv2.getContext('2d');
+      ctx1.clearRect(0, 0, cv1.width, cv1.height);
+      ctx2.clearRect(0, 0, cv2.width, cv2.height);
+
+      const tf1 = TF_MAP[d1] || 53;
+      const tf2 = TF_MAP[d2] || 31;
+      renderDie2D(ctx1, { x: 2, y: 2, size: 92, tf: tf1, direction: DIRECTIONS.STOP, angleDeg: 0 });
+      renderDie2D(ctx2, { x: 2, y: 2, size: 92, tf: tf2, direction: DIRECTIONS.STOP, angleDeg: 0 });
+    }
+
+    function logAction(msg) {
+      const el = document.getElementById('statusDesc');
+      if (el) el.innerHTML = msg;
+    }
+
+    function showVictory(player) {
+      const modal = document.getElementById('victoryModal');
+      const title = document.getElementById('victoryTitle');
+      const desc = document.getElementById('victoryDesc');
+      const basePts = cubeValue === 64 ? 1 : cubeValue;
+      
+      // Official Backgammon Victory Classification:
+      // Single Win (1x): Opponent has borne off at least 1 checker.
+      // Gammon (2x): Opponent has borne off 0 checkers.
+      // Backgammon (3x): Opponent has borne off 0 checkers AND still has a checker on the bar or in the winner's home board!
+      const opponent = player === 'white' ? 'red' : 'white';
+      let multiplier = 1;
+      let victoryType = 'Standard Win';
+
+      if (off[opponent] === 0) {
+        const winnerHomePts = player === 'white' ? [1, 2, 3, 4, 5, 6] : [19, 20, 21, 22, 23, 24];
+        const opponentInWinnerHome = winnerHomePts.some(pt => board[pt].player === opponent && board[pt].count > 0);
+        if (bar[opponent] > 0 || opponentInWinnerHome) {
+          multiplier = 3;
+          victoryType = 'BACKGAMMON (Triple Win 3×)';
+        } else {
+          multiplier = 2;
+          victoryType = 'GAMMON (Double Win 2×)';
+        }
+      }
+
+      const totalPts = basePts * multiplier;
+      const typeBadge = multiplier > 1 ? ` • ${victoryType}` : '';
+
+      if (gameMode === 'hvh') {
+        if (player === 'white') {
+          title.textContent = multiplier === 3 ? '👑 BACKGAMMON! PLAYER 1 (WHITE) WINS!' : (multiplier === 2 ? '⚡ GAMMON! PLAYER 1 (WHITE) WINS!' : '🏆 PLAYER 1 (WHITE) WINS!');
+          desc.innerHTML = `Player 1 bore off all 15 checkers first for <strong>${totalPts} point(s)</strong> (${basePts} base × ${multiplier})${typeBadge}! Splendid match.`;
+        } else {
+          title.textContent = multiplier === 3 ? '👑 BACKGAMMON! PLAYER 2 (RED) WINS!' : (multiplier === 2 ? '⚡ GAMMON! PLAYER 2 (RED) WINS!' : '🏆 PLAYER 2 (RED) WINS!');
+          desc.innerHTML = `Player 2 bore off all 15 checkers first for <strong>${totalPts} point(s)</strong> (${basePts} base × ${multiplier})${typeBadge}! Splendid match.`;
+        }
+      } else {
+        if (player === 'white') {
+          title.textContent = multiplier === 3 ? '👑 BACKGAMMON VICTORY!' : (multiplier === 2 ? '⚡ GAMMON VICTORY!' : '🏆 VICTORY!');
+          desc.innerHTML = `Congratulations! You defeated the Night0WL Bot for <strong>${totalPts} point(s)</strong> (${basePts} base × ${multiplier})${typeBadge}!`;
+        } else {
+          title.textContent = multiplier === 3 ? '🤖 BOT SCORES BACKGAMMON!' : (multiplier === 2 ? '🤖 BOT SCORES GAMMON!' : '🤖 BOT WINS');
+          desc.innerHTML = `Night0WL Bot bore off all 15 checkers first for <strong>${totalPts} point(s)</strong> (${basePts} base × ${multiplier})${typeBadge}. Better luck next match!`;
+        }
+      }
+      modal.classList.add('open');
+    }
+
+    // Game Mode Switcher
+    function setGameMode(mode) {
+      if (gameMode === mode) return;
+      gameMode = mode;
+      document.getElementById('btnModeBot').classList.toggle('active', mode === 'bot');
+      document.getElementById('btnModeHvh').classList.toggle('active', mode === 'hvh');
+      setupStandardBoard();
+      if (mode === 'hvh') {
+        logAction("👥 Mode switched to Pass & Play (HvH). Player 1 (White) rolls first!");
+      } else {
+        logAction("🤖 Mode switched to vs Night0WL Bot. You play White, Bot plays Red.");
+      }
+    }
+
+    
+    // AxLeLocked Dice & Bot ELO Event Listeners
+    document.getElementById('btnDiceStandard').onclick = () => setDiceVariant('standard');
+    document.getElementById('btnDiceAxle2345').onclick = () => setDiceVariant('axle_1_6');
+    document.getElementById('btnDiceAxle1256').onclick = () => setDiceVariant('axle_3_4');
+
+    document.getElementById('btnEloNovice').onclick = () => setBotElo('novice');
+    document.getElementById('btnEloClub').onclick = () => setBotElo('club');
+    document.getElementById('btnEloGM').onclick = () => setBotElo('gm');
+
+    document.getElementById('btnModeBot').onclick = () => setGameMode('bot');
+    document.getElementById('btnModeHvh').onclick = () => setGameMode('hvh');
+
+    document.getElementById('btnPlayAgain').onclick = () => {
+      document.getElementById('victoryModal').classList.remove('open');
+      setupStandardBoard();
+    };
+
+    document.getElementById('btnNewGame').onclick = () => {
+      setupStandardBoard();
+    };
+
+    // Initial Load
+    renderDiceCanvases(5, 3);
+    setupStandardBoard();
+  </script>
+</body>
+</html>

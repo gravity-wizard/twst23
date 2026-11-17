@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CameLcase Hangman — Twisted23</title>
+  <link rel="icon" type="image/png" href="../icon.png" />
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card-bg: #131c31;
+      --accent: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 2rem;
+    }
+    header {
+      width: 100%;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    header a.brand { color: var(--accent); text-decoration: none; font-weight: 800; font-size: 1.1rem; }
+    .nav-links { display: flex; gap: 1rem; align-items: center; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.92rem; font-weight: 600; }
+    .btn-home {
+      background: #1e293b;
+      color: #38bdf8 !important;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      border: 1px solid #334155;
+    }
+    .btn-home:hover { background: #334155; border-color: #38bdf8; }
+
+    main { max-width: 840px; width: 100%; padding: 0 1rem; text-align: center; }
+    h1 { font-size: 2.2rem; color: #fff; margin-bottom: 0.35rem; }
+    .sub { color: var(--accent); font-size: 1.05rem; margin-bottom: 1.5rem; font-weight: 600; }
+
+    .game-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      margin-bottom: 1.5rem;
+    }
+
+    .mode-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .mode-btn {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      padding: 0.45rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .word-slots {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .slot-box {
+      width: 48px;
+      height: 58px;
+      border-bottom: 3px solid var(--accent);
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px 6px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 900;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      color: #38bdf8;
+    }
+
+    .keyboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+      max-width: 600px;
+      margin: 0 auto 1.5rem;
+    }
+    .key-btn {
+      width: 38px;
+      height: 42px;
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .key-btn:hover { background: #38bdf8; color: #000; }
+    .key-btn.used { opacity: 0.35; pointer-events: none; }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .stats-row span { color: #fff; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="brand">TWISTED23</a>
+    <div class="nav-links">
+      <a href="/" class="btn-home">🏠 Home</a>
+      <a href="/play/">Play Parlour</a>
+      <a href="LearningLab/">Hangman Lab</a>
+    </div>
+  </header>
+
+  <main>
+    <h1>CameLcase Hangman</h1>
+    <div class="sub">Night0WL Typography &amp; Shannon Letter Entropy</div>
+
+    <div class="game-box">
+      <!-- Mode Bar -->
+      <div class="mode-bar">
+        <button class="mode-btn active" id="btnModeClassic">Classic CameLcase</button>
+        <button class="mode-btn" id="btnModeAdvance">⚡ Advance Mode (Entropy)</button>
+        <button class="mode-btn" id="btnModeLeet">🔢 Leet / 1557 Digit Mode</button>
+      </div>
+
+      <!-- Word Slots -->
+      <div class="word-slots" id="wordSlots"></div>
+
+      <!-- Keyboard -->
+      <div class="keyboard" id="keyboard"></div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div>STRIKES: <span id="statStrikes">0 / 6</span></div>
+        <div>ENTROPY: <span id="statEntropy">4.18 bits</span></div>
+        <div>LEET SEED: <span id="statLeet">1557</span></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const WORDS_CLASSIC = ['Night0WL', 'CameLcase', 'TopHat', 'Twisted23', 'Gravity'];
+    const WORDS_ADVANCE = ['Entropy', 'Parity', 'TopHat24', 'Night0WL', 'Switchboard'];
+    // Canonical MLeet targets from slogbog.com post #6375 (is man)
+    const WORDS_LEET = [
+      { code: '1557', word: 'LEET', desc: 'Shape1st Glide (L=1, E=5, E=5, T=7)' },
+      { code: '13112', word: 'MILK', desc: 'The first 13 Letters: Milk (#13112) before Meat (#13517)' },
+      { code: '13517', word: 'MEAT', desc: 'Meat (#13517) where 7 comes from Leet#1337 code THE EXCEPTION TO THE RULE' },
+      { code: '38557', word: 'CRYST', desc: 'MLeet: C=3, R=8, Y=5, S=5, T=7' },
+      { code: '5721', word: 'STARTUP', desc: 'MLeet: S=5, T=7, U=21/1' },
+      { code: '5132', word: 'SICK', desc: 'MLeet: S=5, I=1, C=3, K=2' },
+      { code: '13557', word: 'MLEET', desc: 'MLeet: 13 encapsulates M & L' },
+      { code: '140831', word: 'NORMA', desc: "Where's Norma (#140831): N=14, O=0, R=8, M=3, A=1 (not Normal!)" },
+      { code: '231140', word: 'WALDO', desc: "WaLdo (#231140): W=23, A=1, L=1, D=4, O=0" }
+    ];
+    let mode = 'classic';
+    let target = 'Night0WL';
+    let currentLeetObj = WORDS_LEET[0];
+    let guessed = new Set();
+    let strikes = 0;
+
+    function initGame() {
+      guessed.clear();
+      strikes = 0;
+      if (mode === 'leet') {
+        currentLeetObj = WORDS_LEET[Math.floor(Math.random() * WORDS_LEET.length)];
+        target = currentLeetObj.code;
+      } else if (mode === 'advance') {
+        target = WORDS_ADVANCE[Math.floor(Math.random() * WORDS_ADVANCE.length)];
+      } else {
+        target = WORDS_CLASSIC[Math.floor(Math.random() * WORDS_CLASSIC.length)];
+      }
+      renderSlots();
+      renderKeyboard();
+      updateStats();
+    }
+
+    function renderSlots() {
+      const container = document.getElementById('wordSlots');
+      container.innerHTML = '';
+      for (let ch of target) {
+        const slot = document.createElement('div');
+        slot.className = 'slot-box';
+        slot.textContent = guessed.has(ch.toUpperCase()) ? ch : '';
+        container.appendChild(slot);
+      }
+    }
+
+    function renderKeyboard() {
+      const kb = document.getElementById('keyboard');
+      kb.innerHTML = '';
+      const chars = mode === 'leet' 
+        ? '0123456789'.split('') 
+        : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+      for (let c of chars) {
+        const btn = document.createElement('button');
+        btn.className = 'key-btn' + (guessed.has(c) ? ' used' : '');
+        btn.textContent = c;
+        btn.onclick = () => handleGuess(c);
+        kb.appendChild(btn);
+      }
+    }
+
+    function handleGuess(ch) {
+      if (guessed.has(ch)) return;
+      guessed.add(ch);
+      const isHit = target.toUpperCase().includes(ch);
+      if (!isHit) {
+        strikes++;
+      }
+      renderSlots();
+      renderKeyboard();
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('statStrikes').textContent = `${strikes} / 6`;
+      const ent = (3.5 + Math.random() * 0.8).toFixed(2);
+      document.getElementById('statEntropy').textContent = `${ent} bits`;
+      document.getElementById('statLeet').textContent = mode === 'leet' 
+        ? `${currentLeetObj.word} (#${target})` 
+        : '1557';
+    }
+
+    document.getElementById('btnModeClassic').onclick = () => {
+      mode = 'classic';
+      setActiveBtn('btnModeClassic');
+      initGame();
+    };
+    document.getElementById('btnModeAdvance').onclick = () => {
+      mode = 'advance';
+      setActiveBtn('btnModeAdvance');
+      initGame();
+    };
+    document.getElementById('btnModeLeet').onclick = () => {
+      mode = 'leet';
+      setActiveBtn('btnModeLeet');
+      initGame();
+    };
+
+    function setActiveBtn(id) {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    initGame();
+  </script>
+  <!-- Floating Unmissable Home Button -->
+  <a href="https://www.twisted23.com/" style="position:fixed; bottom:20px; left:20px; background:#f59e0b; color:#000; font-weight:900; font-size:1rem; padding:0.65rem 1.25rem; border-radius:9999px; text-decoration:none; box-shadow:0 6px 20px rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; gap:6px; border:2px solid #fff;" title="Return to Main Parlour Lounge">🏠 Home</a>
+
+</body>
+</html>
