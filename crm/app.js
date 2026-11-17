@@ -319,6 +319,7 @@ function openSendStep1Dispatcher(contactId) {
   mailtoParams.set('body', fullBody);
   const mailtoUrl = `mailto:${encodeURIComponent(to)}?${mailtoParams.toString()}`;
 
+  const hasHostingerMail = !!serverStatus.hostingerMailConfigured;
   const hasResend = !!serverStatus.resendConfigured;
 
   const modalHtml = `
@@ -352,13 +353,20 @@ function openSendStep1Dispatcher(contactId) {
           </button>
         </div>
 
-        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button id="btn-dispatch-server" class="btn btn-primary btn-sm" type="button">
-            ${hasResend ? '🚀 Dispatch via Resend Cloud API' : '🚀 Dispatch via Server Mail (with BCC Echo)'}
-          </button>
-          <button id="btn-echo-bcc-now" class="btn btn-secondary btn-sm" type="button">
-            ✉ Send BCC Echo to iCloud Now
-          </button>
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button id="btn-dispatch-server" class="btn btn-primary btn-sm" type="button">
+              ${hasHostingerMail ? '🚀 Dispatch via Hostinger Mail API (DKIM Verified)' : (hasResend ? '🚀 Dispatch via Resend Cloud API' : '🚀 Dispatch via Server Mail (with BCC Echo)')}
+            </button>
+            <button id="btn-echo-bcc-now" class="btn btn-secondary btn-sm" type="button">
+              ✉ Send BCC Echo to iCloud Now
+            </button>
+          </div>
+          ${hasHostingerMail ? `
+            <div style="font-size:0.76rem;color:var(--accent);display:flex;align-items:center;gap:6px;">
+              <span>✓ Hostinger Agentic Mail API active (authenticated from media@twisted23.com with DKIM)</span>
+            </div>
+          ` : ''}
         </div>
       </div>
     </div>

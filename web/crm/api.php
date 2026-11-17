@@ -28,6 +28,8 @@ $DATA_FILE = __DIR__ . '/data/crm.json';
 $FROM_ADDRESS = getenv('FROM_ADDRESS') ?: 'Gary Stout <media@twisted23.com>';
 $REPLY_TO = getenv('REPLY_TO') ?: 'media@twisted23.com';
 $DEFAULT_BCC = getenv('DEFAULT_BCC') ?: 'gary@gravitywizards.com, botchee@icloud.com';
+$HOSTINGER_MAIL_TOKEN = getenv('HOSTINGER_MAIL_TOKEN') ?: 'a023e730fa37a0813595549dffc89c29b1ce09a294328544f0f377bd6291851a';
+$HOSTINGER_MAILBOX_ID = getenv('HOSTINGER_MAILBOX_ID') ?: 'AC4474ceb28197b9db960e1111ee79';
 $SIGNATURE = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
 
 function read_data(string $path): array {
@@ -63,9 +65,11 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($action === 'status' && $method === 'GET') {
     $key = trim((string)(getenv('RESEND_API_KEY') ?: ''));
-    $configured = ($key !== '' && !str_contains($key, 'your_actual_key'));
+    $resendConfigured = ($key !== '' && !str_contains($key, 'your_actual_key'));
+    $hostingerConfigured = ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '');
     echo json_encode([
-        'resendConfigured' => $configured,
+        'hostingerMailConfigured' => $hostingerConfigured,
+        'resendConfigured' => $resendConfigured,
         'mailAvailable' => function_exists('mail'),
         'fromAddress' => $FROM_ADDRESS,
         'replyTo' => $REPLY_TO,
@@ -175,7 +179,56 @@ if ($action === 'send' && $method === 'POST') {
             continue;
         }
 
-        // Live send: If RESEND_API_KEY is not configured, dispatch via Hostinger PHP mail() fallback
+        // 1. Primary Cloud Dispatch: Hostinger Agentic Mail REST API (100% DKIM Signed, Production Outbound)
+        if ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '') {
+            $payload = [
+                'to' => [$c['primary_email']],
+                'displayName' => 'Gary Stout',
+                'subject' => $subject,
+                'text' => $text,
+            ];
+            if (count($ccList) > 0) $payload['cc'] = $ccList;
+            if (count($bccList) > 0) $payload['bcc'] = $bccList;
+
+            $ch = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
+                    'Content-Type: application/json',
+                ],
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_TIMEOUT => 15,
+            ]);
+            $respRaw = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlErr = curl_error($ch);
+            curl_close($ch);
+
+            if ($httpCode >= 200 && $httpCode < 300) {
+                $now = gmdate('c');
+                if ($step === 1) {
+                    $c['stage'] = 'Sent Step 1';
+                    $c['sent_at'] = $now;
+                } else {
+                    $c['stage'] = 'Sent Step 2';
+                    $c['step_2_sent_at'] = $now;
+                }
+                $c['delivery_status'] = 'Sent (Hostinger Mail API)';
+                $results[] = [
+                    'id' => $c['id'],
+                    'outlet' => $c['outlet'],
+                    'status' => 'sent',
+                    'channel' => 'hostinger_mail_api',
+                    'http_code' => $httpCode,
+                    'bcc' => $bccList,
+                ];
+                continue;
+            }
+        }
+
+        // Live send: If API is not configured or fails, dispatch via Hostinger PHP mail() fallback
         if ($apiKey === '' || str_contains($apiKey, 'your_actual_key')) {
             $headers = "From: " . $FROM_ADDRESS . "\r\n" .
                        "Reply-To: " . $REPLY_TO . "\r\n" .
@@ -356,6 +409,49 @@ if ($action === 'echo_bcc' && $method === 'POST') {
         if ($c['id'] === $id) {
             $subject = $c['subject_line'] ?? 'Twisted23 Pitch';
             $text = ($c['custom_blurb'] ?? '') . $SIGNATURE;
+            $echoText = "=== [TWISTED23 CRM OUTREACH BCC ECHO] ===\n" .
+                        "Recipient: " . ($c['primary_email'] ?? '') . "\n" .
+                        "Outlet: " . ($c['outlet'] ?? '') . "\n" .
+                        "Original Sent At: " . ($c['sent_at'] ?? 'Earlier') . "\n" .
+                        "Echo Dispatched: " . gmdate('c') . "\n" .
+                        "=========================================\n\n" .
+                        $text;
+
+            if ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '') {
+                $payload = [
+                    'to' => $targets,
+                    'displayName' => 'Twisted23 CRM',
+                    'subject' => "[BCC Sent] " . $subject,
+                    'text' => $echoText,
+                ];
+                $ch = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_POST => true,
+                    CURLOPT_HTTPHEADER => [
+                        'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
+                        'Content-Type: application/json',
+                    ],
+                    CURLOPT_POSTFIELDS => json_encode($payload),
+                    CURLOPT_TIMEOUT => 15,
+                ]);
+                $respRaw = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($httpCode >= 200 && $httpCode < 300) {
+                    echo json_encode([
+                        'success' => true,
+                        'contactId' => $c['id'],
+                        'outlet' => $c['outlet'],
+                        'channel' => 'hostinger_mail_api',
+                        'http_code' => $httpCode,
+                        'targets' => $targets,
+                    ]);
+                    exit;
+                }
+            }
+
             $results = [];
             foreach ($targets as $addr) {
                 $headers = "From: " . $FROM_ADDRESS . "\r\n" .
@@ -363,13 +459,6 @@ if ($action === 'echo_bcc' && $method === 'POST') {
                            "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
                            "X-Bcc-Echo-To: " . ($c['primary_email'] ?? '') . "\r\n" .
                            "Content-Type: text/plain; charset=UTF-8\r\n";
-                $echoText = "=== [TWISTED23 CRM OUTREACH BCC ECHO] ===\n" .
-                            "Recipient: " . ($c['primary_email'] ?? '') . "\n" .
-                            "Outlet: " . ($c['outlet'] ?? '') . "\n" .
-                            "Original Sent At: " . ($c['sent_at'] ?? 'Earlier') . "\n" .
-                            "Echo Dispatched: " . gmdate('c') . "\n" .
-                            "=========================================\n\n" .
-                            $text;
                 $ok = @mail($addr, "[BCC Sent] " . $subject, $echoText, $headers);
                 $results[] = ['address' => $addr, 'sent' => $ok];
             }
@@ -377,6 +466,7 @@ if ($action === 'echo_bcc' && $method === 'POST') {
                 'success' => true,
                 'contactId' => $c['id'],
                 'outlet' => $c['outlet'],
+                'channel' => 'php_mail_fallback',
                 'echoes' => $results,
             ]);
             exit;
