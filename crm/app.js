@@ -1,5 +1,6 @@
 let state = { contacts: [], derbies: [], triage: [] };
 let activeContactId = null;
+let serverStatus = { resendConfigured: false };
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -176,6 +177,7 @@ async function runSendBatch(ids, dryRun) {
 
 async function refresh() {
   const [status, data] = await Promise.all([api('api.php?action=status'), api('api.php?action=state')]);
+  serverStatus = status;
   state = data;
   const badge = $('#resend-badge');
   if (status.resendConfigured) {
@@ -215,30 +217,217 @@ $('#filter-stage').addEventListener('change', renderContacts);
 $('#drawer-close').addEventListener('click', closeDrawer);
 $('#modal-close').addEventListener('click', () => ($('#modal-backdrop').hidden = true));
 
+function showDrawerNotice(msg, type = 'ok') {
+  const el = $('#drawer-notice');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = `status-pill ${type === 'ok' ? 'status-ok' : 'status-warn'}`;
+  el.style.display = 'block';
+  setTimeout(() => {
+    if (el) el.style.display = 'none';
+  }, 4000);
+}
+
+async function handleSaveContact() {
+  if (!activeContactId) return;
+  const saveBtn = $('#d-save') || $('#drawer-form button[type="submit"]');
+  const origText = saveBtn ? saveBtn.textContent : 'Save Changes';
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+  }
+  try {
+    const updated = await api(`api.php?action=contact&id=${encodeURIComponent(activeContactId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        stage: $('#d-stage').value,
+        cc_email: $('#d-cc').value,
+        bcc_email: $('#d-bcc').value,
+        subject_line: $('#d-subject').value,
+        custom_blurb: $('#d-blurb').value,
+        notes: $('#d-notes').value,
+      }),
+    });
+    const idx = state.contacts.findIndex((x) => x.id === activeContactId);
+    if (idx !== -1) {
+      state.contacts[idx] = { ...state.contacts[idx], ...updated };
+    }
+    renderMetrics();
+    renderContacts();
+    if (saveBtn) {
+      saveBtn.textContent = '✓ Saved!';
+    }
+    showDrawerNotice('✓ Changes saved to CRM!', 'ok');
+    setTimeout(() => {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = origText;
+      }
+    }, 1500);
+  } catch (err) {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = origText;
+    }
+    showDrawerNotice(`Save failed: ${err.message}`, 'warn');
+  }
+}
+
+async function markContactSentStep1(contactId, deliveryStatus = 'Sent Step 1') {
+  try {
+    const updated = await api(`api.php?action=contact&id=${encodeURIComponent(contactId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        stage: 'Sent Step 1',
+        delivery_status: deliveryStatus,
+        sent_at: new Date().toISOString(),
+      }),
+    });
+    const idx = state.contacts.findIndex((x) => x.id === contactId);
+    if (idx !== -1) {
+      state.contacts[idx] = { ...state.contacts[idx], ...updated };
+    }
+    if (activeContactId === contactId) {
+      $('#d-stage').value = 'Sent Step 1';
+    }
+    renderMetrics();
+    renderContacts();
+    showDrawerNotice('✓ Stage updated to Sent Step 1!', 'ok');
+    return true;
+  } catch (err) {
+    showModal('Error', `<p class="status-pill status-warn">Failed to update stage: ${escapeHtml(err.message)}</p>`);
+    return false;
+  }
+}
+
+function openSendStep1Dispatcher(contactId) {
+  const c = state.contacts.find((x) => x.id === contactId);
+  if (!c) return;
+
+  const to = c.primary_email || '';
+  const cc = c.cc_email || '';
+  const bcc = c.bcc_email || 'gary@gravitywizards.com';
+  const subject = c.subject_line || 'Twisted23 & Flipping Dice';
+  const blurb = c.custom_blurb || '';
+  const signature = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
+  const fullBody = blurb + signature;
+
+  const mailtoParams = new URLSearchParams();
+  if (cc) mailtoParams.set('cc', cc);
+  if (bcc) mailtoParams.set('bcc', bcc);
+  mailtoParams.set('subject', subject);
+  mailtoParams.set('body', fullBody);
+  const mailtoUrl = `mailto:${encodeURIComponent(to)}?${mailtoParams.toString()}`;
+
+  const hasResend = !!serverStatus.resendConfigured;
+
+  const modalHtml = `
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;">Dispatch Step 1 Outreach</div>
+        <h3 style="margin:4px 0 0;font-size:1.15rem;">${escapeHtml(c.outlet)}</h3>
+      </div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.83rem;display:flex;flex-direction:column;gap:5px;">
+        <div><strong>To:</strong> <code>${escapeHtml(to || '(No email set)')}</code></div>
+        ${cc ? `<div><strong>CC:</strong> <code>${escapeHtml(cc)}</code></div>` : ''}
+        <div><strong>BCC:</strong> <code>${escapeHtml(bcc)}</code> <span style="color:var(--accent);font-size:0.75rem;font-weight:600;">(Spy Echo Active)</span></div>
+        <div><strong>Subject:</strong> ${escapeHtml(subject)}</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <a id="btn-launch-mailto" href="${escapeHtml(mailtoUrl)}" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;">
+            ✉ Launch in Mail App (Pre-filled with BCC) &amp; Mark Sent Step 1 ↗
+          </a>
+          <span style="font-size:0.76rem;color:var(--muted);">Opens your native Mac/iOS Mail client with To, CC, BCC, Subject &amp; Pitch ready to send.</span>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px;">
+          <button id="btn-copy-outreach" class="btn btn-secondary" type="button">
+            📋 Copy Email to Clipboard
+          </button>
+          <button id="btn-mark-sent-only" class="btn btn-secondary" type="button">
+            ✓ Mark Stage as "Sent Step 1"
+          </button>
+        </div>
+
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px;">
+          ${hasResend ? `
+            <button id="btn-dispatch-resend" class="btn btn-primary btn-sm" type="button">
+              🚀 Dispatch via Resend Cloud API
+            </button>
+          ` : `
+            <div style="font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span class="status-pill status-warn" style="font-size:0.72rem;">Resend API Key Not Configured</span>
+              <span>Use <strong>Launch in Mail App</strong> above to send directly with BCC.</span>
+            </div>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+
+  showModal('Send Step 1 — Outreach Dispatcher', modalHtml);
+
+  const launchBtn = $('#btn-launch-mailto');
+  if (launchBtn) {
+    launchBtn.addEventListener('click', async () => {
+      await markContactSentStep1(contactId, 'Sent (Mail App / iCloud)');
+      setTimeout(() => { $('#modal-backdrop').hidden = true; }, 800);
+    });
+  }
+
+  const copyBtn = $('#btn-copy-outreach');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const copyText = `To: ${to}\nCC: ${cc}\nBCC: ${bcc}\nSubject: ${subject}\n\n${fullBody}`;
+      try {
+        await navigator.clipboard.writeText(copyText);
+        copyBtn.textContent = '✓ Copied to Clipboard!';
+      } catch (e) {
+        copyBtn.textContent = 'Copy failed';
+      }
+      setTimeout(() => { copyBtn.textContent = '📋 Copy Email to Clipboard'; }, 2000);
+    });
+  }
+
+  const markBtn = $('#btn-mark-sent-only');
+  if (markBtn) {
+    markBtn.addEventListener('click', async () => {
+      await markContactSentStep1(contactId, 'Sent Step 1 (Manual)');
+      $('#modal-backdrop').hidden = true;
+    });
+  }
+
+  const resendBtn = $('#btn-dispatch-resend');
+  if (resendBtn) {
+    resendBtn.addEventListener('click', async () => {
+      $('#modal-backdrop').hidden = true;
+      runSendBatch([contactId], false);
+    });
+  }
+}
+
 $('#drawer-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (!activeContactId) return;
-  await api(`api.php?action=contact&id=${encodeURIComponent(activeContactId)}`, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      stage: $('#d-stage').value,
-      cc_email: $('#d-cc').value,
-      bcc_email: $('#d-bcc').value,
-      subject_line: $('#d-subject').value,
-      custom_blurb: $('#d-blurb').value,
-      notes: $('#d-notes').value,
-    }),
-  });
-  await refresh();
-  closeDrawer();
+  await handleSaveContact();
 });
+
+const saveBtnEl = $('#d-save');
+if (saveBtnEl) {
+  saveBtnEl.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await handleSaveContact();
+  });
+}
 
 $('#d-preview').addEventListener('click', () => {
   if (activeContactId) runSendBatch([activeContactId], true);
 });
 
 $('#d-send-one').addEventListener('click', () => {
-  if (activeContactId) runSendBatch([activeContactId], false);
+  if (activeContactId) openSendStep1Dispatcher(activeContactId);
 });
 
 $('#btn-dry-run-2').addEventListener('click', () => {
@@ -247,8 +436,12 @@ $('#btn-dry-run-2').addEventListener('click', () => {
 });
 
 $('#btn-send-2').addEventListener('click', () => {
-  const next2 = state.contacts.filter((c) => c.stage === 'Queued' && c.primary_email).slice(0, 2).map((c) => c.id);
-  runSendBatch(next2, false);
+  const nextQueued = state.contacts.find((c) => c.stage === 'Queued' && c.primary_email);
+  if (nextQueued) {
+    openSendStep1Dispatcher(nextQueued.id);
+  } else {
+    showModal('Send Step 1', '<p class="status-pill status-info">No contacts currently queued for Step 1.</p>');
+  }
 });
 
 $('#btn-add-contact').addEventListener('click', () => {
