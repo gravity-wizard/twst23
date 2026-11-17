@@ -26,13 +26,50 @@
       "angle": "Subjective/Creator-to-Creator: 3D-in-2D Die Math & Flash Rescue",
       "subject_line": "Database submission + Puzzle archaeology & 3D-in-2D cube geometry (Tophat Sudoku & Flipping Dice)",
       "custom_blurb": "Hi Thinky Games team, I was reading your 'How we choose what to cover' guidelines and loved your focus on subjective team curiosity and pure puzzle mechanics, so I wanted to submit our browser-playable spatial lab (https://flippingdice.twisted23.com) to your database and share two interconnected stories: (1) Flipping Dice & The 3D-in-2D Die Geometry Lab\u2014encoding all 24 valid cube orientations (opposite faces = 7) directly onto a 2D face (TF = Top * 10 + Front) with an Untimed Thinky Mode, Axle-Locked (7-1-7-5) Learning Lab, and embedded 24-slot diagonal Twisted 23 puzzle; and (2) Rescuing Tophat Sudoku by tapping the orphaned Flash database of tophatpuzzle.com after its developer Domas vanished, and fixing its logic to guarantee unique solutions.",
-      "stage": "Queued",
-      "delivery_status": "Not Sent",
+      "stage": "Auto-Acknowledged",
+      "delivery_status": "Auto-Acknowledged",
       "resend_id": null,
-      "sent_at": null,
+      "sent_at": "2026-11-17T21:40:00+00:00",
       "step_2_sent_at": null,
-      "notes": "",
-      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
+      "notes": "Auto-acknowledgments confirmed from Joe at Thinky Games (Editorial & Database desks). Step 2 follow-up eligible in 3 days.",
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com",
+      "auto_acknowledged": true,
+      "auto_acknowledged_at": "2026-11-17T23:25:00+00:00",
+      "last_reply": {
+        "id": "REP-thinky-editorial",
+        "type": "auto",
+        "classification": "Auto-Acknowledged",
+        "from": "editorial@thinkygames.com",
+        "from_name": "Joe (Thinky Games)",
+        "subject": "Re: Database submission + Puzzle archaeology & 3D-in-2D cube geometry (Tophat Sudoku & Flipping Dice)",
+        "snippet": "Hi there,\n\nThank you for your email! We aren't always able to reply to every email we receive, but please understand that we do read them even if we don't necessarily respond. We will get in touch if we need anything from you.\n\nThanks once again,\n\nJoe\nThinky Games\n\n---\n[Auto-Ack #2 from Database Desk]:\nHi there,\n\nThank you for your email! We get a lot of emails so can't always reply to everything, but we will absolutely be in touch if we need any further information from you.\n\nThanks for being part of this wonderful thinky community!\n\nJoe\nThinky Games",
+        "received_at": "2026-11-17T23:25:00+00:00",
+        "reason": "auto-acknowledgment body keywords"
+      },
+      "replies": [
+        {
+          "id": "REP-thinky-editorial",
+          "type": "auto",
+          "classification": "Auto-Acknowledged",
+          "from": "editorial@thinkygames.com",
+          "from_name": "Joe (Thinky Games)",
+          "subject": "Re: Database submission + Puzzle archaeology & 3D-in-2D cube geometry (Tophat Sudoku & Flipping Dice)",
+          "snippet": "Hi there,\n\nThank you for your email! We aren't always able to reply to every email we receive, but please understand that we do read them even if we don't necessarily respond. We will get in touch if we need anything from you.\n\nThanks once again,\n\nJoe\nThinky Games",
+          "received_at": "2026-11-17T23:25:00+00:00",
+          "reason": "auto-acknowledgment body keywords"
+        },
+        {
+          "id": "REP-thinky-database",
+          "type": "auto",
+          "classification": "Auto-Acknowledged",
+          "from": "database@thinkygames.com",
+          "from_name": "Joe (Thinky Games)",
+          "subject": "Re: Database submission + Puzzle archaeology & 3D-in-2D cube geometry (Tophat Sudoku & Flipping Dice)",
+          "snippet": "Hi there,\n\nThank you for your email! We get a lot of emails so can't always reply to everything, but we will absolutely be in touch if we need any further information from you.\n\nThanks for being part of this wonderful thinky community!\n\nJoe\nThinky Games",
+          "received_at": "2026-11-17T23:25:10+00:00",
+          "reason": "auto-acknowledgment body keywords"
+        }
+      ]
     },
     {
       "id": "GW-C007",

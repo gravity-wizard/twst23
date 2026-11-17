@@ -557,18 +557,43 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
 
         foreach ($data['contacts'] as &$c) {
             $cEmail = strtolower($c['primary_email'] ?? $c['email'] ?? '');
-            $normCEmail = preg_replace('/\+[^@]+/', '', $cEmail);
-            $cParts = explode('@', $cEmail);
-            $cDomain = strtolower($cParts[1] ?? '');
             $cSubject = strtolower($c['subject_line'] ?? '');
+            $cOutlet = strtolower($c['outlet'] ?? '');
 
-            // 1. Direct or plus-normalized email match
-            $emailMatch = ($cEmail !== '' && ($cEmail === strtolower($fromEmail) || $normCEmail === $normFromEmail));
+            // Collect all emails associated with this contact (primary + all CCs)
+            $contactEmails = [];
+            if ($cEmail !== '') $contactEmails[] = $cEmail;
+            if (!empty($c['cc_email'])) {
+                foreach (explode(',', (string)$c['cc_email']) as $ccPart) {
+                    $trimmed = strtolower(trim($ccPart));
+                    if ($trimmed !== '') $contactEmails[] = $trimmed;
+                }
+            }
 
-            // 2. Domain match (for organizational replies from company domains)
-            $domainMatch = ($cDomain !== '' && $fromDomain !== '' && $cDomain === $fromDomain && !in_array($fromDomain, ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com']));
+            // 1. Direct or plus-normalized email match across primary and CCs
+            $emailMatch = false;
+            foreach ($contactEmails as $ce) {
+                $normCe = preg_replace('/\+[^@]+/', '', $ce);
+                if ($ce === strtolower($fromEmail) || $normCe === $normFromEmail) {
+                    $emailMatch = true;
+                    break;
+                }
+            }
 
-            // 3. Subject match (e.g. Steel Media autoresponder quoting our exact subject)
+            // 2. Domain match across any contact email
+            $domainMatch = false;
+            if ($fromDomain !== '' && !in_array($fromDomain, ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com', 'hotmail.com'], true)) {
+                foreach ($contactEmails as $ce) {
+                    $ceParts = explode('@', $ce);
+                    $ceDomain = strtolower($ceParts[1] ?? '');
+                    if ($ceDomain !== '' && $ceDomain === $fromDomain) {
+                        $domainMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            // 3. Subject match (e.g. autoresponders quoting our subject)
             $subjectMatch = false;
             if ($cSubject !== '' && $subjectLower !== '') {
                 $cleanSub = preg_replace('/^(re|fwd):\s*/i', '', $subjectLower);
@@ -579,7 +604,16 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
                 }
             }
 
-            if ($emailMatch || $subjectMatch || $domainMatch) {
+            // 4. Outlet name match in sender name or body
+            $outletMatch = false;
+            if ($cOutlet !== '') {
+                $shortOutlet = trim(preg_replace('/\s*\(.*?\)/', '', $cOutlet));
+                if (strlen($shortOutlet) >= 5 && (str_contains(strtolower($fromName), strtolower($shortOutlet)) || str_contains($snippetLower, strtolower($shortOutlet)))) {
+                    $outletMatch = true;
+                }
+            }
+
+            if ($emailMatch || $subjectMatch || $domainMatch || $outletMatch) {
                 $c['delivery_status'] = $statusVal;
                 $c['stage'] = $stageVal;
                 $c['last_reply'] = $replyObj;
