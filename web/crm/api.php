@@ -317,6 +317,7 @@ if ($action === 'send' && $method === 'POST') {
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POST => true,
+                CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
                 CURLOPT_HTTPHEADER => [
                     'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
                     'Content-Type: application/json',
@@ -378,6 +379,7 @@ if ($action === 'send' && $method === 'POST') {
                     'http_code' => $httpCode,
                     'bcc' => $bccList,
                 ];
+                usleep(300000); // 300ms pause between batch sends to prevent rate limits
                 continue;
             }
         }
@@ -741,6 +743,7 @@ if ($action === 'echo_bcc' && $method === 'POST') {
                 curl_setopt_array($ch, [
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_POST => true,
+                    CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
                     CURLOPT_HTTPHEADER => [
                         'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
                         'Content-Type: application/json',

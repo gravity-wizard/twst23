@@ -226,7 +226,12 @@ async function runSendBatch(ids, dryRun, step = 1) {
       .map(
         (r) => `
       <div class="preview-block">
-        <strong>${escapeHtml(r.outlet)}</strong> (${escapeHtml(r.status)})
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <strong>${escapeHtml(r.outlet)}</strong>
+          <span class="status-pill ${r.status === 'sent' ? 'status-ok' : (r.status === 'dry_run' ? 'status-info' : 'status-warn')}">
+            ${r.status === 'sent' ? '✓ Dispatched (Hostinger Mail API)' : escapeHtml(r.status)}
+          </span>
+        </div>
         ${r.to ? `<div><code>To: ${escapeHtml(r.to)}</code> ${r.cc?.length ? `<code>CC: ${escapeHtml(r.cc.join(', '))}</code>` : ''} ${r.bcc?.length ? `<code>BCC: ${escapeHtml(r.bcc.join(', '))}</code>` : ''}</div>` : ''}
         ${r.subject ? `<div><strong>Subject:</strong> ${escapeHtml(r.subject)}</div>` : ''}
         ${r.preview ? `<pre>${escapeHtml(r.preview)}</pre>` : ''}
@@ -751,19 +756,16 @@ function openSendBatchDispatcher(contacts) {
       ${contactsHtml}
 
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
-        <button id="btn-dispatch-batch-server" class="btn btn-primary" type="button" style="padding:10px 16px;font-size:0.92rem;">
+        <button id="btn-dispatch-batch-server" class="btn btn-primary" type="button" style="padding:12px 18px;font-size:0.95rem;font-weight:600;">
           ${hasHostingerMail ? `🚀 Dispatch Both (${count} Outlets) via Hostinger Mail API` : `🚀 Dispatch Both (${count} Outlets) via Server`}
         </button>
         <span style="font-size:0.76rem;color:var(--muted);text-align:center;">
           Authenticated from <code>media@twisted23.com</code> with DKIM signing &amp; guaranteed BCC echo to <code>botchee@icloud.com</code> &amp; <code>gary@gravitywizards.com</code>.
         </span>
 
-        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;">
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
           <button id="btn-mark-batch-sent" class="btn btn-secondary btn-sm" type="button">
             ✓ Mark Both as "Sent Step 1" (Manual)
-          </button>
-          <button id="btn-send-first-only" class="btn btn-secondary btn-sm" type="button">
-            Send Just First One (#1 Only) ↗
           </button>
         </div>
       </div>
@@ -775,7 +777,8 @@ function openSendBatchDispatcher(contacts) {
   const dispatchBatchBtn = $('#btn-dispatch-batch-server');
   if (dispatchBatchBtn) {
     dispatchBatchBtn.addEventListener('click', async () => {
-      $('#modal-backdrop').hidden = true;
+      dispatchBatchBtn.disabled = true;
+      dispatchBatchBtn.textContent = `⏳ Dispatching ${count} Outlets via Hostinger Mail API...`;
       await runSendBatch(contacts.map((c) => c.id), false, 1);
     });
   }
@@ -783,6 +786,8 @@ function openSendBatchDispatcher(contacts) {
   const markBatchBtn = $('#btn-mark-batch-sent');
   if (markBatchBtn) {
     markBatchBtn.addEventListener('click', async () => {
+      markBatchBtn.disabled = true;
+      markBatchBtn.textContent = 'Marking sent...';
       for (const c of contacts) {
         await api(`api.php?action=contact&id=${encodeURIComponent(c.id)}`, {
           method: 'PATCH',
@@ -791,13 +796,6 @@ function openSendBatchDispatcher(contacts) {
       }
       await refresh();
       $('#modal-backdrop').hidden = true;
-    });
-  }
-
-  const sendFirstBtn = $('#btn-send-first-only');
-  if (sendFirstBtn) {
-    sendFirstBtn.addEventListener('click', () => {
-      openSendStep1Dispatcher(contacts[0].id);
     });
   }
 }
