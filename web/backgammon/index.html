@@ -911,6 +911,16 @@
         <button class="btn-mode active" id="btnModeBot">🤖 vs Night0WL Bot</button>
         <button class="btn-mode" id="btnModeHvh">👥 Pass & Play (HvH)</button>
       </div>
+      <div class="mode-toggle-group" title="Bot AI Difficulty">
+        <button class="btn-mode" id="btnEloNovice">Novice</button>
+        <button class="btn-mode active" id="btnEloClub">Club</button>
+        <button class="btn-mode" id="btnEloGM">Night0WL GM</button>
+      </div>
+      <div class="mode-toggle-group" title="3D-in-2D Dice Variant">
+        <button class="btn-mode active" id="btnDiceStandard">🎲 1–6</button>
+        <button class="btn-mode" id="btnDiceAxle2345">AxLe {2,3,4,5}</button>
+        <button class="btn-mode" id="btnDiceAxle1256">AxLe {1,2,5,6}</button>
+      </div>
       <button class="btn-secondary" id="btnDoubleCube">✖️ Offer Doubling Cube</button>
       <button class="btn-secondary" id="btnNewGame">🔄 New Game</button>
       <a href="LearningLab/" class="btn-secondary">🦉 36-Roll Equity Lab &rarr;</a>
@@ -956,22 +966,32 @@
     // Audio Clack Synthesizer
     let audioCtx = null;
     function initAudio() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      try {
+        if (!audioCtx) {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (Ctx) audioCtx = new Ctx();
+        }
+      } catch (e) { /* ignore audio errors */ }
     }
     function playClack(freq = 460) {
-      initAudio();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.frequency.setValueAtTime(freq, now);
-      osc.frequency.exponentialRampToValueAtTime(110, now + 0.07);
-      gain.gain.setValueAtTime(0.35, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + 0.085);
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended' && typeof audioCtx.resume === 'function') {
+          audioCtx.resume().catch(() => {});
+        }
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.07);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.085);
+      } catch (e) { /* ignore WebAudio failures on restricted browsers */ }
     }
 
     // In-game Floating Toast Notification
@@ -1016,9 +1036,9 @@
 
     function setDiceVariant(variant) {
       diceVariant = variant;
-      document.getElementById('btnDiceStandard').classList.toggle('active', variant === 'standard');
-      document.getElementById('btnDiceAxle2345').classList.toggle('active', variant === 'axle_1_6');
-      document.getElementById('btnDiceAxle1256').classList.toggle('active', variant === 'axle_3_4');
+      document.getElementById('btnDiceStandard')?.classList.toggle('active', variant === 'standard');
+      document.getElementById('btnDiceAxle2345')?.classList.toggle('active', variant === 'axle_1_6');
+      document.getElementById('btnDiceAxle1256')?.classList.toggle('active', variant === 'axle_3_4');
 
       const varNames = { standard: 'Standard 1–6', axle_1_6: 'AxLe [1–6] {2, 3, 4, 5}', axle_3_4: 'AxLe [3–4] {1, 2, 5, 6}' };
       showToast(`🎲 Dice switched to ${varNames[variant]}`);
@@ -1028,9 +1048,9 @@
 
     function setBotElo(elo) {
       botElo = elo;
-      document.getElementById('btnEloNovice').classList.toggle('active', elo === 'novice');
-      document.getElementById('btnEloClub').classList.toggle('active', elo === 'club');
-      document.getElementById('btnEloGM').classList.toggle('active', elo === 'gm');
+      document.getElementById('btnEloNovice')?.classList.toggle('active', elo === 'novice');
+      document.getElementById('btnEloClub')?.classList.toggle('active', elo === 'club');
+      document.getElementById('btnEloGM')?.classList.toggle('active', elo === 'gm');
 
       const eloNames = { novice: 'Novice (1100 ELO)', club: 'Club (1550 ELO)', gm: 'Night0WL Grandmaster (2050 ELO)' };
       showToast(`🤖 Bot difficulty: ${eloNames[elo]}`);
@@ -1480,45 +1500,53 @@
       if (isBotMoving || diceRemaining.length > 0) return;
       if (gameMode === 'bot' && turn !== 'white') return;
 
-      const active = turn;
-      document.getElementById('btnRollDice').disabled = true;
+      const btnRoll = document.getElementById('btnRollDice');
+      try {
+        const active = turn;
+        btnRoll.disabled = true;
 
-      const d1 = getRandomDie();
-      const d2 = getRandomDie();
-      renderDiceCanvases(d1, d2);
+        const d1 = getRandomDie();
+        const d2 = getRandomDie();
+        renderDiceCanvases(d1, d2);
 
-      const isDoubles = d1 === d2;
-      diceRemaining = isDoubles ? [d1, d1, d1, d1] : [d1, d2];
+        const isDoubles = d1 === d2;
+        diceRemaining = isDoubles ? [d1, d1, d1, d1] : [d1, d2];
 
-      const pLabel = active === 'white' ? (gameMode === 'hvh' ? 'Player 1 (White)' : 'You') : 'Player 2 (Red)';
-      if (isDoubles) {
-        logAction('🎲 ' + pLabel + ' rolled DOUBLE ' + d1 + "s! You have 4 moves of " + d1 + '.');
-      } else {
-        logAction('🎲 ' + pLabel + ' rolled ' + d1 + ' and ' + d2 + '. You have 2 moves.');
-      }
+        const pLabel = active === 'white' ? (gameMode === 'hvh' ? 'Player 1 (White)' : 'You') : 'Player 2 (Red)';
+        if (isDoubles) {
+          logAction('🎲 ' + pLabel + ' rolled DOUBLE ' + d1 + "s! You have 4 moves of " + d1 + '.');
+        } else {
+          logAction('🎲 ' + pLabel + ' rolled ' + d1 + ' and ' + d2 + '. You have 2 moves.');
+        }
 
-      if (!hasAnyLegalMove(active)) {
-        const nextName = (active === 'white' && gameMode === 'bot') ? 'Night0WL Bot' : (active === 'white' ? 'Player 2' : 'Player 1');
-        logAction('No legal moves possible for ' + d1 + ' & ' + d2 + '. Turn passes to ' + nextName + '.');
-        document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — No Legal Moves`;
-        document.getElementById('statusDesc').textContent = `No legal moves available. Turn passes to ${nextName}...`;
-        renderBoard();
-        setTimeout(advanceTurn, 1400);
-        return;
-      }
+        if (!hasAnyLegalMove(active)) {
+          const nextName = (active === 'white' && gameMode === 'bot') ? 'Night0WL Bot' : (active === 'white' ? 'Player 2' : 'Player 1');
+          logAction('No legal moves possible for ' + d1 + ' & ' + d2 + '. Turn passes to ' + nextName + '.');
+          document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — No Legal Moves`;
+          document.getElementById('statusDesc').textContent = `No legal moves available. Turn passes to ${nextName}...`;
+          renderBoard();
+          setTimeout(advanceTurn, 1400);
+          return;
+        }
 
-      // Auto-select or highlight movable checkers so board immediately responds
-      const movable = getMovableSources(active);
-      if (bar[active] > 0) {
-        selectSource('bar');
-        document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — Re-enter from Bar`;
-        document.getElementById('statusDesc').textContent = `Must enter from the bar. Tap a green target dot to enter.`;
-      } else if (movable.length > 0) {
-        selectSource(movable[0]);
-        document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — ${pLabel}'s Move`;
-        document.getElementById('statusDesc').textContent = `Point ${movable[0]} selected. Tap a green target dot to move, or click another glowing checker.`;
-      } else {
-        renderBoard();
+        // Auto-select or highlight movable checkers so board immediately responds
+        const movable = getMovableSources(active);
+        if (bar[active] > 0) {
+          selectSource('bar');
+          document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — Re-enter from Bar`;
+          document.getElementById('statusDesc').textContent = `Must enter from the bar. Tap a green target dot to enter.`;
+        } else if (movable.length > 0) {
+          selectSource(movable[0]);
+          document.getElementById('statusHead').textContent = `🎲 Rolled [${d1}, ${d2}] — ${pLabel}'s Move`;
+          document.getElementById('statusDesc').textContent = `Point ${movable[0]} selected. Tap a green target dot to move, or click another glowing checker.`;
+        } else {
+          renderBoard();
+        }
+      } catch (err) {
+        console.error('Roll error:', err);
+        diceRemaining = [];
+        btnRoll.disabled = false;
+        showToast('⚠️ Roll interrupted — please click Roll again.');
       }
     };
 
@@ -1931,10 +1959,11 @@
     }
 
     // Render 3D Dice Canvases
-    function renderDiceCanvases(d1, d2) {
-      playClack(turn === 'white' ? 520 : 380);
+    function renderDiceCanvases(d1, d2, playSound = true) {
+      if (playSound) playClack(turn === 'white' ? 520 : 380);
       const cv1 = document.getElementById('bgDie1');
       const cv2 = document.getElementById('bgDie2');
+      if (!cv1 || !cv2) return;
       const ctx1 = cv1.getContext('2d');
       const ctx2 = cv2.getContext('2d');
       ctx1.clearRect(0, 0, cv1.width, cv1.height);
@@ -2016,28 +2045,32 @@
 
     
     // AxLeLocked Dice & Bot ELO Event Listeners
-    document.getElementById('btnDiceStandard').onclick = () => setDiceVariant('standard');
-    document.getElementById('btnDiceAxle2345').onclick = () => setDiceVariant('axle_1_6');
-    document.getElementById('btnDiceAxle1256').onclick = () => setDiceVariant('axle_3_4');
+    const bindClick = (id, fn) => {
+      const el = document.getElementById(id);
+      if (el) el.onclick = fn;
+    };
+    bindClick('btnDiceStandard', () => setDiceVariant('standard'));
+    bindClick('btnDiceAxle2345', () => setDiceVariant('axle_1_6'));
+    bindClick('btnDiceAxle1256', () => setDiceVariant('axle_3_4'));
 
-    document.getElementById('btnEloNovice').onclick = () => setBotElo('novice');
-    document.getElementById('btnEloClub').onclick = () => setBotElo('club');
-    document.getElementById('btnEloGM').onclick = () => setBotElo('gm');
+    bindClick('btnEloNovice', () => setBotElo('novice'));
+    bindClick('btnEloClub', () => setBotElo('club'));
+    bindClick('btnEloGM', () => setBotElo('gm'));
 
-    document.getElementById('btnModeBot').onclick = () => setGameMode('bot');
-    document.getElementById('btnModeHvh').onclick = () => setGameMode('hvh');
+    bindClick('btnModeBot', () => setGameMode('bot'));
+    bindClick('btnModeHvh', () => setGameMode('hvh'));
 
-    document.getElementById('btnPlayAgain').onclick = () => {
+    bindClick('btnPlayAgain', () => {
       document.getElementById('victoryModal').classList.remove('open');
       setupStandardBoard();
-    };
+    });
 
-    document.getElementById('btnNewGame').onclick = () => {
+    bindClick('btnNewGame', () => {
       setupStandardBoard();
-    };
+    });
 
     // Initial Load
-    renderDiceCanvases(5, 3);
+    renderDiceCanvases(5, 3, false);
     setupStandardBoard();
   </script>
 </body>
