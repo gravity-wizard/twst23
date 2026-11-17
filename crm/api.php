@@ -361,6 +361,15 @@ if ($action === 'webhooks_resend' && $method === 'POST') {
 
 if ($action === 'webhooks_hostinger' && $method === 'POST') {
     $rawBody = file_get_contents('php://input');
+    $secret = getenv('HOSTINGER_WEBHOOK_SECRET') ?: '';
+    if ($secret !== '') {
+        $sig = $_SERVER['HTTP_X_HOSTINGER_SIGNATURE'] ?? $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? '';
+        $sig = preg_replace('/^sha256=/i', '', $sig);
+        $expected = hash_hmac('sha256', $rawBody, $secret);
+        if ($sig !== '' && !hash_equals($expected, $sig)) {
+            fail(401, 'Invalid webhook signature');
+        }
+    }
     $event = json_decode($rawBody, true) ?: [];
     $fromEmail = trim($event['from']['email'] ?? $event['fromEmail'] ?? $event['sender'] ?? '');
     $fromName = trim($event['from']['name'] ?? $event['fromName'] ?? $fromEmail);
