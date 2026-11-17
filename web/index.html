@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TWISTED23 PARLOUR • Lounge | 24-Tile Shape &amp; Live 3D-in-2D Flipping Dice</title>
+  <link rel="canonical" href="https://twisted23.com/" />
+  <meta name="description" content="Twisted23 Parlour: 24-Tile Shape, 3D-in-2D Orthographic Flipping Dice, Backgammon 36-Roll Lab, CameLcase Hangman, and STEM spatial puzzle games." />
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="apple-touch-icon" href="./icon.png" />
+  <style>
+    :root {
+      --bg-parlour-top: #121738;
+      --bg-parlour-mid: #161D42;
+      --bg-parlour-bot: #0D1128;
+      --wood-frame: #271907;
+      --wood-border: #6D4917;
+      --wood-tile: #D5C19D;
+      --wood-tile-hi: #EAE0CA;
+      --wood-tile-shadow: #8E744B;
+      --amber: #F59E0B;
+      --amber-bright: #FBB10D;
+      --die-1: #FA7D0C;
+      --die-2: #2A60C9;
+      --die-3: #E7391C;
+      --die-4: #24BDCB;
+      --die-5: #DE1BE2;
+      --die-6: #FBB10D;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at 25% 20%, #1F295C 0%, var(--bg-parlour-mid) 48%, var(--bg-parlour-bot) 100%);
+      color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* TOP PARLOUR NAVBAR (Matches Screenshot + Adds FlippingDice & Base38) */
+    .parlour-topbar-wrap {
+      width: 100%;
+      background: rgba(11, 14, 32, 0.92);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      padding: 12px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+    }
+
+    .parlour-topbar {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #F59E0B, #7C3AED);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.45);
+    }
+
+    .brand-name {
+      font-size: 1.28rem;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #F8FAFC;
+    }
+
+    .badge-parlour {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.22);
+      color: #A5B4FC;
+      border: 1px solid rgba(129, 140, 248, 0.35);
+    }
+
+    .btn-lounge {
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      color: #FBB10D;
+      font-weight: 700;
+      font-size: 0.84rem;
+      text-decoration: none;
+    }
+
+    /* WHITE PILL NAV TABS (From Screenshot) */
+    .nav-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .nav-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 74px;
+      padding: 6px 12px;
+      background: #F8FAFC;
+      color: #334155;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1.15;
+      border: 2px solid transparent;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .nav-pill:hover {
+      transform: translateY(-2px);
+      border-color: #F59E0B;
+      color: #0F172A;
+    }
+
+    .nav-pill.highlight {
+      background: #FEF3C7;
+      border-color: #F59E0B;
+      color: #78350F;
+    }
+
+    .nav-pill .ico {
+      font-size: 1.05rem;
+      margin-bottom: 2px;
+    }
+
+    .right-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .base38-pill {
+      padding: 6px 11px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      color: #34D399;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .home-box {
+      padding: 6px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #F59E0B;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    /* HERO SECTION */
+    .hero-section {
+      max-width: 1200px;
+      width: 100%;
+      padding: 38px 24px 26px;
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 36px;
+      align-items: center;
+    }
+
+    @media (max-width: 960px) {
+      .hero-section {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .hero-left {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    .tagline-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #FBB10D;
+      font-weight: 700;
+      font-size: 0.86rem;
+      margin-bottom: 18px;
+    }
+
+    .hero-headline {
+      font-family: Georgia, "Times New Roman", Times, serif;
+      font-size: clamp(2.5rem, 4.8vw, 4rem);
+      font-weight: 900;
+      line-height: 1.06;
+      margin: 0 0 18px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-headline .amber {
+      color: #F59E0B;
+      display: block;
+    }
+
+    .hero-lead {
+      font-size: 1.08rem;
+      line-height: 1.6;
+      color: #CBD5E1;
+      max-width: 540px;
+      margin: 0 0 24px 0;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .btn-primary-amber {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #FBB10D 0%, #D97706 100%);
+      color: #0F172A;
+      font-weight: 800;
+      font-size: 0.96rem;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
+      transition: transform 0.14s ease;
+    }
+
+    .btn-primary-amber:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary-indigo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 20px;
+      border-radius: 12px;
+      background: rgba(67, 56, 202, 0.35);
+      border: 1px solid rgba(129, 140, 248, 0.45);
+      color: #E0E7FF;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: transform 0.14s ease, background 0.14s ease;
+    }
+
+    .btn-secondary-indigo:hover {
+      transform: translateY(-2px);
+      background: rgba(67, 56, 202, 0.55);
+    }
+
+    .btn-outline-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #F8FAFC;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+
+    /* RIGHT COLUMN: TWISTED WOODEN PARLOUR FRAME WITH 24-TILE SHAPE & FLIPPING DICE */
+    .parlour-frame-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 14px;
+    }
+
+    .wooden-frame {
+      background: linear-gradient(145deg, #2C1D0B 0%, #1E1306 100%);
+      border: 3px solid var(--wood-border);
+      border-radius: 26px;
+      padding: 20px 22px 18px;
+      box-shadow:
+        0 26px 60px rgba(0, 0, 0, 0.65),
+        inset 0 2px 10px rgba(255, 210, 120, 0.12);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      transform: rotate(-11deg);
+      max-width: 470px;
+      width: 100%;
+    }
+
+    .wooden-frame.untwisted {
+      transform: rotate(0deg);
+    }
+
+    .wooden-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #D6B882;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.84rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    /* 6x6 Grid that renders the Unique 24-Tile Shape (2-4-6-6-4-2) OR 4x6 Twisted Frame */
+    .shape24-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 54px);
+      grid-template-rows: repeat(6, 54px);
+      gap: 7px;
+      justify-content: center;
+      margin: 6px auto 12px;
+    }
+
+    .shape24-grid.rect4x6 {
+      grid-template-columns: repeat(6, 54px);
+      grid-template-rows: repeat(4, 54px);
+    }
+
+    @media (max-width: 480px) {
+      .shape24-grid,
+      .shape24-grid.rect4x6 {
+        grid-template-columns: repeat(6, 44px);
+      }
+      .shape24-grid {
+        grid-template-rows: repeat(6, 44px);
+      }
+      .shape24-grid.rect4x6 {
+        grid-template-rows: repeat(4, 44px);
+      }
+    }
+
+    .void-cell {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .wood-tile {
+      border-radius: 10px;
+      background: linear-gradient(180deg, var(--wood-tile-hi) 0%, var(--wood-tile) 100%);
+      border: 2px solid #9D8258;
+      box-shadow: 0 4px 0 var(--wood-tile-shadow), 0 6px 12px rgba(0, 0, 0, 0.4);
+      color: #1C1308;
+      font-weight: 900;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.14s ease, filter 0.14s ease;
+      position: relative;
+      padding: 0;
+    }
+
+    .wood-tile:hover {
+      filter: brightness(1.08);
+      transform: scale(1.05);
+    }
+
+    .wood-tile .upright-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.45s ease;
+      transform: rotate(11deg);
+    }
+
+    .wooden-frame.untwisted .wood-tile .upright-inner {
+      transform: rotate(0deg);
+    }
+
+    .wood-tile.empty-slot {
+      background: rgba(15, 9, 3, 0.58);
+      border: 1.5px dashed rgba(214, 184, 130, 0.35);
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.65);
+      cursor: default;
+    }
+
+    .wood-tile.die-slot {
+      background: radial-gradient(circle, #183B78 0%, #09193A 100%);
+      border: 2px solid #FBB10D;
+      box-shadow: 0 0 14px rgba(251, 177, 13, 0.45), 0 4px 0 #78350F;
+      overflow: hidden;
+    }
+
+    .wood-tile.die-slot canvas {
+      width: 50px;
+      height: 50px;
+      display: block;
+    }
+
+    .frame-controls {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .frame-pill-btn {
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      color: #FBB10D;
+      font-weight: 800;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .frame-pill-btn:hover {
+      background: rgba(245, 158, 11, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .frame-caption {
+      text-align: center;
+      font-size: 0.77rem;
+      color: #E2C893;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    /* CHOOSE YOUR TABLE • GAMES IN TOWN SHOWCASE */
+    .tables-section {
+      max-width: 1200px;
+      width: 100%;
+      padding: 28px 24px 48px;
+    }
+
+    .tables-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .tables-header h2 {
+      font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      margin: 0 0 8px 0;
+    }
+
+    .tables-header h2 .amber {
+      color: #F59E0B;
+    }
+
+    .tables-header p {
+      margin: 0;
+      color: #94A3B8;
+      font-size: 1.02rem;
+    }
+
+    .tables-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 20px;
+    }
+
+    .table-card {
+      background: linear-gradient(160deg, rgba(26, 34, 74, 0.92) 0%, rgba(15, 20, 48, 0.96) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .table-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(245, 158, 11, 0.65);
+    }
+
+    .table-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .table-icon-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .table-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.45rem;
+    }
+
+    .table-title {
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: #F8FAFC;
+    }
+
+    .table-sub {
+      font-size: 0.75rem;
+      color: #FBB10D;
+      font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .table-tag {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38BDF8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .table-desc {
+      font-size: 0.88rem;
+      line-height: 1.52;
+      color: #CBD5E1;
+      margin: 0 0 16px 0;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-table-play {
+      flex: 1;
+      text-align: center;
+      padding: 9px 14px;
+      border-radius: 10px;
+      background: #F59E0B;
+      color: #0F172A;
+      font-weight: 800;
+      font-size: 0.84rem;
+      text-decoration: none;
+    }
+
+    .btn-table-lab {
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #E2E8F0;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-decoration: none;
+    }
+
+    /* THESIS & ECOSYSTEM FOOTER */
+    .thesis-banner {
+      max-width: 1152px;
+      width: calc(100% - 48px);
+      margin: 0 auto 36px;
+      background: linear-gradient(135deg, rgba(24, 34, 78, 0.95), rgba(40, 26, 70, 0.92));
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 20px;
+      padding: 20px 24px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+    }
+  
+    /* Parlour Modal Overlay & Auth Styles */
+    .parlour-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(3, 7, 18, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+    }
+    .parlour-modal-overlay.open { display: flex; }
+    .parlour-modal-box {
+      background: #0b1528;
+      border: 2px solid #38bdf8;
+      border-radius: 20px;
+      padding: 2rem 2.2rem;
+      max-width: 440px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 0 50px rgba(56, 189, 248, 0.35);
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 14px; right: 18px;
+      background: none; border: none;
+      color: #94a3b8; font-size: 1.5rem;
+      cursor: pointer; line-height: 1;
+    }
+    .modal-close-btn:hover { color: #fff; }
+    .modal-title { font-size: 1.35rem; color: #fff; font-weight: 900; margin-bottom: 0.5rem; }
+    .modal-subtitle { color: #94a3b8; font-size: 0.88rem; margin-bottom: 1.25rem; line-height: 1.45; }
+    .modal-form-group { margin-bottom: 1rem; text-align: left; }
+    .modal-form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: #cbd5e1; margin-bottom: 4px; }
+    .modal-input {
+      width: 100%;
+      background: #070f20;
+      border: 1px solid #1e3a8a;
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .modal-input:focus { border-color: #38bdf8; }
+    .modal-btn-submit {
+      width: 100%;
+      background: #f59e0b;
+      color: #000;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 9999px;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+    }
+    .modal-btn-submit:hover { filter: brightness(1.1); }
+    .modal-quick-links {
+      display: flex; gap: 8px; justify-content: center; margin-top: 1rem; flex-wrap: wrap;
+    }
+    .modal-quick-pill {
+      background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-size: 0.76rem;
+      font-weight: 700; padding: 0.3rem 0.65rem; border-radius: 9999px; cursor: pointer;
+    }
+    .modal-quick-pill:hover { border-color: #f59e0b; color: #f59e0b; }
+    .modal-tab-bar {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid #1e3a8a;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+    }
+    .modal-tab-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .modal-tab-btn:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .modal-tab-btn.active {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+    }
+    .modal-tab-panel { display: none; }
+    .modal-tab-panel.active { display: block; }
+    .modal-select {
+      width: 100%;
+      background: #070f20;
+      border: 1px solid #1e3a8a;
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      color: #fff;
+      font-size: 0.92rem;
+      outline: none;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .modal-select:focus { border-color: #38bdf8; }
+    .member-id-tag {
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .user-session-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid #38bdf8;
+      color: #f8fafc;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .user-session-badge.admin {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.18);
+    }
+    .btn-mini-action {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0 4px;
+      line-height: 1;
+    }
+    .btn-mini-action:hover { color: #ef4444; }
+
+  </style>
+</head>
+<body>
+  <!-- TOP PARLOUR NAVIGATION BAR -->
+  <div class="parlour-topbar-wrap">
+    <div class="parlour-topbar">
+      <div class="brand-cluster">
+        <a href="./" style="background:#f59e0b; color:#000; font-weight:900; font-size:0.95rem; padding:0.45rem 1.1rem; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center; gap:5px; margin-right:6px; box-shadow:0 3px 10px rgba(245,158,11,0.4);">🏠 Home</a>
+        <div class="brand-logo">🎩</div>
+        <span class="brand-name">TWISTED23</span>
+        <span class="badge-parlour">PARLOUR</span>
+        <a href="./play/" class="btn-lounge" style="background:rgba(56,189,248,0.2); border-color:#38bdf8; color:#38bdf8; font-weight:800;">▶️ Play Parlour (/play/)</a>
+      </div>
+
+      <div class="nav-pills">
+        <a href="./extreme/" class="nav-pill highlight" style="background:#fdf2f8; border-color:#ec4899; color:#831843;">
+          <span class="ico">🎸</span>
+          <span>eXtreme 24</span>
+        </a>
+        <a href="./tophat/" class="nav-pill">
+          <span class="ico">🎩</span>
+          <span>Top Hat</span>
+        </a>
+        <a href="./slider/" class="nav-pill highlight">
+          <span class="ico">🌀</span>
+          <span>Twisted 23</span>
+        </a>
+        <a href="./botchee/" class="nav-pill">
+          <span class="ico">🎲</span>
+          <span>Botchee</span>
+        </a>
+        <a href="./hangman/" class="nav-pill">
+          <span class="ico">🦀</span>
+          <span>Hangman</span>
+        </a>
+        <a href="./flippingdice/" class="nav-pill highlight">
+          <span class="ico">🐬</span>
+          <span>FlippingDice</span>
+        </a>
+        <a href="./backgammon/" class="nav-pill">
+          <span class="ico">🔴⚪</span>
+          <span>Backgammon</span>
+        </a>
+        <a href="./LearningLab/" class="nav-pill">
+          <span class="ico">🦉</span>
+          <span>LearningLab</span>
+        </a>
+        <a href="/forum" target="_blank" rel="noopener" class="nav-pill" style="background:#0f172a; border-color:#38bdf8; color:#38bdf8;">
+          <span class="ico">💬</span>
+          <span>Forum</span>
+        </a>
+      </div>
+
+      <div class="right-cluster">
+        <div class="header-auth-wrap" id="headerAuth" style="display:inline-flex; align-items:center;">
+          <button class="btn-auth-pill" id="btnOpenRegister" style="background:#38bdf8; color:#0f172a; font-weight:900; padding:6px 14px; border-radius:8px; border:none; cursor:pointer; font-size:0.82rem; margin-right:5px;" onclick="openLoginModal('register')">🧝 Sign Up</button>
+          <button class="btn-auth-pill" id="btnOpenLogin" style="background:rgba(255,255,255,0.08); border:1px solid #334155; color:#cbd5e1; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.82rem; margin-right:5px;" onclick="openLoginModal('signin')">🔑 Sign In</button>
+        </div>
+        <a href="https://base38.now62.com/" target="_blank" rel="noopener" class="base38-pill" title="Live Base-38 Time Ident from https://base38.now62.com/">
+          🐸 SLog 🐬 <span id="base38IdentBadge">2OCRXG</span>
+        </a>
+        <a href="./" class="home-box">
+          🏠 twisted23.com ↗
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO SECTION: HEADLINE LEFT + TWISTED 24-TILE FRAME WITH LIVE FLIPPING DICE RIGHT -->
+  <section class="hero-section">
+    <div class="hero-left">
+      <div class="tagline-pill">
+        ✨ A classic slider &amp; 3D-in-2D dice parlour, turned sideways
+      </div>
+      <h1 class="hero-headline">
+        One empty space.
+        <span class="amber">Twenty-three ways.</span>
+      </h1>
+      <p class="hero-lead">
+        A clever shuffle and <strong>3D-in-2D flipping dice parlour</strong> inspired by the wooden puzzles and tabletop classics we grew up with. Watch live 3D dice flip inside our signature <strong>24-tile TopHat shape</strong> and twisted frame—or jump right into any table in town.
+      </p>
+
+      <div class="cta-row">
+        <a href="javascript:void(0)" onclick="openLoginModal('register')" class="btn-primary-amber" style="background:#f59e0b; color:#000; box-shadow:0 8px 24px rgba(245,158,11,0.4);">
+          🧝 Join Free (Sign Up)
+        </a>
+        <a href="/forum" target="_blank" rel="noopener" class="btn-primary-amber" style="background:rgba(56,189,248,0.18); border:1px solid #38bdf8; color:#38bdf8;">
+          💬 phpBB Forum ↗
+        </a>
+        <a href="./extreme/" class="btn-primary-amber" style="background:#ec4899; color:#fff; box-shadow:0 8px 24px rgba(236,72,153,0.4);">
+          🎸 Play eXtreme 24-Cie
+        </a>
+        <a href="./play/" class="btn-primary-amber" style="background:#38bdf8; color:#000; box-shadow:0 8px 24px rgba(56,189,248,0.35);">
+          ▶️ Full Screen Play (/play/)
+        </a>
+        <a href="./slider/" class="btn-primary-amber">
+          ▶️ Play Twisted 23
+        </a>
+        <a href="./flippingdice/" class="btn-secondary-indigo">
+          🎲 Play Flipping Dice Blitz
+        </a>
+        <a href="./tophat/" class="btn-secondary-indigo">
+          🎩 Top Hat Sudoku
+        </a>
+      </div>
+      <div class="cta-row" style="margin-bottom:0;">
+        <a href="./LearningLab/" class="btn-outline-dark">
+          🦉 Common /LearningLab (CameLcase)
+        </a>
+        <a href="#choose-table" class="btn-outline-dark">
+          🍻 All 6 Games in Town ↓
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT: INTERACTIVE TWISTED WOODEN FRAME FEATURING THE UNIQUE 24-TILE SHAPE & LIVE FLIPPING DICE -->
+    <div class="parlour-frame-stage">
+      <div class="wooden-frame" id="heroWoodenFrame">
+        <div class="wooden-hud">
+          <span>Shape: <strong id="hudShapeName" style="color:#FBB10D;">24-Tile TopHat</strong></span>
+          <span>Moves: <strong id="hudMoves">0</strong></span>
+          <span>Dice Flips: <strong id="hudFlips" style="color:#34D399;">0</strong></span>
+        </div>
+
+        <!-- 24-Tile Shape Grid with 21 Wooden Tiles + 1 Empty Space + 2 Live Flipping 3D-in-2D Dice -->
+        <div class="shape24-grid" id="heroGrid24"></div>
+
+        <div class="frame-controls">
+          <button class="frame-pill-btn" id="btnHeroFlipDice">
+            🎲 Flip Dice in Frame!
+          </button>
+          <button class="frame-pill-btn" id="btnHeroShuffle">
+            🔀 Slide &amp; Shuffle
+          </button>
+          <button class="frame-pill-btn" id="btnHeroToggleShape">
+            📐 Shape: 24-Tile Cross ↔ 4×6
+          </button>
+          <button class="frame-pill-btn" id="btnHeroToggleTwist">
+            🌀 Frame Twist: ON
+          </button>
+        </div>
+        <div class="frame-caption" id="heroFrameStatus">
+          💡 Two live 3D-in-2D dice flip inside the twisted 24-tile frame! Click any die to flip it, or click a tile next to the empty space to slide.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHOOSE YOUR TABLE • GAMES IN TOWN (ALL 6 SUBDOMAINS + COMMON LEARNINGLAB) -->
+  <section class="tables-section" id="choose-table">
+    <div class="tables-header">
+      <h2>CHOOSE <span class="amber">YOUR TABLE</span> · Games in town</h2>
+      <p>The familiar puzzle is only the beginning. Pick a game—or explore its dedicated <code>/LearningLab</code>—and make yourself at home.</p>
+    </div>
+
+    <div class="tables-grid">
+      <!-- 1. SLIDER -->
+      <div class="table-card">
+        <div>
+          <div class="table-top">
+            <div class="table-icon-title">
+              <div class="table-icon">🌀</div>
+              <div>
+                <div class="table-title">Twisted 23 Slider</div>
+                <div class="table-sub">slider.Twisted23.com</div>
+              </div>
+            </div>
+            <span class="table-tag">24 Spaces • 23 Tiles</span>
+          </div>
+          <p class="table-desc">
+            Our signature 24-space spatial puzzle tilted onto its diagonal axis. Slide 1, 2, 3, or 5 tiles in a single move with mathematically guaranteed solvable permutation parity.
+          </p>
+        </div>
+        <div class="table-actions">
+          <a href="./slider/" class="btn-table-play">▶️ Play Slider Table</a>
+          <a href="./slider/LearningLab/" class="btn-table-lab">🦉 Slider LearningLab</a>
+        </div>
+      </div>
+
+      <!-- 2. TOPHAT -->
+      <div class="table-card">
+        <div>
+          <div class="table-top">
+            <div class="table-icon-title">
+              <div class="table-icon">🎩</div>
+              <div>
+                <div class="table-title">Top Hat Sudoku</div>
+                <div class="table-sub">tophat.Twisted23.com</div>
+              </div>
+            </div>
+            <span class="table-tag">Unique 24-Tile Shape</span>
+          </div>
+          <p class="table-desc">
+            Rescued from the Adobe Flash graveyard (<code>tophatpuzzle.com</code> by Domas) and re-engineered with the signature 24-tile TopHat geometry and guaranteed unique solutions.
+          </p>
+        </div>
+        <div class="table-actions">
+          <a href="./tophat/" class="btn-table-play">▶️ Play Top Hat Table</a>
+          <a href="./tophat/LearningLab/" class="btn-table-lab">🦉 TopHat LearningLab</a>
+        </div>
+      </div>
+
+      <!-- 3. FLIPPING DICE -->
+      <div class="table-card">
+        <div>
+          <div class="table-top">
+            <div class="table-icon-title">
+              <div class="table-icon">🎲</div>
+              <div>
+                <div class="table-title">Flipping Dice Blitz</div>
+                <div class="table-sub">flippingdice.Twisted23.com</div>
+              </div>
+            </div>
+            <span class="table-tag">3D-in-2D • 6 Levels</span>
+          </div>
+          <p class="table-desc">
+            3D dice rendered in crisp 2D invites Lady Luck to the parlour! Master the <code>AxleLocked</code> 7-1-7-5 trainer, tap between dice for 2X Double-Flips, and trigger Dolphin celebrations.
+          </p>
+        </div>
+        <div class="table-actions">
+          <a href="./flippingdice/" class="btn-table-play">▶️ Play Flipping Dice</a>
+          <a href="./flippingdice/LearningLab/" class="btn-table-lab">🦉 FlippingDice LearningLab</a>
+        </div>
+      </div>
+
+      <!-- 4. BOTCHEE -->
+      <div class="table-card">
+        <div>
+          <div class="table-top">
+            <div class="table-icon-title">
+              <div class="table-icon">🎯</div>
+              <div>
+                <div class="table-title">Botchee 4×4 &amp; Xtreme</div>
+                <div class="table-sub">botchee.Twisted23.com</div>
+              </div>
+            </div>
+            <span class="table-tag">24-Tile Yacht &amp; FOBBs</span>
+          </div>
+          <p class="table-desc">
+            Roll and flip 5 Twisted23 3D-in-2D dice across the 24-tile Botchee board to lock Full Houses, Straights, and 5-of-a-Kind Botchee—bridging digital play with GravityWizards FOBBs.
+          </p>
+        </div>
+        <div class="table-actions">
+          <a href="./botchee/" class="btn-table-play">▶️ Play Botchee Table</a>
+          <a href="./botchee/LearningLab/" class="btn-table-lab">🦉 Botchee LearningLab</a>
+        </div>
+      </div>
+
+      <!-- 5. HANGMAN -->
+      <div class="table-card">
+        <div>
+          <div class="table-top">
+            <div class="table-icon-title">
+              <div class="table-icon">🦀</div>
+              <div>
+                <div class="table-title">CameLcase Hangman</div>
+                <div class="table-sub">hangman.Twisted23.com</div>
+              </div>
+            </div>
+            <span class="table-tag">Night0WL Typography</span>
+          </div>
+          <p class="table-desc">
+            A familiar word classic with a Night0WL twist: discover why capital <code>L</code> rules over ambiguous little <code>l</code> while testing Shannon vowel-first information entropy.
+          </p>
+        </div>
+        <div class="table-actions">
+          <a href="./hangman/" class="btn-table-play">▶️ Play Hangman Table</a>
+          <a href="./hangman/LearningLab/" class="btn-table-lab">🦉 Hangman LearningLab</a>
+        </div>
+      </div>
+
+      <!-- 6. BACKGAMMON -->
+      <div class="table-card">
+        <div>
+          <div class="table-top">
+            <div class="table-icon-title">
+              <div class="table-icon">🔴⚪</div>
+              <div>
+                <div class="table-title">Backgammon 36-Roll Lab</div>
+                <div class="table-sub">backgammon.Twisted23.com</div>
+              </div>
+            </div>
+            <span class="table-tag">6×6 Two-Dice Matrix</span>
+          </div>
+          <p class="table-desc">
+            Explore the 36-outcome two-dice matrix behind Backgammon: visualize exact blot-hit odds from 1 to 12 pips, the 11/36 rule, and the 25% Doubling Cube take point.
+          </p>
+        </div>
+        <div class="table-actions">
+          <a href="./backgammon/" class="btn-table-play">▶️ Play Backgammon Lab</a>
+          <a href="./backgammon/LearningLab/" class="btn-table-lab">🦉 Backgammon LearningLab</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMON LEARNINGLAB CALLOUT BAR -->
+    <div style="margin-top:22px; background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.95)); border:1px solid rgba(52,211,153,0.45); border-radius:18px; padding:18px 22px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;">
+      <div style="flex:1; min-width:260px;">
+        <div style="font-size:0.76rem; font-weight:800; color:#34D399; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:4px;">
+          🦉 Twisted23.com/LearningLab • Common Elements &amp; Foundation
+        </div>
+        <div style="font-size:0.9rem; color:#E2E8F0; line-height:1.5;">
+          Visit our central <strong><code>/LearningLab</code></strong> for the common architecture shared across all 6 tables: <strong>Lesson #1 (Why Linux is case-sensitive &amp; why Night0WL despises little <code>l</code>)</strong>, the 24-state 3D-in-2D <code>TF</code> die engine, live <a href="https://base38.now62.com/" target="_blank" rel="noopener" style="color:#34D399; font-weight:700;">base38.now62.com</a> time idents, and GravityWizards FOBBs.
+        </div>
+      </div>
+      <a href="./LearningLab/" class="btn-primary-amber" style="white-space:nowrap;">
+        🎓 Open Common /LearningLab →
+      </a>
+    </div>
+  </section>
+
+  <!-- OUR THESIS FOOTER -->
+  <section class="thesis-banner">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px;">
+      <div style="flex:1; min-width:280px;">
+        <div style="font-size:0.76rem; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:#FBB10D; margin-bottom:4px;">
+          Our Thesis • People-First Spatial Math &amp; GravityWizards.com
+        </div>
+        <div style="font-size:0.85rem; color:#E2E8F0; line-height:1.52;">
+          Early mathematical and spatial reasoning ability strongly predicts future innovation—yet cuts to public gifted and acceleration programs mean future invention rates vary nearly <strong>20-fold</strong> depending on family resources. Through free digital spatial gyms (<a href="https://www.Twisted23.com" style="color:#38BDF8; font-weight:700;">Twisted23.com</a>) and trackless bouncing <strong>FOBBs</strong> (<a href="https://gravitywizards.com" style="color:#38BDF8; font-weight:700;">GravityWizards.com</a>), we put everyday families first to help unlock America's <strong>10–55% grassroots innovation potential</strong>.
+        </div>
+      </div>
+      <div style="font-size:0.8rem; color:#93C5FD; text-align:right;">
+        <div><strong>Contact &amp; Press:</strong> <a href="mailto:juniper@slogfrog.com" style="color:#FBB10D; text-decoration:none; font-weight:800;">juniper@slogfrog.com</a></div>
+        <div style="margin-top:4px;">🐸 <code>SLog</code> ruLes 🐬 • <a href="https://base38.now62.com/" target="_blank" rel="noopener" style="color:#34D399;">base38.now62.com</a></div>
+        <div style="margin-top:6px; font-size:0.75rem; color:#94A3B8;">
+          <a href="./backgammon/" style="color:#E2E8F0;">Backgammon</a> &bull;
+          <a href="./hangman/" style="color:#E2E8F0;">Hangman</a> &bull;
+          <a href="https://gravitywizards.com/" style="color:#38BDF8;">Gravity Wizards</a> &bull;
+          <a href="./sitemap.xml" style="color:#94A3B8;">Sitemap</a> &bull;
+          <a href="./llms.txt" style="color:#94A3B8;">llms.txt</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    import {
+      VALID_TFS,
+      DIRECTIONS,
+      getEndTF,
+      renderDie2D,
+      getBase38TimeIdent,
+      SLog
+    } from './dice3d2d.js';
+
+    /**
+     * THE UNIQUE 24-TILE TOPHAT / BOTCHEE / TWISTED23 SHAPE (2-4-6-6-4-2 = 24 spaces!)
+     * In a 6x6 bounding matrix:
+     * - Row 0: cols 2, 3 (2 cells — Top Hat!)
+     * - Row 1: cols 1, 2, 3, 4 (4 cells)
+     * - Row 2: cols 0, 1, 2, 3, 4, 5 (6 cells — Left & Right Ears!)
+     * - Row 3: cols 0, 1, 2, 3, 4, 5 (6 cells — Left & Right Ears!)
+     * - Row 4: cols 1, 2, 3, 4 (4 cells)
+     * - Row 5: cols 2, 3 (2 cells — Bottom Hat!)
+     * Total = 2 + 4 + 6 + 6 + 4 + 2 = 24 spaces!
+     */
+    const SHAPE24_COORDS = [
+      [0, 2], [0, 3],
+      [1, 1], [1, 2], [1, 3], [1, 4],
+      [2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5],
+      [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [3, 5],
+      [4, 1], [4, 2], [4, 3], [4, 4],
+      [5, 2], [5, 3]
+    ];
+
+    const RECT24_COORDS = [];
+    for (let r = 0; r < 4; r++) {
+      for (let c = 0; c < 6; c++) {
+        RECT24_COORDS.push([r, c]);
+      }
+    }
+
+    let useShape24 = true; // Default to the unique 24-tile shape!
+    let isTwisted = true;  // Default to twisted frame!
+    let movesCount = 0;
+    let flipsCount = 0;
+
+    // 24 items in the 24 slots:
+    // Slots 1..21 are wooden numbers, Slot 8 & Slot 15 are LIVE 3D-in-2D FLIPPING DICE, Slot 23 is empty (0)
+    let slots = [
+      1, 2,
+      3, 4, 5, 6,
+      7, 8, { type: 'die', id: 'dieA', tf: 12, dir: DIRECTIONS.RIGHT, angle: 0 }, 10, 11, 12,
+      13, 14, 15, { type: 'die', id: 'dieB', tf: 62, dir: DIRECTIONS.LEFT, angle: 0 }, 17, 18,
+      19, 20, 21, 22,
+      23, 0
+    ];
+
+    const dieCanvases = {};
+    const gridEl = document.getElementById('heroGrid24');
+    const frameEl = document.getElementById('heroWoodenFrame');
+
+    function getActiveCoords() {
+      return useShape24 ? SHAPE24_COORDS : RECT24_COORDS;
+    }
+
+    function renderHeroBoard() {
+      gridEl.className = useShape24 ? 'shape24-grid' : 'shape24-grid rect4x6';
+      gridEl.innerHTML = '';
+      const coords = getActiveCoords();
+      const rows = useShape24 ? 6 : 4;
+      const cols = 6;
+
+      // Map (r,c) -> slot index 0..23
+      const coordMap = new Map();
+      coords.forEach(([r, c], idx) => coordMap.set(`${r},${c}`, idx));
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const key = `${r},${c}`;
+          if (!coordMap.has(key)) {
+            const voidDiv = document.createElement('div');
+            voidDiv.className = 'void-cell';
+            gridEl.appendChild(voidDiv);
+            continue;
+          }
+          const idx = coordMap.get(key);
+          const item = slots[idx];
+          const btn = document.createElement('button');
+
+          if (item === 0) {
+            btn.className = 'wood-tile empty-slot';
+          } else if (typeof item === 'object' && item.type === 'die') {
+            btn.className = 'wood-tile die-slot';
+            btn.title = 'Click to flip this 3D-in-2D die (or slide if next to empty space)!';
+            const inner = document.createElement('div');
+            inner.className = 'upright-inner';
+            const cv = document.createElement('canvas');
+            cv.width = 100;
+            cv.height = 100;
+            inner.appendChild(cv);
+            btn.appendChild(inner);
+            dieCanvases[item.id] = cv;
+            btn.onclick = () => handleSlotClick(idx, true);
+          } else {
+            btn.className = 'wood-tile';
+            btn.innerHTML = `<span class="upright-inner">${item}</span>`;
+            btn.onclick = () => handleSlotClick(idx, false);
+          }
+          gridEl.appendChild(btn);
+        }
+      }
+
+      document.getElementById('hudMoves').textContent = movesCount;
+      document.getElementById('hudFlips').textContent = flipsCount;
+      document.getElementById('hudShapeName').textContent = useShape24 ? '24-Tile TopHat' : '4×6 Twisted';
+      drawHeroDice();
+    }
+
+    function drawHeroDice() {
+      for (const item of slots) {
+        if (typeof item === 'object' && item.type === 'die') {
+          const cv = dieCanvases[item.id];
+          if (!cv) continue;
+          const ctx = cv.getContext('2d');
+          ctx.clearRect(0, 0, cv.width, cv.height);
+          renderDie2D(ctx, {
+            x: 6,
+            y: 6,
+            size: 88,
+            tf: item.tf,
+            direction: item.dir,
+            angleDeg: item.angle,
+            showOrientationCompass: item.angle === 0
+          });
+        }
+      }
+    }
+
+    function triggerDieFlip(dieObj, customDir = null) {
+      if (dieObj.angle > 0) return; // Already mid-flip
+      const dirs = [DIRECTIONS.RIGHT, DIRECTIONS.LEFT, DIRECTIONS.UP, DIRECTIONS.DOWN];
+      dieObj.dir = customDir || dirs[Math.floor(Math.random() * dirs.length)];
+      dieObj.angle = 5;
+      flipsCount++;
+      document.getElementById('hudFlips').textContent = flipsCount;
+    }
+
+    function handleSlotClick(clickedIdx, isDie) {
+      const coords = getActiveCoords();
+      const emptyIdx = slots.indexOf(0);
+      const [rClick, cClick] = coords[clickedIdx];
+      const [rEmpty, cEmpty] = coords[emptyIdx];
+      const manhattan = Math.abs(rClick - rEmpty) + Math.abs(cClick - cEmpty);
+
+      // If adjacent to the empty space, slide into the empty space!
+      if (manhattan === 1) {
+        const clickedItem = slots[clickedIdx];
+        slots[emptyIdx] = clickedItem;
+        slots[clickedIdx] = 0;
+        movesCount++;
+        if (isDie) {
+          // Also flip the die in the direction it moved!
+          const dir = cEmpty > cClick ? DIRECTIONS.RIGHT
+            : cEmpty < cClick ? DIRECTIONS.LEFT
+            : rEmpty < rClick ? DIRECTIONS.UP : DIRECTIONS.DOWN;
+          triggerDieFlip(clickedItem, dir);
+        }
+        renderHeroBoard();
+        document.getElementById('heroFrameStatus').textContent = isDie
+          ? `🎲 Rolled & flipped 3D die into the empty slot! (Moves: ${movesCount})`
+          : `✨ Slid tile ${clickedItem} into the empty space!`;
+        return;
+      }
+
+      // If clicking a die anywhere else, flip it in place!
+      if (isDie) {
+        const dieObj = slots[clickedIdx];
+        triggerDieFlip(dieObj);
+        const nextTF = getEndTF(dieObj.tf, dieObj.dir);
+        SLog(`Hero frame die flipped TF=${dieObj.tf}->${nextTF}`);
+        document.getElementById('heroFrameStatus').textContent =
+          `🎲 Flipped 3D-in-2D Die inside the twisted frame! (Top face → ${Math.floor(nextTF / 10)})`;
+      } else {
+        document.getElementById('heroFrameStatus').textContent =
+          `💡 Click a tile adjacent to the empty space to slide, or click either 3D die to flip it!`;
+      }
+    }
+
+    // Smooth 60fps animation loop for the flipping dice inside the Hero twisted frame
+    function animateHeroDice() {
+      let anyAnimating = false;
+      for (const item of slots) {
+        if (typeof item === 'object' && item.type === 'die' && item.angle > 0) {
+          anyAnimating = true;
+          item.angle += 6;
+          if (item.angle >= 90) {
+            item.tf = getEndTF(item.tf, item.dir);
+            item.angle = 0;
+            item.dir = DIRECTIONS.STOP;
+          }
+        }
+      }
+      if (anyAnimating) {
+        drawHeroDice();
+      }
+      requestAnimationFrame(animateHeroDice);
+    }
+
+    // Autonomous eye-catching dice flips every 1.9 seconds for sporadic visitors
+    setInterval(() => {
+      const diceItems = slots.filter(it => typeof it === 'object' && it.type === 'die');
+      if (diceItems.length > 0) {
+        const pick = diceItems[Math.floor(Math.random() * diceItems.length)];
+        triggerDieFlip(pick);
+      }
+    }, 1900);
+
+    document.getElementById('btnHeroFlipDice').onclick = () => {
+      slots.forEach(it => {
+        if (typeof it === 'object' && it.type === 'die') triggerDieFlip(it);
+      });
+      SLog('Manual Double-Flip triggered in Lounge Hero Frame');
+    };
+
+    document.getElementById('btnHeroShuffle').onclick = () => {
+      const coords = getActiveCoords();
+      for (let s = 0; s < 18; s++) {
+        const emptyIdx = slots.indexOf(0);
+        const [rE, cE] = coords[emptyIdx];
+        const neighbors = [];
+        coords.forEach(([r, c], idx) => {
+          if (Math.abs(r - rE) + Math.abs(c - cE) === 1) neighbors.push(idx);
+        });
+        const pick = neighbors[Math.floor(Math.random() * neighbors.length)];
+        slots[emptyIdx] = slots[pick];
+        slots[pick] = 0;
+      }
+      movesCount = 0;
+      renderHeroBoard();
+      slots.forEach(it => {
+        if (typeof it === 'object' && it.type === 'die') triggerDieFlip(it);
+      });
+      document.getElementById('heroFrameStatus').textContent =
+        '🔀 Shuffled the 24-tile frame & flipped the 3D dice!';
+    };
+
+    document.getElementById('btnHeroToggleShape').onclick = () => {
+      useShape24 = !useShape24;
+      renderHeroBoard();
+    };
+
+    document.getElementById('btnHeroToggleTwist').onclick = (e) => {
+      isTwisted = !isTwisted;
+      frameEl.classList.toggle('untwisted', !isTwisted);
+      e.currentTarget.textContent = `🌀 Frame Twist: ${isTwisted ? 'ON' : 'OFF'}`;
+    };
+
+    // Live Base-38 Clock (https://base38.now62.com/)
+    function updateBase38() {
+      const el = document.getElementById('base38IdentBadge');
+      if (el) el.textContent = getBase38TimeIdent();
+    }
+    updateBase38();
+    setInterval(updateBase38, 1000);
+
+    SLog('Twisted23 Parlour Lounge & 24-Tile Flipping Dice Hero Initialized');
+    renderHeroBoard();
+    requestAnimationFrame(animateHeroDice);
+  
+    // ==========================================
+    // TWISTED23 PARLOUR AUTH & SESSION MANAGER
+    // ==========================================
+    let currentUser = null;
+
+    async function checkAuthSession() {
+      try {
+        const res = await fetch('/auth/auth.php?action=check_session');
+        const data = await res.json();
+        if (data.status === 'authenticated' && data.user) {
+          currentUser = data.user;
+          renderAuthPill(currentUser);
+        } else {
+          currentUser = null;
+          renderAuthPill(null);
+        }
+      } catch (e) {
+        renderAuthPill(null);
+      }
+    }
+
+    function renderAuthPill(user) {
+      const container = document.getElementById('headerAuth');
+      if (!container) return;
+      if (!user) {
+        container.innerHTML = `
+          <button class="btn-auth-pill" id="btnOpenRegister" style="background:#38bdf8; color:#0f172a; font-weight:900; padding:6px 14px; border-radius:8px; border:none; cursor:pointer; font-size:0.82rem; margin-right:5px;" onclick="openLoginModal('register')">🧝 Sign Up</button>
+          <button class="btn-auth-pill" id="btnOpenLogin" style="background:rgba(255,255,255,0.08); border:1px solid #334155; color:#cbd5e1; font-weight:700; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.82rem; margin-right:5px;" onclick="openLoginModal('signin')">🔑 Sign In</button>
+        `;
+      } else {
+        const isAdmin = user.role === 'admin';
+        const badgeClass = isAdmin ? 'user-session-badge admin' : 'user-session-badge';
+        const base38Tag = user.base38_id ? `<span class="member-id-tag" title="Verified Base-38 Member ID">${user.base38_id}</span>` : '';
+        container.innerHTML = `
+          <div class="${badgeClass}">
+            <span>${user.badge || (isAdmin ? '👑' : '🧝')}</span>
+            <span>${user.username}</span>
+            ${base38Tag}
+            <button class="btn-mini-action" id="btnLogout" title="Sign Out">✕</button>
+          </div>
+        `;
+        document.getElementById('btnLogout').onclick = handleLogout;
+      }
+    }
+
+    window.openLoginModal = function(tab = 'register') {
+      document.getElementById('loginModal').classList.add('open');
+      switchAuthTab(tab);
+    };
+
+    window.closeLoginModal = function() {
+      document.getElementById('loginModal').classList.remove('open');
+      const loginErr = document.getElementById('loginError');
+      const regErr = document.getElementById('registerError');
+      const regSucc = document.getElementById('registerSuccess');
+      if (loginErr) loginErr.textContent = '';
+      if (regErr) regErr.textContent = '';
+      if (regSucc) regSucc.textContent = '';
+    };
+
+    window.switchAuthTab = function(tab) {
+      const btnIn = document.getElementById('tabBtnSignIn');
+      const btnReg = document.getElementById('tabBtnRegister');
+      const pIn = document.getElementById('panelSignIn');
+      const pReg = document.getElementById('panelRegister');
+      if (tab === 'register') {
+        btnIn.classList.remove('active');
+        btnReg.classList.add('active');
+        pIn.classList.remove('active');
+        pReg.classList.add('active');
+      } else {
+        btnReg.classList.remove('active');
+        btnIn.classList.add('active');
+        pReg.classList.remove('active');
+        pIn.classList.add('active');
+      }
+      const loginErr = document.getElementById('loginError');
+      const regErr = document.getElementById('registerError');
+      const regSucc = document.getElementById('registerSuccess');
+      if (loginErr) loginErr.textContent = '';
+      if (regErr) regErr.textContent = '';
+      if (regSucc) regSucc.textContent = '';
+    };
+
+    window.handleLogin = async function(e) {
+      if (e) e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      const errEl = document.getElementById('loginError');
+      errEl.textContent = 'Authenticating...';
+
+      try {
+        const res = await fetch('/auth/auth.php?action=login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+        if (data.status === 'success' && data.user) {
+          currentUser = data.user;
+          renderAuthPill(currentUser);
+          closeLoginModal();
+        } else {
+          errEl.textContent = data.message || 'Login failed. Invalid credentials.';
+        }
+      } catch (err) {
+        errEl.textContent = 'Server connection failed. Check /auth/auth.php.';
+      }
+    };
+
+    window.handleRegister = async function(e) {
+      if (e) e.preventDefault();
+      const u = document.getElementById('regUsername').value.trim();
+      const p = document.getElementById('regPassword').value.trim();
+      const arch = document.getElementById('regArchetype').value;
+      const errEl = document.getElementById('registerError');
+      const succEl = document.getElementById('registerSuccess');
+      errEl.textContent = '';
+      succEl.textContent = 'Enrolling in Parlour Guild...';
+
+      try {
+        const res = await fetch('/auth/auth.php?action=register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p, archetype: arch })
+        });
+        const data = await res.json();
+        if (data.status === 'success' && data.user) {
+          currentUser = data.user;
+          renderAuthPill(currentUser);
+          succEl.textContent = '🎉 Welcome to the Guild! Entering Parlour...';
+          setTimeout(() => {
+            closeLoginModal();
+          }, 1100);
+        } else {
+          succEl.textContent = '';
+          errEl.textContent = data.message || 'Signup failed. Please try a different username.';
+        }
+      } catch (err) {
+        succEl.textContent = '';
+        errEl.textContent = 'Server connection failed. Check /auth/auth.php.';
+      }
+    };
+
+    window.handleLogout = async function() {
+      try {
+        await fetch('/auth/auth.php?action=logout', { method: 'POST' });
+      } catch (e) {}
+      currentUser = null;
+      renderAuthPill(null);
+    };
+
+    window.quickFillLogin = function(u, p) {
+      document.getElementById('loginUsername').value = u;
+      document.getElementById('loginPassword').value = p;
+    };
+
+    checkAuthSession();
+
+  </script>
+  <!-- 🐸 SLog ruLes 🐬 • https://base38.now62.com/ Time Ident: 2OCRXG -->
+  <!-- Parlour Gateway Modal (Login & Member Signup) -->
+  <div class="parlour-modal-overlay" id="loginModal">
+    <div class="parlour-modal-box">
+      <button class="modal-close-btn" onclick="closeLoginModal()">&times;</button>
+      <div class="modal-title">🏰 Twisted23 Parlour Gateway</div>
+      
+      <!-- Modal Tabs -->
+      <div class="modal-tab-bar">
+        <button class="modal-tab-btn" id="tabBtnSignIn" onclick="switchAuthTab('signin')">🔑 Sign In</button>
+        <button class="modal-tab-btn active" id="tabBtnRegister" onclick="switchAuthTab('register')">🧝 Member Signup</button>
+      </div>
+
+      <!-- Panel 1: Sign In -->
+      <div class="modal-tab-panel" id="panelSignIn">
+        <div class="modal-subtitle">Sign in to sync your profile, base-38 ident, and private forum privileges.</div>
+        <form onsubmit="handleLogin(event)">
+          <div class="modal-form-group">
+            <label for="loginUsername">Call-Sign / Username</label>
+            <input type="text" id="loginUsername" class="modal-input" placeholder="e.g. Gary, CQ, or Siea" required autocomplete="username">
+          </div>
+          <div class="modal-form-group">
+            <label for="loginPassword">Passcode</label>
+            <input type="password" id="loginPassword" class="modal-input" placeholder="Enter parlour passcode" required autocomplete="current-password">
+          </div>
+          <div id="loginError" style="color: #ef4444; font-size: 0.82rem; margin-bottom: 0.75rem; min-height: 1.1rem; text-align: left;"></div>
+          <button type="submit" class="modal-btn-submit">🔑 Sign In to Parlour</button>
+        </form>
+        <div class="modal-quick-links">
+          <span style="color:#64748b; font-size:0.75rem; align-self:center;">Demo Quick-Fill:</span>
+          <button class="modal-quick-pill" onclick="quickFillLogin('Gary', 'twisted23')">👑 Gary</button>
+          <button class="modal-quick-pill" onclick="quickFillLogin('CQ', 'slogbog23')">🦉 CQ</button>
+          <button class="modal-quick-pill" onclick="quickFillLogin('Siea', 'nightowl23')">🐬 Siea</button>
+        </div>
+      </div>
+
+      <!-- Panel 2: Member Signup -->
+      <div class="modal-tab-panel active" id="panelRegister">
+        <div class="modal-subtitle">Enroll as a verified Twisted23 member. Instantly receive your unique <strong>Base-38 Member Ident</strong>!</div>
+        <form onsubmit="handleRegister(event)">
+          <div class="modal-form-group">
+            <label for="regUsername">Choose Your Member Call-Sign</label>
+            <input type="text" id="regUsername" class="modal-input" placeholder="Letters, numbers, underscores (3-24 chars)" required minlength="3" maxlength="24">
+          </div>
+          <div class="modal-form-group">
+            <label for="regPassword">Create Passcode</label>
+            <input type="password" id="regPassword" class="modal-input" placeholder="At least 6 characters" required minlength="6">
+          </div>
+          <div class="modal-form-group">
+            <label for="regArchetype">Player Archetype</label>
+            <select id="regArchetype" class="modal-select">
+              <option value="eLeven eLve Explorer">🧝 eLeven eLve Explorer</option>
+              <option value="CameLcase Cryptographer">🦉 CameLcase Cryptographer</option>
+              <option value="High Roller">🎲 High Roller (3D-in-2D)</option>
+              <option value="Night0WL Strategist">🌙 Night0WL Strategist</option>
+            </select>
+          </div>
+          <div id="registerError" style="color: #ef4444; font-size: 0.82rem; margin-bottom: 0.5rem; min-height: 1.1rem; text-align: left;"></div>
+          <div id="registerSuccess" style="color: #34d399; font-size: 0.82rem; margin-bottom: 0.5rem; min-height: 1.1rem; text-align: left; font-weight: 700;"></div>
+          <button type="submit" class="modal-btn-submit" style="background:#38bdf8; color:#0f172a;">🧝 Create Account &amp; Claim ID</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

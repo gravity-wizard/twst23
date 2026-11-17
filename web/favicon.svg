@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#111827"/>
+  <!-- Subtle Hangman gallows/branch perch -->
+  <path d="M12 53 H52" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+  <!-- Owl body -->
+  <ellipse cx="32" cy="36" rx="16" ry="17" fill="#334155"/>
+  <!-- Owl belly -->
+  <ellipse cx="32" cy="41" rx="9" ry="10" fill="#cbd5e1"/>
+  <!-- Owl ear tufts -->
+  <polygon points="18,22 22,12 28,20" fill="#475569"/>
+  <polygon points="46,22 42,12 36,20" fill="#475569"/>
+  <!-- Owl eyes -->
+  <circle cx="25.5" cy="27" r="6" fill="#fef08a"/>
+  <circle cx="38.5" cy="27" r="6" fill="#fef08a"/>
+  <circle cx="25.5" cy="27" r="2.6" fill="#0f172a"/>
+  <circle cx="38.5" cy="27" r="2.6" fill="#0f172a"/>
+  <!-- Beak -->
+  <polygon points="32,30 29,34 35,34" fill="#f59e0b"/>
+  <!-- Tiny Hangman rope/23 accent -->
+  <circle cx="25.5" cy="26.2" r="0.9" fill="#ffffff"/>
+  <circle cx="38.5" cy="26.2" r="0.9" fill="#ffffff"/>
+</svg>
