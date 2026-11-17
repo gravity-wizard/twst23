@@ -359,6 +359,45 @@ if ($action === 'webhooks_resend' && $method === 'POST') {
     exit;
 }
 
+if ($action === 'webhooks_hostinger' && $method === 'POST') {
+    $rawBody = file_get_contents('php://input');
+    $event = json_decode($rawBody, true) ?: [];
+    $fromEmail = trim($event['from']['email'] ?? $event['fromEmail'] ?? $event['sender'] ?? '');
+    $fromName = trim($event['from']['name'] ?? $event['fromName'] ?? $fromEmail);
+    $subject = trim($event['subject'] ?? '(No Subject)');
+    $snippet = substr(trim($event['snippet'] ?? $event['text'] ?? $event['body'] ?? ''), 0, 300);
+
+    if ($fromEmail !== '') {
+        $data = read_data($DATA_FILE);
+        $matched = false;
+        foreach ($data['contacts'] as &$c) {
+            if (strtolower($c['email'] ?? '') === strtolower($fromEmail)) {
+                $c['delivery_status'] = 'Replied';
+                $c['notes'] = ($c['notes'] ? $c['notes'] . " | " : "") . "[hMail: {$subject}] {$snippet}";
+                $c['updated_at'] = gmdate('c');
+                $matched = true;
+                break;
+            }
+        }
+        if (!$matched) {
+            $data['contacts'][] = [
+                'id' => 'C' . str_pad((string)(count($data['contacts']) + 1), 3, '0', STR_PAD_LEFT),
+                'name' => $fromName,
+                'outlet' => 'Inbound Reply',
+                'email' => $fromEmail,
+                'stage' => 'Received Reply',
+                'delivery_status' => 'Replied',
+                'notes' => "[hMail: {$subject}] {$snippet}",
+                'created_at' => gmdate('c'),
+            ];
+        }
+        write_data($DATA_FILE, $data);
+    }
+    echo json_encode(['received' => true, 'from' => $fromEmail]);
+    exit;
+}
+
+
 if ($action === 'derbies' && $method === 'POST') {
     $body = json_body();
     $data = read_data($DATA_FILE);
