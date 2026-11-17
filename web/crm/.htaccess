@@ -1,0 +1,9 @@
+# Protect data, environment config, and dotfiles from direct web access
+<FilesMatch "^(\.env|\.env\.example|config\.php)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^data/ - [F,L]
+</IfModule>

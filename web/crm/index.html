@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twisted23 & Gravity Wizards — Coordination Hub</title>
+  <meta name="description" content="Shared coordination dashboard for Twisted23 media outreach, Resend delivery tracking, GPADA Air Derby ops, and puzzle bug triage." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">23</span>
+        <div>
+          <h1>Twisted23 &amp; Gravity Wizards</h1>
+          <p class="subtitle">Coordination Hub &middot; <code>media@twisted23.com</code></p>
+        </div>
+      </div>
+      <div class="topbar-status">
+        <span id="resend-badge" class="status-pill status-warn">Checking Resend&hellip;</span>
+        <button id="btn-dry-run-2" class="btn btn-secondary" type="button">Preview Next 2</button>
+        <button id="btn-send-2" class="btn btn-primary" type="button">Send Next 2</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="summary-strip" aria-label="Pipeline Summary">
+      <div class="metric">
+        <span class="metric-label">Total Contacts</span>
+        <strong id="m-total" class="metric-value">0</strong>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Queued</span>
+        <strong id="m-queued" class="metric-value">0</strong>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Sent / Active</span>
+        <strong id="m-sent" class="metric-value">0</strong>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Derby &amp; Kit Ops</span>
+        <strong id="m-derby" class="metric-value">0</strong>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Open Triage</span>
+        <strong id="m-triage" class="metric-value">0</strong>
+      </div>
+    </section>
+
+    <nav class="tabs" role="tablist" aria-label="Coordination Roles">
+      <button class="tab active" role="tab" aria-selected="true" data-tab="outreach" id="tab-outreach">Press &amp; Outreach</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="derby" id="tab-derby">Derby &amp; GPADA Ops</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="triage" id="tab-triage">Puzzle &amp; Bug Triage</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="setup" id="tab-setup">DNS &amp; Mail Setup</button>
+    </nav>
+
+    <!-- OUTREACH TAB -->
+    <section id="panel-outreach" class="panel active" role="tabpanel" aria-labelledby="tab-outreach">
+      <div class="panel-toolbar">
+        <div class="filters">
+          <input id="search-contacts" class="input" type="search" placeholder="Search outlet, email, angle&hellip;" />
+          <select id="filter-stage" class="select">
+            <option value="all">All Stages</option>
+            <option value="Queued">Queued</option>
+            <option value="Sent Step 1">Sent Step 1</option>
+            <option value="Sent Step 2">Sent Step 2</option>
+            <option value="Sent (Form Fill)">Sent (Form Fill)</option>
+            <option value="Replied">Replied</option>
+            <option value="Featured">Featured</option>
+          </select>
+        </div>
+        <button id="btn-add-contact" class="btn btn-secondary" type="button">+ Add Contact</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Outlet</th>
+              <th>Primary Email / CC</th>
+              <th>Stage</th>
+              <th>Delivery</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contacts-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DERBY OPS TAB -->
+    <section id="panel-derby" class="panel" role="tabpanel" aria-labelledby="tab-derby" hidden>
+      <div class="panel-toolbar">
+        <h2>GPADA Air Derby &amp; Free Build Kit Queue</h2>
+        <button id="btn-add-derby" class="btn btn-secondary" type="button">+ Add Derby Task</button>
+      </div>
+      <div id="derby-list" class="card-list"></div>
+    </section>
+
+    <!-- TRIAGE TAB -->
+    <section id="panel-triage" class="panel" role="tabpanel" aria-labelledby="tab-triage" hidden>
+      <div class="panel-toolbar">
+        <h2>Twisted23 &amp; Tophat Sudoku Feedback / Bug Triage</h2>
+        <button id="btn-add-triage" class="btn btn-secondary" type="button">+ Log Issue</button>
+      </div>
+      <div id="triage-list" class="card-list"></div>
+    </section>
+
+    <!-- SETUP TAB -->
+    <section id="panel-setup" class="panel" role="tabpanel" aria-labelledby="tab-setup" hidden>
+      <div class="setup-grid">
+        <article class="info-card">
+          <h3>1. Namecheap + Resend DNS</h3>
+          <p>Verify <code>twisted23.com</code> in Resend and add these records in <strong>Namecheap &rarr; Advanced DNS</strong>:</p>
+          <ul>
+            <li><strong>DKIM (TXT):</strong> Host <code>resend._domainkey</code></li>
+            <li><strong>Return-Path SPF (TXT):</strong> Host <code>send</code> &rarr; <code>v=spf1 include:amazonses.com ~all</code></li>
+            <li><strong>Return-Path MX (MX):</strong> Host <code>send</code> &rarr; Priority <code>10</code> (from Resend)</li>
+            <li><strong>DMARC (TXT):</strong> Host <code>_dmarc</code> &rarr; <code>v=DMARC1; p=none; rua=mailto:media@twisted23.com</code></li>
+          </ul>
+        </article>
+        <article class="info-card">
+          <h3>2. Replies Without Exposing <code>botchee@icloud.com</code></h3>
+          <p>Keep Namecheap Email Forwarding (<code>media@twisted23.com</code> &rarr; <code>botchee@icloud.com</code>) for inbound, and configure Apple Mail's outgoing SMTP to <code>smtp.resend.com</code> (Port <code>465</code>, SSL, user <code>resend</code>, password = API key).</p>
+        </article>
+        <article class="info-card">
+          <h3>3. Resend Webhook URL</h3>
+          <p>Point Resend Webhooks to:</p>
+          <p><code>https://twisted23.com/crm/api/webhooks/resend</code></p>
+          <p>Events: <code>email.sent</code>, <code>email.delivered</code>, <code>email.bounced</code>, <code>email.opened</code>.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- SLIDE-OVER CONTACT DRAWER -->
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <span id="drawer-id" class="mono-tag"></span>
+        <h2 id="drawer-title">Contact</h2>
+      </div>
+      <button id="drawer-close" class="btn-icon" type="button" aria-label="Close drawer">&times;</button>
+    </div>
+    <form id="drawer-form" class="drawer-body">
+      <label class="field">
+        <span>Stage</span>
+        <select id="d-stage" class="select">
+          <option value="Queued">Queued</option>
+          <option value="Sent Step 1">Sent Step 1</option>
+          <option value="Sent Step 2">Sent Step 2</option>
+          <option value="Sent (Form Fill)">Sent (Form Fill)</option>
+          <option value="Replied">Replied</option>
+          <option value="Featured">Featured</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>CC Emails</span>
+        <input id="d-cc" class="input" type="text" />
+      </label>
+      <label class="field">
+        <span>BCC Emails (Spy Echo & Archive)</span>
+        <input id="d-bcc" class="input" type="text" placeholder="gary@gravitywizards.com, botchee@icloud.com" />
+      </label>
+      <label class="field">
+        <span>Subject Line</span>
+        <input id="d-subject" class="input" type="text" />
+      </label>
+      <label class="field">
+        <span>Custom Pitch Blurb</span>
+        <textarea id="d-blurb" class="textarea" rows="7"></textarea>
+      </label>
+      <label class="field">
+        <span>Team Coordination Notes</span>
+        <textarea id="d-notes" class="textarea" rows="3"></textarea>
+      </label>
+      <div class="drawer-actions">
+        <button id="d-preview" class="btn btn-secondary" type="button">Dry Run Preview</button>
+        <button id="d-send-one" class="btn btn-primary" type="button">Send Step 1</button>
+        <button class="btn btn-secondary" type="submit">Save Changes</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- MODAL FOR PREVIEWS / QUICK ADD -->
+  <div id="modal-backdrop" class="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h3 id="modal-title">Preview</h3>
+        <button id="modal-close" class="btn-icon" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
