@@ -12,8 +12,32 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
-$EARTH_TILT_DEG = 23.44;
+function compute_earth_obliquity(float $unixSec): array {
+    $jd = ($unixSec / 86400.0) + 2440587.5;
+    $T = ($jd - 2451545.0) / 36525.0;
+    // IAU 2006 mean obliquity polynomial (41,000-yr 22.1°-24.5° cycle)
+    $eps0Arcsec = 84381.406
+        - 46.836769 * $T
+        - 0.0001831 * ($T ** 2)
+        + 0.00200340 * ($T ** 3)
+        - 5.76e-7 * ($T ** 4)
+        - 4.34e-8 * ($T ** 5);
+    // Lunar ascending node & solar longitude nutation in obliquity
+    $omegaDeg = 125.04452 - 1934.136261 * $T;
+    $lSunDeg = 280.4665 + 36000.7698 * $T;
+    $dEpsArcsec = 9.205 * cos(deg2rad($omegaDeg)) + 0.573 * cos(deg2rad(2.0 * $lSunDeg));
+    $meanDeg = $eps0Arcsec / 3600.0;
+    $trueDeg = ($eps0Arcsec + $dEpsArcsec) / 3600.0;
+    return [
+        'meanDeg' => round($meanDeg, 7),
+        'trueDeg' => round($trueDeg, 7),
+        'nutationArcsec' => round($dEpsArcsec, 3)
+    ];
+}
+
 $NOW = time();
+$EARTH_OBLIQUITY = compute_earth_obliquity(microtime(true));
+$EARTH_TILT_DEG = $EARTH_OBLIQUITY['trueDeg'];
 $ACTIVE_WINDOW = 300;   // 5 minutes = active session
 $WINDOW_24H = 86400;    // 24 hours = recent telemetry window
 
@@ -328,6 +352,9 @@ echo json_encode([
     'source' => 'live_server_telemetry',
     'serverTime' => $NOW,
     'earthTiltDeg' => $EARTH_TILT_DEG,
+    'earthMeanTiltDeg' => $EARTH_OBLIQUITY['meanDeg'],
+    'earthNutationArcsec' => $EARTH_OBLIQUITY['nutationArcsec'],
+    'earthCycleRangeDeg' => '22.1-24.5',
     'activeSessions' => count($activeSessionsMap),
     'unique24h' => count($unique24hMap),
     'hits24h' => count($events),

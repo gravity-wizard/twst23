@@ -1141,7 +1141,7 @@
               <span class="table-tag" style="background:#0284c7; color:#fff;">Live Telemetry</span>
             </div>
             <p class="table-desc" style="margin-bottom:12px;">
-              Watch genuine live parlour arrivals on our interactive 3D globe tilted at Earth&rsquo;s true 23.44&deg; axial obliquity: dot-matrix continents, active visitor pins, connection arcs, and real telemetry.
+              Watch genuine live parlour arrivals on our interactive 3D globe tilted at Earth&rsquo;s real-time instantaneous axial obliquity (22.1&deg;&ndash;24.5&deg; 41,000-yr cycle): dot-matrix continents, active visitor pins, and real telemetry.
             </p>
             <div id="homeGlobeTicker" style="font-family:ui-monospace, monospace; font-size:0.8rem; color:#38bdf8; background:rgba(15,23,42,0.75); border:1px solid #1e293b; border-radius:10px; padding:8px 12px; margin-bottom:14px;">
               🌐 Connecting global parlour telemetry...
@@ -1641,7 +1641,17 @@
       try { isHidden = localStorage.getItem(STORAGE_KEY) === '1'; } catch (_) {}
       let rafId = null;
 
-      const EARTH_TILT_RAD = (23.44 * Math.PI) / 180;
+      function getEarthAxialTiltDeg(nowMs = Date.now()) {
+        const jd = nowMs / 86400000 + 2440587.5;
+        const T = (jd - 2451545.0) / 36525.0;
+        const eps0 = 84381.406 - 46.836769 * T - 0.0001831 * T * T + 0.00200340 * T * T * T - 5.76e-7 * Math.pow(T, 4) - 4.34e-8 * Math.pow(T, 5);
+        const omega = (125.04452 - 1934.136261 * T) * Math.PI / 180;
+        const lSun = (280.4665 + 36000.7698 * T) * Math.PI / 180;
+        const dEps = 9.205 * Math.cos(omega) + 0.573 * Math.cos(2 * lSun);
+        return (eps0 + dEps) / 3600;
+      }
+      let currentTiltDeg = getEarthAxialTiltDeg();
+      let currentTiltRad = (currentTiltDeg * Math.PI) / 180;
       const gCtx = cv.getContext('2d');
       const r = 92;
       let yaw = 0.85;
@@ -1676,8 +1686,8 @@
       }
       const pings = [];
       function applyEarthTransform(x0, y0, z0) {
-        const x1 = x0 * Math.cos(EARTH_TILT_RAD) - y0 * Math.sin(EARTH_TILT_RAD);
-        const y1 = x0 * Math.sin(EARTH_TILT_RAD) + y0 * Math.cos(EARTH_TILT_RAD);
+        const x1 = x0 * Math.cos(currentTiltRad) - y0 * Math.sin(currentTiltRad);
+        const y1 = x0 * Math.sin(currentTiltRad) + y0 * Math.cos(currentTiltRad);
         const z1 = z0;
         const y2 = y1 * Math.cos(pitch) - z1 * Math.sin(pitch);
         const z2 = y1 * Math.sin(pitch) + z1 * Math.cos(pitch);
@@ -1694,12 +1704,13 @@
       function refreshHomeTicker() {
         const el = document.getElementById('homeGlobeTicker');
         if (!el) return;
+        const liveTiltStr = getEarthAxialTiltDeg().toFixed(5);
         if (recentArrivals.length === 0) {
-          el.textContent = `🌐 ${activeCount} active (24h: ${unique24h}) • 23.4° Earth Tilt`;
+          el.textContent = `🌐 ${activeCount} active (24h: ${unique24h}) • Earth Tilt: ${liveTiltStr}°`;
           return;
         }
         const c = recentArrivals[arrivalIdx % recentArrivals.length];
-        el.textContent = `${c.flag || '🌐'} ${c.city} → ${c.table} • ${activeCount} active (24h: ${unique24h})`;
+        el.textContent = `${c.flag || '🌐'} ${c.city} → ${c.table} • ${activeCount} active • Tilt: ${liveTiltStr}°`;
       }
       async function fetchHomeTelemetry(recordHit = false) {
         try {
@@ -1742,10 +1753,12 @@
           rafId = null;
           return;
         }
+        currentTiltDeg = getEarthAxialTiltDeg();
+        currentTiltRad = (currentTiltDeg * Math.PI) / 180;
         gCtx.clearRect(0, 0, cv.width, cv.height);
         const cx = cv.width / 2, cy = cv.height / 2;
 
-        // 23.44° Earth Axial Tilt Pole Line
+        // Real-Time Earth Axial Tilt Pole Line
         const nPole = applyEarthTransform(0, -r * 1.15, 0);
         const sPole = applyEarthTransform(0, r * 1.15, 0);
         gCtx.save();

@@ -11,7 +11,15 @@
   var TELEMETRY_URL = '/visitors/telemetry.php';
   var VISITORS_URL = '/visitors/';
   var STORAGE_KEY = 'twst23_visitors_widget_hidden';
-  var EARTH_TILT_RAD = (23.44 * Math.PI) / 180;
+  function getEarthAxialTiltDeg(nowMs) {
+    var jd = (nowMs || Date.now()) / 86400000 + 2440587.5;
+    var T = (jd - 2451545.0) / 36525.0;
+    var eps0 = 84381.406 - 46.836769 * T - 0.0001831 * T * T + 0.00200340 * T * T * T - 5.76e-7 * Math.pow(T, 4) - 4.34e-8 * Math.pow(T, 5);
+    var omega = (125.04452 - 1934.136261 * T) * Math.PI / 180;
+    var lSun = (280.4665 + 36000.7698 * T) * Math.PI / 180;
+    var dEps = 9.205 * Math.cos(omega) + 0.573 * Math.cos(2 * lSun);
+    return (eps0 + dEps) / 3600;
+  }
 
   if (/^\/visitors(\/index\.html|\/)?$/i.test(path)) {
     return;
@@ -242,10 +250,12 @@
     var pitch = 0.14;
     var r = 82;
     var pings = [];
+    var currentTiltDeg = getEarthAxialTiltDeg();
+    var currentTiltRad = (currentTiltDeg * Math.PI) / 180;
 
     function applyEarthTransform(x0, y0, z0) {
-      var x1 = x0 * Math.cos(EARTH_TILT_RAD) - y0 * Math.sin(EARTH_TILT_RAD);
-      var y1 = x0 * Math.sin(EARTH_TILT_RAD) + y0 * Math.cos(EARTH_TILT_RAD);
+      var x1 = x0 * Math.cos(currentTiltRad) - y0 * Math.sin(currentTiltRad);
+      var y1 = x0 * Math.sin(currentTiltRad) + y0 * Math.cos(currentTiltRad);
       var z1 = z0;
       var y2 = y1 * Math.cos(pitch) - z1 * Math.sin(pitch);
       var z2 = y1 * Math.sin(pitch) + z1 * Math.cos(pitch);
@@ -264,7 +274,7 @@
     function refreshTickerText() {
       if (!tickerEl) return;
       if (recentArrivals.length === 0) {
-        tickerEl.textContent = '\uD83C\uDF0D 23.4\u00B0 Real Live';
+        tickerEl.textContent = '\uD83C\uDF0D ' + getEarthAxialTiltDeg().toFixed(4) + '\u00B0 Real';
         return;
       }
       var item = recentArrivals[arrivalIdx % recentArrivals.length];
@@ -320,11 +330,13 @@
         rafId = null;
         return;
       }
+      currentTiltDeg = getEarthAxialTiltDeg();
+      currentTiltRad = (currentTiltDeg * Math.PI) / 180;
       gCtx.clearRect(0, 0, cv.width, cv.height);
       var cx = cv.width / 2;
       var cy = cv.height / 2;
 
-      // Earth's 23.44° tilted axis line
+      // Earth's real-time tilted axis line
       var nPole = applyEarthTransform(0, -r * 1.16, 0);
       var sPole = applyEarthTransform(0, r * 1.16, 0);
       gCtx.save();

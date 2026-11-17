@@ -217,7 +217,7 @@
 
   <main>
     <h1>World Visitors Live Globe</h1>
-    <div class="sub">Real-Time Planetary Telemetry &bull; Earth True Axial Tilt (23.44°)</div>
+    <div class="sub">Real-Time Telemetry &bull; Live Earth Axial Tilt (22.1°–24.5° / 41,000-yr Cycle)</div>
 
     <!-- KPI ROW -->
     <div class="kpi-row">
@@ -243,9 +243,9 @@
     <div class="globe-stage">
       <div class="canvas-box" id="canvasBox">
         <div class="canvas-overlay-top">
-          <span style="color:#10b981;">●</span> Live Real Data &bull; Drag to Rotate &bull; 23.44° Axial Tilt
+          <span style="color:#10b981;">●</span> Live Real Data &bull; Drag to Rotate &bull; Real-Time Ephemeris Tilt
         </div>
-        <div class="canvas-overlay-coords" id="coordsReadout">TILT: 23.4° • YAW: 0°</div>
+        <div class="canvas-overlay-coords" id="coordsReadout">TILT: ... • YAW: 0°</div>
 
         <canvas id="globeCanvas" width="600" height="420"></canvas>
 
@@ -282,8 +282,29 @@
     const ctx = canvas.getContext('2d');
     const box = document.getElementById('canvasBox');
 
-    const EARTH_TILT_DEG = 23.44;
-    const EARTH_TILT_RAD = (EARTH_TILT_DEG * Math.PI) / 180;
+    function getEarthAxialObliquity(nowMs = Date.now()) {
+      const jd = nowMs / 86400000 + 2440587.5;
+      const T = (jd - 2451545.0) / 36525.0;
+      const eps0Arcsec = 84381.406
+        - 46.836769 * T
+        - 0.0001831 * T * T
+        + 0.00200340 * T * T * T
+        - 5.76e-7 * Math.pow(T, 4)
+        - 4.34e-8 * Math.pow(T, 5);
+      const omegaDeg = 125.04452 - 1934.136261 * T;
+      const lSunDeg = 280.4665 + 36000.7698 * T;
+      const dEpsArcsec = 9.205 * Math.cos((omegaDeg * Math.PI) / 180)
+        + 0.573 * Math.cos((2 * lSunDeg * Math.PI) / 180);
+      const trueDeg = (eps0Arcsec + dEpsArcsec) / 3600;
+      return {
+        meanDeg: eps0Arcsec / 3600,
+        trueDeg,
+        trueRad: (trueDeg * Math.PI) / 180
+      };
+    }
+
+    let currentTiltDeg = getEarthAxialObliquity().trueDeg;
+    let currentTiltRad = (currentTiltDeg * Math.PI) / 180;
 
     let radius = 148;
     let yaw = 0.85;
@@ -328,10 +349,10 @@
     let activePings = [];
     let activeArcs = [];
 
-    // Rotate point around Earth's polar axis (yaw), apply true 23.44° axial tilt, then camera pitch
+    // Rotate point around Earth's polar axis (yaw), apply real-time obliquity tilt, then camera pitch
     function applyEarthTransform(x0, y0, z0) {
-      const x1 = x0 * Math.cos(EARTH_TILT_RAD) - y0 * Math.sin(EARTH_TILT_RAD);
-      const y1 = x0 * Math.sin(EARTH_TILT_RAD) + y0 * Math.cos(EARTH_TILT_RAD);
+      const x1 = x0 * Math.cos(currentTiltRad) - y0 * Math.sin(currentTiltRad);
+      const y1 = x0 * Math.sin(currentTiltRad) + y0 * Math.cos(currentTiltRad);
       const z1 = z0;
 
       const y2 = y1 * Math.cos(pitch) - z1 * Math.sin(pitch);
@@ -370,11 +391,15 @@
     }
 
     function render() {
+      const ob = getEarthAxialObliquity();
+      currentTiltDeg = ob.trueDeg;
+      currentTiltRad = ob.trueRad;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
-      // Subtle vertical reference line for 23.44° axial comparison
+      // Subtle vertical reference line for real-time axial comparison
       ctx.save();
       ctx.setLineDash([3, 4]);
       ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
@@ -385,7 +410,7 @@
       ctx.stroke();
       ctx.restore();
 
-      // Earth's True 23.44° Tilted Rotational Axis
+      // Earth's Real-Time Tilted Rotational Axis
       const northPole = applyEarthTransform(0, -radius * 1.22, 0);
       const southPole = applyEarthTransform(0, radius * 1.22, 0);
       ctx.save();
@@ -397,7 +422,7 @@
       ctx.stroke();
       ctx.fillStyle = '#f59e0b';
       ctx.font = 'bold 10px ui-monospace, SFMono-Regular, monospace';
-      ctx.fillText('N (23.4°)', northPole.x + 6, northPole.y + 4);
+      ctx.fillText(`N (${currentTiltDeg.toFixed(4)}°)`, northPole.x + 6, northPole.y + 4);
       ctx.restore();
 
       // Outer Glow
@@ -536,7 +561,7 @@
       if (isSpinning) yaw += spinSpeed;
       const yawDeg = Math.round(((yaw * 180 / Math.PI) % 360 + 360) % 360);
       const pitchDeg = Math.round(pitch * 180 / Math.PI);
-      document.getElementById('coordsReadout').textContent = `TILT: ${EARTH_TILT_DEG}° • YAW: ${yawDeg}° • PITCH: ${pitchDeg}°`;
+      document.getElementById('coordsReadout').textContent = `TILT: ${currentTiltDeg.toFixed(6)}° • YAW: ${yawDeg}° • PITCH: ${pitchDeg}°`;
 
       requestAnimationFrame(render);
     }
