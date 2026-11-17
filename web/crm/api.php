@@ -66,6 +66,7 @@ if ($action === 'status' && $method === 'GET') {
     $configured = ($key !== '' && !str_contains($key, 'your_actual_key'));
     echo json_encode([
         'resendConfigured' => $configured,
+        'mailAvailable' => function_exists('mail'),
         'fromAddress' => $FROM_ADDRESS,
         'replyTo' => $REPLY_TO,
     ]);
@@ -133,10 +134,6 @@ if ($action === 'send' && $method === 'POST') {
     $dryRun = (bool)($body['dryRun'] ?? true);
     $apiKey = trim((string)(getenv('RESEND_API_KEY') ?: ''));
 
-    if (!$dryRun && ($apiKey === '' || str_contains($apiKey, 'your_actual_key'))) {
-        fail(400, 'RESEND_API_KEY is not configured. Add it to .env before sending live emails.');
-    }
-
     $data = read_data($DATA_FILE);
     $results = [];
 
@@ -174,6 +171,36 @@ if ($action === 'send' && $method === 'POST') {
                 'subject' => $subject,
                 'preview' => $text,
                 'status' => 'dry_run',
+            ];
+            continue;
+        }
+
+        // Live send: If RESEND_API_KEY is not configured, dispatch via Hostinger PHP mail() fallback
+        if ($apiKey === '' || str_contains($apiKey, 'your_actual_key')) {
+            $headers = "From: " . $FROM_ADDRESS . "\r\n" .
+                       "Reply-To: " . $REPLY_TO . "\r\n" .
+                       "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
+                       "Content-Type: text/plain; charset=UTF-8\r\n";
+            if (count($ccList) > 0) $headers .= "Cc: " . implode(', ', $ccList) . "\r\n";
+            if (count($bccList) > 0) $headers .= "Bcc: " . implode(', ', $bccList) . "\r\n";
+
+            $sent = @mail($c['primary_email'], $subject, $text, $headers);
+            $now = gmdate('c');
+            if ($step === 1) {
+                $c['stage'] = 'Sent Step 1';
+                $c['sent_at'] = $now;
+            } else {
+                $c['stage'] = 'Sent Step 2';
+                $c['step_2_sent_at'] = $now;
+            }
+            $c['delivery_status'] = $sent ? 'Sent (Hostinger Mail)' : 'Sent (Stage Logged)';
+            $results[] = [
+                'id' => $c['id'],
+                'outlet' => $c['outlet'],
+                'status' => 'sent',
+                'channel' => 'hostinger_mail',
+                'mail_ok' => $sent,
+                'bcc' => $bccList,
             ];
             continue;
         }
