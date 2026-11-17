@@ -1148,9 +1148,10 @@
             </div>
             <div class="table-actions">
               <a href="./visitors/" class="btn-table-play">🌍 Open Full Live Globe</a>
+              <button type="button" id="homeGlobeToggleBtn" class="btn-table-lab" style="cursor:pointer;">Hide Mini Globe</button>
             </div>
           </div>
-          <div style="flex:0 0 auto; display:flex; align-items:center; justify-content:center; margin:0 auto;">
+          <div id="homeMiniGlobeWrap" style="flex:0 0 auto; display:flex; align-items:center; justify-content:center; margin:0 auto;">
             <a href="./visitors/" title="Click to open full World Visitors Live Globe" style="display:block; line-height:0;">
               <canvas id="homeMiniGlobeCanvas" width="230" height="230" style="border-radius:50%; filter:drop-shadow(0 0 24px rgba(56, 189, 248, 0.25)); cursor:pointer;"></canvas>
             </a>
@@ -1632,7 +1633,14 @@
     // ==========================================
     (function initHomeMiniGlobe() {
       const cv = document.getElementById('homeMiniGlobeCanvas');
+      const wrap = document.getElementById('homeMiniGlobeWrap');
+      const toggleBtn = document.getElementById('homeGlobeToggleBtn');
       if (!cv) return;
+      const STORAGE_KEY = 'twst23_visitors_widget_hidden';
+      let isHidden = false;
+      try { isHidden = localStorage.getItem(STORAGE_KEY) === '1'; } catch (_) {}
+      let rafId = null;
+
       const gCtx = cv.getContext('2d');
       const r = 98;
       let yaw = 0.85;
@@ -1686,12 +1694,17 @@
       updateTicker(cities[0]);
       pings.push({ city: cities[0], rad: 0, max: 20 });
       setInterval(() => {
+        if (isHidden) return;
         const c = cities[Math.floor(Math.random() * cities.length)];
         pings.push({ city: c, rad: 0, max: 20 });
         updateTicker(c);
       }, 2400);
 
       function draw() {
+        if (isHidden) {
+          rafId = null;
+          return;
+        }
         gCtx.clearRect(0, 0, cv.width, cv.height);
         const cx = cv.width / 2, cy = cv.height / 2;
         const sp = gCtx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
@@ -1743,9 +1756,29 @@
         }
         gCtx.restore();
         yaw += 0.008;
-        requestAnimationFrame(draw);
+        rafId = requestAnimationFrame(draw);
       }
-      requestAnimationFrame(draw);
+
+      function applyGlobeVisibility() {
+        if (wrap) wrap.style.display = isHidden ? 'none' : 'flex';
+        if (toggleBtn) toggleBtn.textContent = isHidden ? '🌍 Show Mini Globe' : 'Hide Mini Globe';
+        if (!isHidden && !rafId) {
+          rafId = requestAnimationFrame(draw);
+        }
+      }
+
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          isHidden = !isHidden;
+          try {
+            if (isHidden) localStorage.setItem(STORAGE_KEY, '1');
+            else localStorage.removeItem(STORAGE_KEY);
+          } catch (_) {}
+          applyGlobeVisibility();
+        });
+      }
+
+      applyGlobeVisibility();
     })();
 
   </script>
