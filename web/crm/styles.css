@@ -242,6 +242,7 @@ code {
 .status-warn { background: var(--warn-bg); color: var(--warn-text); }
 .status-info { background: var(--info-bg); color: var(--info-text); }
 .status-muted { background: var(--surface-alt); color: var(--muted); }
+.status-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
 
 .table-wrap {
   background: var(--surface);
@@ -428,3 +429,55 @@ code {
   margin: 8px 0 0;
   font-size: 0.85rem;
 }
+
+/* Inbound Reply / Autoresponder Card in Drawer */
+.reply-card {
+  background: var(--surface);
+  border: 1px solid #d8b4fe;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.reply-card.human {
+  border-color: #86efac;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.reply-date {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.reply-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.reply-body {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  background: var(--bg);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #9333ea;
+  white-space: pre-wrap;
+  color: var(--text);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.reply-card.human .reply-body {
+  border-left-color: #16a34a;
+}
+

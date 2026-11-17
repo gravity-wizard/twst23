@@ -21,8 +21,18 @@ async function api(url, opts = {}) {
 }
 
 function stagePill(stage) {
-  if (stage === 'Queued') return 'status-info';
-  if (stage.startsWith('Sent') || stage === 'Featured' || stage === 'Replied') return 'status-ok';
+  if (stage === 'Queued') return 'status-warn';
+  if (stage === 'Auto-Acknowledged') return 'status-purple';
+  if (stage === 'Received Reply' || stage === 'Replied' || stage === 'Featured') return 'status-ok';
+  if (stage && stage.startsWith('Sent')) return 'status-info';
+  return 'status-muted';
+}
+
+function deliveryPill(status) {
+  if (!status || status === 'Not Sent') return 'status-muted';
+  if (status === 'Auto-Acknowledged') return 'status-purple';
+  if (status === 'Human Replied' || status === 'Replied') return 'status-ok';
+  if (status.includes('Sent')) return 'status-info';
   return 'status-muted';
 }
 
@@ -37,9 +47,13 @@ function renderMetrics() {
   const contacts = state.contacts;
   $('#m-total').textContent = contacts.length;
   $('#m-queued').textContent = contacts.filter((c) => c.stage === 'Queued').length;
-  $('#m-sent').textContent = contacts.filter((c) => c.stage !== 'Queued').length;
-  $('#m-derby').textContent = state.derbies.length;
-  $('#m-triage').textContent = state.triage.filter((t) => t.status !== 'Resolved').length;
+  $('#m-sent').textContent = contacts.filter((c) => c.stage && c.stage.startsWith('Sent')).length;
+  const autoEl = $('#m-auto');
+  if (autoEl) autoEl.textContent = contacts.filter((c) => c.stage === 'Auto-Acknowledged' || c.auto_acknowledged).length;
+  const humanEl = $('#m-human');
+  if (humanEl) humanEl.textContent = contacts.filter((c) => c.stage === 'Received Reply' || c.delivery_status === 'Human Replied').length;
+  const triageEl = $('#m-triage');
+  if (triageEl) triageEl.textContent = state.triage.filter((t) => t.status !== 'Resolved').length;
 }
 
 function renderContacts() {
@@ -70,8 +84,8 @@ function renderContacts() {
         ${c.cc_email ? `<div class="cc-line">CC: ${escapeHtml(c.cc_email)}</div>` : ''}
         ${c.bcc_email ? `<div class="bcc-line" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">BCC: ${escapeHtml(c.bcc_email)}</div>` : ''}
       </td>
-      <td><span class="status-pill ${stagePill(c.stage)}">${escapeHtml(c.stage)}</span></td>
-      <td><span class="status-pill status-muted">${escapeHtml(c.delivery_status)}</span></td>
+      <td><span class="status-pill ${stagePill(c.stage)}">${c.stage === 'Auto-Acknowledged' ? '🤖 ' : (c.stage === 'Received Reply' ? '💬 ' : '')}${escapeHtml(c.stage)}</span></td>
+      <td><span class="status-pill ${deliveryPill(c.delivery_status)}">${escapeHtml(c.delivery_status)}</span></td>
       <td>
         <button class="btn btn-secondary btn-sm" type="button" data-open="${c.id}">Inspect / Edit</button>
       </td>
@@ -134,6 +148,59 @@ function openDrawer(id) {
   $('#d-subject').value = c.subject_line || '';
   $('#d-blurb').value = c.custom_blurb || '';
   $('#d-notes').value = c.notes || '';
+
+  // Render Inbound Reply / Auto-Ack Card
+  const replyCard = $('#drawer-reply-card');
+  const lastReply = c.last_reply;
+  if (replyCard) {
+    if (lastReply && (lastReply.snippet || lastReply.body)) {
+      const isAuto = lastReply.type === 'auto';
+      replyCard.className = `reply-card ${isAuto ? 'auto' : 'human'}`;
+      const pill = $('#drawer-reply-pill');
+      if (pill) {
+        pill.className = `status-pill ${isAuto ? 'status-purple' : 'status-ok'}`;
+        pill.textContent = isAuto ? '🤖 Auto-Acknowledged' : '💬 Human Reply';
+      }
+
+      const dateStr = lastReply.received_at ? new Date(lastReply.received_at).toLocaleString() : '';
+      const dateEl = $('#drawer-reply-date');
+      if (dateEl) dateEl.textContent = dateStr;
+
+      const fromDisp = lastReply.from_name ? `${escapeHtml(lastReply.from_name)} &lt;${escapeHtml(lastReply.from)}&gt;` : escapeHtml(lastReply.from || '');
+      const metaEl = $('#drawer-reply-meta');
+      if (metaEl) {
+        metaEl.innerHTML = `<strong>From:</strong> ${fromDisp}<br/><strong>Subject:</strong> ${escapeHtml(lastReply.subject || '')}${lastReply.reason ? `<br/><span style="font-size:0.75rem;color:var(--muted);">(Detected via: ${escapeHtml(lastReply.reason)})</span>` : ''}`;
+      }
+
+      const bodyEl = $('#drawer-reply-body');
+      if (bodyEl) bodyEl.textContent = lastReply.snippet || lastReply.body || '';
+
+      const toggleBtn = $('#btn-toggle-reply-type');
+      if (toggleBtn) {
+        toggleBtn.textContent = isAuto ? 'Mark Human' : 'Mark Auto-Ack';
+        toggleBtn.title = isAuto ? 'Reclassify as genuine human reply' : 'Reclassify as automated bot receipt';
+      }
+
+      replyCard.style.display = 'block';
+    } else {
+      replyCard.style.display = 'none';
+    }
+  }
+
+  // Adjust Send Step 1 / Step 2 buttons
+  const step1Btn = $('#d-send-one');
+  const step2Btn = $('#d-send-step2');
+  if (step1Btn && step2Btn) {
+    if (c.stage === 'Queued') {
+      step1Btn.style.display = 'inline-block';
+      step2Btn.style.display = 'none';
+    } else {
+      step1Btn.style.display = 'none';
+      step2Btn.style.display = 'inline-block';
+      step2Btn.textContent = c.step_2_sent_at ? '✓ Step 2 Sent (Resend)' : 'Send Step 2 Follow-Up';
+    }
+  }
+
   $('#drawer').classList.add('open');
   $('#drawer').setAttribute('aria-hidden', 'false');
 }
@@ -149,11 +216,11 @@ function showModal(title, html) {
   $('#modal-backdrop').hidden = false;
 }
 
-async function runSendBatch(ids, dryRun) {
+async function runSendBatch(ids, dryRun, step = 1) {
   try {
     const res = await api('api.php?action=send', {
       method: 'POST',
-      body: JSON.stringify({ contactIds: ids, step: 1, dryRun }),
+      body: JSON.stringify({ contactIds: ids, step, dryRun }),
     });
     const html = res.results
       .map(
@@ -432,6 +499,119 @@ function openSendStep1Dispatcher(contactId) {
   }
 }
 
+function openSendStep2Dispatcher(contactId) {
+  const c = state.contacts.find((x) => x.id === contactId);
+  if (!c) return;
+
+  const to = c.primary_email || '';
+  const cc = c.cc_email || '';
+  const bcc = c.bcc_email || 'gary@gravitywizards.com, botchee@icloud.com';
+  const origSubject = c.subject_line || 'Twisted23 & Flipping Dice';
+  const subject = origSubject.toLowerCase().startsWith('re:') ? origSubject : `Re: ${origSubject}`;
+  const signature = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
+  const followUpText = "Just a quick follow-up in case my note earlier this week got buried.\n\nIf you have 2 minutes to try it right in your browser, you can jump straight into Tophat Sudoku and the Flipping Dice 3D-in-2D Spatial Lab here:\nhttps://twisted23.com\nhttps://flippingdice.twisted23.com\n\nHappy to share a quick walkthrough or any technical notes if this fits what you're covering." + signature;
+
+  const mailtoParams = new URLSearchParams();
+  if (cc) mailtoParams.set('cc', cc);
+  if (bcc) mailtoParams.set('bcc', bcc);
+  mailtoParams.set('subject', subject);
+  mailtoParams.set('body', followUpText);
+  const mailtoUrl = `mailto:${encodeURIComponent(to)}?${mailtoParams.toString()}`;
+
+  const hasHostingerMail = !!serverStatus.hostingerMailConfigured;
+
+  const modalHtml = `
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <div style="font-size:0.78rem;color:#0284c7;text-transform:uppercase;letter-spacing:0.04em;font-weight:600;">Dispatch Step 2 Follow-Up (Day 3-5 Cadence)</div>
+        <h3 style="margin:4px 0 0;font-size:1.15rem;">${escapeHtml(c.outlet)}</h3>
+      </div>
+
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.83rem;display:flex;flex-direction:column;gap:5px;">
+        <div><strong>To:</strong> <code>${escapeHtml(to || '(No email set)')}</code></div>
+        ${cc ? `<div><strong>CC:</strong> <code>${escapeHtml(cc)}</code></div>` : ''}
+        <div><strong>BCC:</strong> <code>${escapeHtml(bcc)}</code> <span style="color:var(--accent);font-size:0.75rem;font-weight:600;">(Spy Echo Active)</span></div>
+        <div><strong>Subject:</strong> ${escapeHtml(subject)}</div>
+        ${c.auto_acknowledged ? `<div style="color:#7e22ce;font-weight:600;font-size:0.75rem;margin-top:2px;">🤖 Note: Automated receipt previously confirmed. Sending polite editorial follow-up.</div>` : ''}
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <a id="btn-launch-mailto-step2" href="${escapeHtml(mailtoUrl)}" class="btn btn-primary" style="background:#0284c7;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;">
+            ✉ Launch in Mail App (Pre-filled with BCC) &amp; Mark Sent Step 2 ↗
+          </a>
+          <span style="font-size:0.76rem;color:var(--muted);">Opens Apple Mail with Step 2 follow-up text, BCC, and links ready to send.</span>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px;">
+          <button id="btn-copy-step2" class="btn btn-secondary" type="button">
+            📋 Copy Follow-Up to Clipboard
+          </button>
+          <button id="btn-mark-sent2-only" class="btn btn-secondary" type="button">
+            ✓ Mark Stage as "Sent Step 2"
+          </button>
+        </div>
+
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button id="btn-dispatch-server-step2" class="btn btn-primary btn-sm" type="button" style="background:#0284c7;">
+              ${hasHostingerMail ? '🚀 Dispatch Step 2 via Hostinger Mail API' : '🚀 Dispatch Step 2 via Server'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  showModal('Send Step 2 — Editorial Follow-Up Dispatcher', modalHtml);
+
+  const launchBtn = $('#btn-launch-mailto-step2');
+  if (launchBtn) {
+    launchBtn.addEventListener('click', async () => {
+      await api(`api.php?action=contact&id=${encodeURIComponent(contactId)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ stage: 'Sent Step 2', delivery_status: 'Sent Step 2 (Mail App)', step_2_sent_at: new Date().toISOString() }),
+      });
+      await refresh();
+      setTimeout(() => { $('#modal-backdrop').hidden = true; }, 800);
+    });
+  }
+
+  const copyBtn = $('#btn-copy-step2');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const copyText = `To: ${to}\nCC: ${cc}\nBCC: ${bcc}\nSubject: ${subject}\n\n${followUpText}`;
+      try {
+        await navigator.clipboard.writeText(copyText);
+        copyBtn.textContent = '✓ Copied to Clipboard!';
+      } catch (e) {
+        copyBtn.textContent = 'Copy failed';
+      }
+      setTimeout(() => { copyBtn.textContent = '📋 Copy Follow-Up to Clipboard'; }, 2000);
+    });
+  }
+
+  const markBtn = $('#btn-mark-sent2-only');
+  if (markBtn) {
+    markBtn.addEventListener('click', async () => {
+      await api(`api.php?action=contact&id=${encodeURIComponent(contactId)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ stage: 'Sent Step 2', delivery_status: 'Sent Step 2 (Manual)', step_2_sent_at: new Date().toISOString() }),
+      });
+      await refresh();
+      $('#modal-backdrop').hidden = true;
+    });
+  }
+
+  const serverDispatchBtn = $('#btn-dispatch-server-step2');
+  if (serverDispatchBtn) {
+    serverDispatchBtn.addEventListener('click', async () => {
+      $('#modal-backdrop').hidden = true;
+      runSendBatch([contactId], false, 2);
+    });
+  }
+}
+
 $('#drawer-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await handleSaveContact();
@@ -477,6 +657,55 @@ $('#d-preview').addEventListener('click', () => {
 $('#d-send-one').addEventListener('click', () => {
   if (activeContactId) openSendStep1Dispatcher(activeContactId);
 });
+
+const sendStep2Btn = $('#d-send-step2');
+if (sendStep2Btn) {
+  sendStep2Btn.addEventListener('click', () => {
+    if (activeContactId) openSendStep2Dispatcher(activeContactId);
+  });
+}
+
+const toggleReplyBtn = $('#btn-toggle-reply-type');
+if (toggleReplyBtn) {
+  toggleReplyBtn.addEventListener('click', async () => {
+    if (!activeContactId) return;
+    const c = state.contacts.find((x) => x.id === activeContactId);
+    if (!c || !c.last_reply) return;
+    const targetType = c.last_reply.type === 'auto' ? 'human' : 'auto';
+    try {
+      toggleReplyBtn.disabled = true;
+      toggleReplyBtn.textContent = 'Updating...';
+      const res = await api('api.php?action=reclassify_reply', {
+        method: 'POST',
+        body: JSON.stringify({ id: activeContactId, type: targetType }),
+      });
+      if (res.contact) {
+        const idx = state.contacts.findIndex((x) => x.id === activeContactId);
+        if (idx !== -1) state.contacts[idx] = res.contact;
+        openDrawer(activeContactId);
+        renderMetrics();
+        renderContacts();
+        showDrawerNotice(`✓ Reclassified as ${targetType === 'human' ? 'Human Reply' : 'Auto-Acknowledged'}!`, 'ok');
+      }
+    } catch (err) {
+      showDrawerNotice(`Failed to reclassify: ${err.message}`, 'warn');
+    } finally {
+      toggleReplyBtn.disabled = false;
+    }
+  });
+}
+
+const copyReplyBtn = $('#btn-copy-reply-body');
+if (copyReplyBtn) {
+  copyReplyBtn.addEventListener('click', async () => {
+    const text = $('#drawer-reply-body').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      copyReplyBtn.textContent = '✓ Copied';
+      setTimeout(() => { copyReplyBtn.textContent = 'Copy'; }, 1500);
+    } catch (e) {}
+  });
+}
 
 $('#btn-dry-run-2').addEventListener('click', () => {
   const next2 = state.contacts.filter((c) => c.stage === 'Queued' && c.primary_email).slice(0, 2).map((c) => c.id);

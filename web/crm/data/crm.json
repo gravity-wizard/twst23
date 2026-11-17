@@ -162,13 +162,40 @@
       "angle": "People-First Indie Creation Outside Corporate Gatekeepers",
       "subject_line": "PITCH / STORY TIP: Rescuing an abandoned Flash puzzle & building people-first math games in Alaska",
       "custom_blurb": "Hi Aftermath team, Wanted to share a grassroots creator story from Anchorage, Alaska: rescuing an abandoned Flash puzzle database (tophatpuzzle.com) after its developer vanished, fixing its math for unique solutions, and building free/accessible spatial-reasoning and physics playgrounds (https://flippingdice.twisted23.com & https://gravitywizards.com) to fight the 20-fold invention gap caused by public school gifted-program cuts.",
-      "stage": "Queued",
-      "delivery_status": "Not Sent",
+      "stage": "Auto-Acknowledged",
+      "delivery_status": "Auto-Acknowledged",
       "resend_id": null,
-      "sent_at": null,
+      "sent_at": "2026-11-17T21:48:00+00:00",
       "step_2_sent_at": null,
-      "notes": "",
-      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
+      "notes": "Auto-acknowledgment confirmed from Aftermath editorial desk. Step 2 follow-up eligible in 3 days.",
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com",
+      "updated_at": "2026-11-17T22:02:11+00:00",
+      "auto_acknowledged": true,
+      "auto_acknowledged_at": "2026-11-17T22:02:11+00:00",
+      "last_reply": {
+        "id": "REP-aftermath-auto",
+        "type": "auto",
+        "classification": "Auto-Acknowledged",
+        "from": "freelance@aftermath.site",
+        "from_name": "Aftermath Freelance",
+        "subject": "Re: PITCH / STORY TIP: Rescuing an abandoned Flash puzzle & building people-first math games in Alaska",
+        "snippet": "Hi, and thanks for reaching out! We appreciate every pitch here at Aftermath, and while we do read every one, and do our best to reply to as many as we can, the volume of emails we receive (plus our general workload) means we sadly can't provide feedback for everyone.\n\nIf we're interested in your pitch we'll reply to you at the address you submitted from; otherwise thanks again for your time, and please consider pitching again in the future if you're interested in writing about something!\n\n- The Aftermath Team",
+        "received_at": "2026-11-17T22:02:11+00:00",
+        "reason": "auto-acknowledgment body keywords"
+      },
+      "replies": [
+        {
+          "id": "REP-aftermath-auto",
+          "type": "auto",
+          "classification": "Auto-Acknowledged",
+          "from": "freelance@aftermath.site",
+          "from_name": "Aftermath Freelance",
+          "subject": "Re: PITCH / STORY TIP: Rescuing an abandoned Flash puzzle & building people-first math games in Alaska",
+          "snippet": "Hi, and thanks for reaching out! We appreciate every pitch here at Aftermath, and while we do read every one, and do our best to reply to as many as we can, the volume of emails we receive (plus our general workload) means we sadly can't provide feedback for everyone.\n\nIf we're interested in your pitch we'll reply to you at the address you submitted from; otherwise thanks again for your time, and please consider pitching again in the future if you're interested in writing about something!\n\n- The Aftermath Team",
+          "received_at": "2026-11-17T22:02:11+00:00",
+          "reason": "auto-acknowledgment body keywords"
+        }
+      ]
     },
     {
       "id": "GW-C015",
@@ -179,13 +206,40 @@
       "angle": "Playable Launch: Flipping Dice 3D-in-2D, Twisted 23 & Tophat Sudoku",
       "subject_line": "NEWS / REVIEW PITCH: Flipping Dice 3D-in-2D Lab, Twisted 23 & Tophat Sudoku (Web & iOS)",
       "custom_blurb": "Hi Pocket Gamer team, Reaching out from Twisted23 (https://twisted23.com) to share our newly expanded browser-and-mobile spatial puzzle suite playable now at https://flippingdice.twisted23.com\u2014featuring Flipping Dice Blitz & 3D-in-2D Die Lab (with both 77s Blitz and Untimed Thinky Mode), our 24-slot diagonal Twisted 23 sliding puzzle, and Tophat Sudoku.",
-      "stage": "Queued",
-      "delivery_status": "Not Sent",
+      "stage": "Auto-Acknowledged",
+      "delivery_status": "Auto-Acknowledged",
       "resend_id": null,
-      "sent_at": null,
+      "sent_at": "2026-11-17T21:48:00+00:00",
       "step_2_sent_at": null,
-      "notes": "",
-      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com"
+      "notes": "Auto-acknowledgment confirmed from Steel Media autoresponder. Step 2 follow-up eligible in 3 days.",
+      "bcc_email": "gary@gravitywizards.com, botchee@icloud.com",
+      "updated_at": "2026-11-17T22:02:12+00:00",
+      "auto_acknowledged": true,
+      "auto_acknowledged_at": "2026-11-17T22:02:12+00:00",
+      "last_reply": {
+        "id": "REP-pocketgamer-auto",
+        "type": "auto",
+        "classification": "Auto-Acknowledged",
+        "from": "pgautoresponder@gmail.com",
+        "from_name": "Steel Media (Pocket Gamer)",
+        "subject": "Promoting your game on Pocket Gamer Re: NEWS / REVIEW PITCH: Flipping Dice 3D-in-2D Lab, Twisted 23 & Tophat Sudoku (Web & iOS)",
+        "snippet": "Thanks for contacting Pocket Gamer / Steel Media. This is an automated confirmation that your news/review pitch has been received by our editorial inbox.",
+        "received_at": "2026-11-17T22:02:12+00:00",
+        "reason": "bot sender address, autoresponder subject"
+      },
+      "replies": [
+        {
+          "id": "REP-pocketgamer-auto",
+          "type": "auto",
+          "classification": "Auto-Acknowledged",
+          "from": "pgautoresponder@gmail.com",
+          "from_name": "Steel Media (Pocket Gamer)",
+          "subject": "Promoting your game on Pocket Gamer Re: NEWS / REVIEW PITCH: Flipping Dice 3D-in-2D Lab, Twisted 23 & Tophat Sudoku (Web & iOS)",
+          "snippet": "Thanks for contacting Pocket Gamer / Steel Media. This is an automated confirmation that your news/review pitch has been received by our editorial inbox.",
+          "received_at": "2026-11-17T22:02:12+00:00",
+          "reason": "bot sender address, autoresponder subject"
+        }
+      ]
     },
     {
       "id": "GW-C016",

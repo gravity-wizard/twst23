@@ -39,12 +39,16 @@
         <strong id="m-queued" class="metric-value">0</strong>
       </div>
       <div class="metric">
-        <span class="metric-label">Sent / Active</span>
+        <span class="metric-label">Sent Step 1/2</span>
         <strong id="m-sent" class="metric-value">0</strong>
       </div>
       <div class="metric">
-        <span class="metric-label">Derby &amp; Kit Ops</span>
-        <strong id="m-derby" class="metric-value">0</strong>
+        <span class="metric-label">Auto-Acknowledged</span>
+        <strong id="m-auto" class="metric-value" style="color:#7e22ce;">0</strong>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Human Replies</span>
+        <strong id="m-human" class="metric-value" style="color:#15803d;">0</strong>
       </div>
       <div class="metric">
         <span class="metric-label">Open Triage</span>
@@ -68,9 +72,10 @@
             <option value="all">All Stages</option>
             <option value="Queued">Queued</option>
             <option value="Sent Step 1">Sent Step 1</option>
+            <option value="Auto-Acknowledged">🤖 Auto-Acknowledged (Receipt)</option>
             <option value="Sent Step 2">Sent Step 2</option>
+            <option value="Received Reply">💬 Received Reply (Human)</option>
             <option value="Sent (Form Fill)">Sent (Form Fill)</option>
-            <option value="Replied">Replied</option>
             <option value="Featured">Featured</option>
           </select>
         </div>
@@ -149,14 +154,31 @@
       <button id="drawer-close" class="btn-icon" type="button" aria-label="Close drawer">&times;</button>
     </div>
     <form id="drawer-form" class="drawer-body">
+      <!-- INBOUND REPLY & AUTO-ACK CARD -->
+      <div id="drawer-reply-card" class="reply-card" style="display:none;">
+        <div class="reply-header">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="drawer-reply-pill" class="status-pill status-purple">🤖 Auto-Acknowledged</span>
+            <span id="drawer-reply-date" class="reply-date"></span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button id="btn-toggle-reply-type" type="button" class="btn btn-secondary btn-sm" title="Reclassify between Bot and Human reply">Switch to Human</button>
+            <button id="btn-copy-reply-body" type="button" class="btn btn-secondary btn-sm">Copy</button>
+          </div>
+        </div>
+        <div id="drawer-reply-meta" class="reply-meta"></div>
+        <div id="drawer-reply-body" class="reply-body"></div>
+      </div>
+
       <label class="field">
         <span>Stage</span>
         <select id="d-stage" class="select">
           <option value="Queued">Queued</option>
           <option value="Sent Step 1">Sent Step 1</option>
+          <option value="Auto-Acknowledged">🤖 Auto-Acknowledged (Bot / Receipt)</option>
           <option value="Sent Step 2">Sent Step 2</option>
+          <option value="Received Reply">💬 Received Reply (Human)</option>
           <option value="Sent (Form Fill)">Sent (Form Fill)</option>
-          <option value="Replied">Replied</option>
           <option value="Featured">Featured</option>
         </select>
       </label>
@@ -184,6 +206,7 @@
       <div class="drawer-actions">
         <button id="d-preview" class="btn btn-secondary" type="button">Dry Run Preview</button>
         <button id="d-send-one" class="btn btn-primary" type="button">Send Step 1</button>
+        <button id="d-send-step2" class="btn btn-primary" type="button" style="background:#0284c7;">Send Step 2</button>
         <button id="d-save" class="btn btn-secondary" type="submit">Save Changes</button>
         <button id="d-echo-bcc" class="btn btn-secondary" type="button" title="Send BCC echo to botchee@icloud.com &amp; gary@gravitywizards.com">Echo BCC to iCloud</button>
       </div>
@@ -201,6 +224,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

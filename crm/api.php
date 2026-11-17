@@ -60,6 +60,99 @@ function fail(int $code, string $msg): never {
     exit;
 }
 
+function classify_inbound_message(string $fromEmail, string $fromName, string $subject, string $snippet, array $headers = []): array {
+    $fromEmailLower = strtolower(trim($fromEmail));
+    $fromNameLower = strtolower(trim($fromName));
+    $subjectLower = strtolower(trim($subject));
+    $snippetLower = strtolower(trim($snippet));
+
+    // 1. Sender address checks
+    $isBotSender = false;
+    $botSenders = [
+        'noreply', 'no-reply', 'autoresponder', 'pgautoresponder',
+        'mailer-daemon', 'postmaster', 'bounce', 'donotreply',
+        'automated', 'notifications', 'notification'
+    ];
+    foreach ($botSenders as $bs) {
+        if (str_contains($fromEmailLower, $bs)) {
+            $isBotSender = true;
+            break;
+        }
+    }
+
+    // 2. Subject phrase checks
+    $isBotSubject = false;
+    $botSubjects = [
+        'automatic reply', 'auto-reply', 'autoreply', 'out of office',
+        'out of the office', 'undeliverable', 'delivery status notification',
+        'mail delivery', 'promoting your game on pocket gamer',
+        'acknowledgment', 'acknowledgement', 'receipt of your',
+        'thank you for contacting', 'thank you for reaching out',
+        'we have received your', 'inquiry received', 'automatic response'
+    ];
+    foreach ($botSubjects as $sub) {
+        if (str_contains($subjectLower, $sub)) {
+            $isBotSubject = true;
+            break;
+        }
+    }
+
+    // 3. Body / Snippet heuristics
+    $isBotSnippet = false;
+    $botSnippets = [
+        'thanks for reaching out', 'thank you for reaching out',
+        'thanks for contacting', 'thank you for contacting',
+        'we appreciate every pitch', 'appreciate every pitch',
+        'volume of emails', 'volume of pitches', 'high volume of',
+        'general workload', "can't provide feedback", 'cannot provide feedback',
+        "can't reply to every", 'cannot reply to every',
+        "if we're interested", 'if we are interested',
+        'consider pitching again', 'automated response', 'automated message',
+        'auto-generated', 'this is an automated', 'autoresponder',
+        'out of the office', 'out of office', 'away from my desk',
+        'returning on', 'limited access to email', 'do not reply to this email'
+    ];
+    foreach ($botSnippets as $snip) {
+        if (str_contains($snippetLower, $snip)) {
+            $isBotSnippet = true;
+            break;
+        }
+    }
+
+    // 4. Header heuristics
+    $isBotHeader = false;
+    foreach ($headers as $k => $v) {
+        $kLower = strtolower((string)$k);
+        $vLower = strtolower((string)$v);
+        if ($kLower === 'auto-submitted' && $vLower !== 'no') {
+            $isBotHeader = true;
+            break;
+        }
+        if ($kLower === 'precedence' && in_array($vLower, ['bulk', 'junk', 'auto_reply'], true)) {
+            $isBotHeader = true;
+            break;
+        }
+        if (in_array($kLower, ['x-autoreply', 'x-autorespond', 'x-auto-response-suppress'], true)) {
+            $isBotHeader = true;
+            break;
+        }
+    }
+
+    $isAuto = $isBotSender || $isBotSubject || $isBotSnippet || $isBotHeader;
+
+    $reasons = [];
+    if ($isBotSender) $reasons[] = 'bot sender address';
+    if ($isBotSubject) $reasons[] = 'autoresponder subject';
+    if ($isBotSnippet) $reasons[] = 'auto-acknowledgment body keywords';
+    if ($isBotHeader) $reasons[] = 'auto-submitted headers';
+
+    return [
+        'is_auto' => $isAuto,
+        'classification' => $isAuto ? 'Auto-Acknowledged' : 'Human Reply',
+        'reason' => implode(', ', $reasons),
+    ];
+}
+
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
@@ -88,12 +181,42 @@ if ($action === 'contact' && $method === 'PATCH') {
     $data = read_data($DATA_FILE);
     foreach ($data['contacts'] as &$c) {
         if (($c['id'] ?? '') === $id) {
-            foreach (['stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'bcc_email', 'delivery_status', 'sent_at'] as $f) {
+            foreach (['stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'bcc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at'] as $f) {
                 if (array_key_exists($f, $body)) $c[$f] = $body[$f];
             }
             $c['updated_at'] = gmdate('c');
             write_data($DATA_FILE, $data);
             echo json_encode($c);
+            exit;
+        }
+    }
+    fail(404, 'Contact not found');
+}
+
+if ($action === 'reclassify_reply' && $method === 'POST') {
+    $body = json_body();
+    $id = $body['id'] ?? '';
+    $type = $body['type'] ?? 'human'; // 'human' or 'auto'
+    $data = read_data($DATA_FILE);
+    foreach ($data['contacts'] as &$c) {
+        if (($c['id'] ?? '') === $id) {
+            if (isset($c['last_reply']) && is_array($c['last_reply'])) {
+                $c['last_reply']['type'] = $type;
+                $c['last_reply']['classification'] = $type === 'auto' ? 'Auto-Acknowledged' : 'Human Reply';
+            }
+            if ($type === 'human') {
+                $c['stage'] = 'Received Reply';
+                $c['delivery_status'] = 'Human Replied';
+                $c['human_replied_at'] = gmdate('c');
+            } else {
+                $c['stage'] = 'Auto-Acknowledged';
+                $c['delivery_status'] = 'Auto-Acknowledged';
+                $c['auto_acknowledged'] = true;
+                $c['auto_acknowledged_at'] = gmdate('c');
+            }
+            $c['updated_at'] = gmdate('c');
+            write_data($DATA_FILE, $data);
+            echo json_encode(['success' => true, 'contact' => $c]);
             exit;
         }
     }
@@ -148,7 +271,7 @@ if ($action === 'send' && $method === 'POST') {
         } elseif ($step === 1) {
             $match = ($c['stage'] ?? '') === 'Queued' && !empty($c['primary_email']);
         } elseif ($step === 2) {
-            $match = ($c['stage'] ?? '') === 'Sent Step 1' && empty($c['step_2_sent_at']) && !empty($c['primary_email']);
+            $match = in_array($c['stage'] ?? '', ['Sent Step 1', 'Auto-Acknowledged'], true) && empty($c['step_2_sent_at']) && !empty($c['primary_email']);
         }
         if (!$match) continue;
 
@@ -405,7 +528,8 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
     $fromEmail = trim($event['from']['email'] ?? $event['fromEmail'] ?? $event['sender'] ?? '');
     $fromName = trim($event['from']['name'] ?? $event['fromName'] ?? $fromEmail);
     $subject = trim($event['subject'] ?? '(No Subject)');
-    $snippet = substr(trim($event['snippet'] ?? $event['text'] ?? $event['body'] ?? ''), 0, 300);
+    $snippet = trim($event['snippet'] ?? $event['text'] ?? $event['body'] ?? '');
+    $headers = is_array($event['headers'] ?? null) ? $event['headers'] : [];
 
     if ($fromEmail !== '') {
         $data = read_data($DATA_FILE);
@@ -414,6 +538,22 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
         $fromParts = explode('@', $fromEmail);
         $fromDomain = strtolower($fromParts[1] ?? '');
         $subjectLower = strtolower($subject);
+
+        $cls = classify_inbound_message($fromEmail, $fromName, $subject, $snippet, $headers);
+        $isAuto = $cls['is_auto'];
+        $stageVal = $isAuto ? 'Auto-Acknowledged' : 'Received Reply';
+        $statusVal = $isAuto ? 'Auto-Acknowledged' : 'Human Replied';
+        $replyObj = [
+            'id' => 'REP-' . substr(md5(uniqid('', true)), 0, 8),
+            'type' => $isAuto ? 'auto' : 'human',
+            'classification' => $cls['classification'],
+            'from' => $fromEmail,
+            'from_name' => $fromName,
+            'subject' => $subject,
+            'snippet' => substr($snippet, 0, 1000),
+            'received_at' => gmdate('c'),
+            'reason' => $cls['reason'],
+        ];
 
         foreach ($data['contacts'] as &$c) {
             $cEmail = strtolower($c['primary_email'] ?? $c['email'] ?? '');
@@ -440,29 +580,60 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
             }
 
             if ($emailMatch || $subjectMatch || $domainMatch) {
-                $c['delivery_status'] = 'Replied';
-                $c['stage'] = 'Received Reply';
-                $c['notes'] = ($c['notes'] ? $c['notes'] . " | " : "") . "[hMail: {$subject}] {$snippet}";
+                $c['delivery_status'] = $statusVal;
+                $c['stage'] = $stageVal;
+                $c['last_reply'] = $replyObj;
+                if (!isset($c['replies']) || !is_array($c['replies'])) {
+                    $c['replies'] = [];
+                }
+                $c['replies'][] = $replyObj;
+
+                if ($isAuto) {
+                    $c['auto_acknowledged'] = true;
+                    $c['auto_acknowledged_at'] = gmdate('c');
+                } else {
+                    $c['human_replied_at'] = gmdate('c');
+                }
+
+                $tag = $isAuto ? "[Auto-Ack: {$subject}]" : "[Human Reply: {$subject}]";
+                $c['notes'] = ($c['notes'] ? $c['notes'] . " | " : "") . "{$tag} " . substr($snippet, 0, 160);
                 $c['updated_at'] = gmdate('c');
                 $matched = true;
                 break;
             }
         }
+
         if (!$matched) {
-            $data['contacts'][] = [
-                'id' => 'C' . str_pad((string)(count($data['contacts']) + 1), 3, '0', STR_PAD_LEFT),
+            $newContact = [
+                'id' => 'GW-C' . str_pad((string)(count($data['contacts']) + 5), 3, '0', STR_PAD_LEFT),
+                'priority' => count($data['contacts']) + 1,
                 'name' => $fromName,
-                'outlet' => 'Inbound Reply',
-                'email' => $fromEmail,
-                'stage' => 'Received Reply',
-                'delivery_status' => 'Replied',
-                'notes' => "[hMail: {$subject}] {$snippet}",
+                'outlet' => $fromName ?: 'Inbound Sender',
+                'primary_email' => $fromEmail,
+                'stage' => $stageVal,
+                'delivery_status' => $statusVal,
+                'last_reply' => $replyObj,
+                'replies' => [$replyObj],
+                'notes' => ($isAuto ? "[Auto-Ack: {$subject}] " : "[Human Reply: {$subject}] ") . substr($snippet, 0, 160),
                 'created_at' => gmdate('c'),
+                'updated_at' => gmdate('c'),
             ];
+            if ($isAuto) {
+                $newContact['auto_acknowledged'] = true;
+                $newContact['auto_acknowledged_at'] = gmdate('c');
+            } else {
+                $newContact['human_replied_at'] = gmdate('c');
+            }
+            $data['contacts'][] = $newContact;
         }
         write_data($DATA_FILE, $data);
     }
-    echo json_encode(['received' => true, 'from' => $fromEmail]);
+    echo json_encode([
+        'received' => true,
+        'from' => $fromEmail,
+        'classification' => $cls['classification'] ?? 'unknown',
+        'is_auto' => $cls['is_auto'] ?? false,
+    ]);
     exit;
 }
 
