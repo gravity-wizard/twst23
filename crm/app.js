@@ -707,18 +707,109 @@ if (copyReplyBtn) {
   });
 }
 
+function openSendBatchDispatcher(contacts) {
+  if (!contacts || contacts.length === 0) {
+    showModal('Send Outreach', '<p class="status-pill status-info">No contacts currently queued for Step 1.</p>');
+    return;
+  }
+  if (contacts.length === 1) {
+    openSendStep1Dispatcher(contacts[0].id);
+    return;
+  }
+
+  const hasHostingerMail = !!serverStatus.hostingerMailConfigured;
+  const count = contacts.length;
+
+  const contactsHtml = contacts
+    .map(
+      (c, idx) => `
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong>#${idx + 1}. ${escapeHtml(c.outlet)}</strong>
+        <span class="status-pill status-warn">Queued</span>
+      </div>
+      <div style="font-size:0.83rem;">
+        <div><strong>To:</strong> <code>${escapeHtml(c.primary_email)}</code></div>
+        ${c.cc_email ? `<div><strong>CC:</strong> <code>${escapeHtml(c.cc_email)}</code></div>` : ''}
+        <div><strong>Subject:</strong> ${escapeHtml(c.subject_line || 'Twisted23 Outreach')}</div>
+      </div>
+      <div style="font-size:0.78rem;color:var(--muted);background:var(--surface);padding:6px 8px;border-radius:4px;border:1px solid var(--border);max-height:60px;overflow-y:auto;">
+        ${escapeHtml(c.custom_blurb || '')}
+      </div>
+    </div>
+  `
+    )
+    .join('');
+
+  const modalHtml = `
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <div style="font-size:0.78rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;">Batch Outreach Dispatcher</div>
+        <h3 style="margin:4px 0 0;font-size:1.15rem;">Send Next ${count} Outlets in Queue</h3>
+      </div>
+
+      ${contactsHtml}
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+        <button id="btn-dispatch-batch-server" class="btn btn-primary" type="button" style="padding:10px 16px;font-size:0.92rem;">
+          ${hasHostingerMail ? `🚀 Dispatch Both (${count} Outlets) via Hostinger Mail API` : `🚀 Dispatch Both (${count} Outlets) via Server`}
+        </button>
+        <span style="font-size:0.76rem;color:var(--muted);text-align:center;">
+          Authenticated from <code>media@twisted23.com</code> with DKIM signing &amp; guaranteed BCC echo to <code>botchee@icloud.com</code> &amp; <code>gary@gravitywizards.com</code>.
+        </span>
+
+        <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;">
+          <button id="btn-mark-batch-sent" class="btn btn-secondary btn-sm" type="button">
+            ✓ Mark Both as "Sent Step 1" (Manual)
+          </button>
+          <button id="btn-send-first-only" class="btn btn-secondary btn-sm" type="button">
+            Send Just First One (#1 Only) ↗
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  showModal(`Batch Send — Next ${count} Outlets`, modalHtml);
+
+  const dispatchBatchBtn = $('#btn-dispatch-batch-server');
+  if (dispatchBatchBtn) {
+    dispatchBatchBtn.addEventListener('click', async () => {
+      $('#modal-backdrop').hidden = true;
+      await runSendBatch(contacts.map((c) => c.id), false, 1);
+    });
+  }
+
+  const markBatchBtn = $('#btn-mark-batch-sent');
+  if (markBatchBtn) {
+    markBatchBtn.addEventListener('click', async () => {
+      for (const c of contacts) {
+        await api(`api.php?action=contact&id=${encodeURIComponent(c.id)}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ stage: 'Sent Step 1', delivery_status: 'Sent Step 1 (Batch Manual)', sent_at: new Date().toISOString() }),
+        });
+      }
+      await refresh();
+      $('#modal-backdrop').hidden = true;
+    });
+  }
+
+  const sendFirstBtn = $('#btn-send-first-only');
+  if (sendFirstBtn) {
+    sendFirstBtn.addEventListener('click', () => {
+      openSendStep1Dispatcher(contacts[0].id);
+    });
+  }
+}
+
 $('#btn-dry-run-2').addEventListener('click', () => {
   const next2 = state.contacts.filter((c) => c.stage === 'Queued' && c.primary_email).slice(0, 2).map((c) => c.id);
   runSendBatch(next2, true);
 });
 
 $('#btn-send-2').addEventListener('click', () => {
-  const nextQueued = state.contacts.find((c) => c.stage === 'Queued' && c.primary_email);
-  if (nextQueued) {
-    openSendStep1Dispatcher(nextQueued.id);
-  } else {
-    showModal('Send Step 1', '<p class="status-pill status-info">No contacts currently queued for Step 1.</p>');
-  }
+  const next2 = state.contacts.filter((c) => c.stage === 'Queued' && c.primary_email).slice(0, 2);
+  openSendBatchDispatcher(next2);
 });
 
 $('#btn-add-contact').addEventListener('click', () => {
