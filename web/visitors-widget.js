@@ -1,18 +1,21 @@
 /**
  * Twisted23 Shared Mini World Visitors Animated Globe Widget
- * Links to https://www.twisted23.com/visitors/ (/visitors/)
- * Shown small by default on all parlour subpages, with one-click Hide/Show persistence.
+ * - Links to https://www.twisted23.com/visitors/ (/visitors/)
+ * - Shown small by default on all parlour subpages, with one-click Hide/Show persistence
+ * - Uses Earth's true 23.44° axial tilt and real server telemetry (/visitors/telemetry.php)
  */
 (function () {
   'use strict';
 
   var path = (window.location && window.location.pathname) || '';
+  var TELEMETRY_URL = '/visitors/telemetry.php';
+  var VISITORS_URL = '/visitors/';
+  var STORAGE_KEY = 'twst23_visitors_widget_hidden';
+  var EARTH_TILT_RAD = (23.44 * Math.PI) / 180;
+
   if (/^\/visitors(\/index\.html|\/)?$/i.test(path)) {
     return;
   }
-
-  var STORAGE_KEY = 'twst23_visitors_widget_hidden';
-  var VISITORS_URL = '/visitors/';
 
   function isHiddenPref() {
     try {
@@ -45,7 +48,7 @@
       '  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;',
       '}',
       '#twst23-visitors-card {',
-      '  width: 158px;',
+      '  width: 162px;',
       '  background: rgba(9, 19, 34, 0.94);',
       '  border: 1px solid rgba(56, 189, 248, 0.45);',
       '  border-radius: 14px;',
@@ -105,8 +108,8 @@
       '  border-radius: 50%;',
       '}',
       '#twv-globe-canvas {',
-      '  width: 104px;',
-      '  height: 104px;',
+      '  width: 108px;',
+      '  height: 108px;',
       '  border-radius: 50%;',
       '  cursor: pointer;',
       '  display: block;',
@@ -158,8 +161,8 @@
       '.twv-show-btn:hover { background: #334155; color: #fbbf24; }',
       '@media (max-width: 520px) {',
       '  #twst23-visitors-dock { right: 10px; bottom: 10px; }',
-      '  #twst23-visitors-card { width: 136px; padding: 7px; }',
-      '  #twv-globe-canvas { width: 88px; height: 88px; }',
+      '  #twst23-visitors-card { width: 138px; padding: 7px; }',
+      '  #twv-globe-canvas { width: 90px; height: 90px; }',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -176,16 +179,16 @@
     dock.innerHTML = [
       '<div id="twst23-visitors-card">',
       '  <div class="twv-header">',
-      '    <a href="' + VISITORS_URL + '" class="twv-title-link" title="Open full World Visitors Animated Globe">',
+      '    <a href="' + VISITORS_URL + '" class="twv-title-link" title="Open World Visitors Live Globe (23.4° Tilt)">',
       '      <span class="twv-dot"></span>',
-      '      <span>Visitors &#8599;</span>',
+      '      <span id="twv-live-label">Visitors &#8599;</span>',
       '    </a>',
       '    <button type="button" id="twv-hide-btn" class="twv-hide-btn" aria-label="Hide World Visitors Globe" title="Hide small globe">Hide</button>',
       '  </div>',
-      '  <a href="' + VISITORS_URL + '" class="twv-canvas-link" title="Open full World Visitors Animated Globe">',
-      '    <canvas id="twv-globe-canvas" width="208" height="208"></canvas>',
+      '  <a href="' + VISITORS_URL + '" class="twv-canvas-link" title="Open full World Visitors Live Globe">',
+      '    <canvas id="twv-globe-canvas" width="216" height="216"></canvas>',
       '  </a>',
-      '  <a href="' + VISITORS_URL + '" id="twv-ticker" class="twv-ticker-link" title="Open World Visitors Telemetry">&#127757; Live Globe</a>',
+      '  <a href="' + VISITORS_URL + '" id="twv-ticker" class="twv-ticker-link" title="Open World Visitors Telemetry">&#127757; 23.4° Live Data</a>',
       '</div>',
       '<div id="twst23-visitors-pill" hidden>',
       '  <a href="' + VISITORS_URL + '" class="twv-pill-link" title="Open full World Visitors Globe">&#127757; Visitors &#8599;</a>',
@@ -201,10 +204,15 @@
     var showBtn = document.getElementById('twv-show-btn');
     var cv = document.getElementById('twv-globe-canvas');
     var tickerEl = document.getElementById('twv-ticker');
+    var liveLabel = document.getElementById('twv-live-label');
     var gCtx = cv && cv.getContext ? cv.getContext('2d') : null;
 
     var hidden = isHiddenPref();
     var rafId = null;
+    var liveLocations = [];
+    var recentArrivals = [];
+    var arrivalIdx = 0;
+    var lastSeenTs = 0;
 
     // Continents dot-matrix coordinates
     var land = [];
@@ -230,46 +238,82 @@
       }
     }
 
-    var cities = [
-      { name: 'Tokyo', flag: '\uD83C\uDDEF\uD83C\uDDF5', lat: 35.68, lon: 139.65, table: 'Backgammon' },
-      { name: 'London', flag: '\uD83C\uDDEC\uD83C\uDDE7', lat: 51.51, lon: -0.13, table: '24-Slider' },
-      { name: 'New York', flag: '\uD83C\uDDFA\uD83C\uDDF8', lat: 40.71, lon: -74.01, table: 'Hangman' },
-      { name: 'Anchorage', flag: '\uD83C\uDDFA\uD83C\uDDF8', lat: 61.22, lon: -149.90, table: 'TopHat' },
-      { name: 'Paris', flag: '\uD83C\uDDEB\uD83C\uDDF7', lat: 48.86, lon: 2.35, table: 'TopHat' },
-      { name: 'Singapore', flag: '\uD83C\uDDF8\uD83C\uDDEC', lat: 1.35, lon: 103.82, table: 'eXtreme' },
-      { name: 'Sydney', flag: '\uD83C\uDDE6\uD83C\uDDFA', lat: -33.87, lon: 151.21, table: 'Backgammon' },
-      { name: 'Sao Paulo', flag: '\uD83C\uDDE7\uD83C\uDDF7', lat: -23.55, lon: -46.63, table: '24-Slider' }
-    ];
-
     var yaw = 0.85;
-    var pitch = 0.26;
-    var r = 88;
-    var pings = [{ city: cities[0], rad: 0, max: 18 }];
+    var pitch = 0.14;
+    var r = 82;
+    var pings = [];
 
-    function updateTicker(c) {
-      if (tickerEl) {
-        tickerEl.textContent = c.flag + ' ' + c.name + ' \u2192 ' + c.table;
-      }
+    function applyEarthTransform(x0, y0, z0) {
+      var x1 = x0 * Math.cos(EARTH_TILT_RAD) - y0 * Math.sin(EARTH_TILT_RAD);
+      var y1 = x0 * Math.sin(EARTH_TILT_RAD) + y0 * Math.cos(EARTH_TILT_RAD);
+      var z1 = z0;
+      var y2 = y1 * Math.cos(pitch) - z1 * Math.sin(pitch);
+      var z2 = y1 * Math.sin(pitch) + z1 * Math.cos(pitch);
+      return { x: cv.width / 2 + x1, y: cv.height / 2 + y2, z: z2, visible: z2 > -4 };
     }
-    updateTicker(cities[0]);
-
-    setInterval(function () {
-      if (hidden) return;
-      var c = cities[Math.floor(Math.random() * cities.length)];
-      pings.push({ city: c, rad: 0, max: 18 });
-      updateTicker(c);
-    }, 2800);
 
     function proj(lt, ln) {
       var ph = (lt * Math.PI) / 180;
       var th = ((ln + 180) * Math.PI) / 180 + yaw;
-      var x = -r * Math.cos(ph) * Math.cos(th);
-      var y = -r * Math.sin(ph);
-      var z = r * Math.cos(ph) * Math.sin(th);
-      var yP = y * Math.cos(pitch) - z * Math.sin(pitch);
-      var zP = y * Math.sin(pitch) + z * Math.cos(pitch);
-      return { x: cv.width / 2 + x, y: cv.height / 2 + yP, z: zP, visible: zP > -4 };
+      var x0 = -r * Math.cos(ph) * Math.cos(th);
+      var y0 = -r * Math.sin(ph);
+      var z0 = r * Math.cos(ph) * Math.sin(th);
+      return applyEarthTransform(x0, y0, z0);
     }
+
+    function refreshTickerText() {
+      if (!tickerEl) return;
+      if (recentArrivals.length === 0) {
+        tickerEl.textContent = '\uD83C\uDF0D 23.4\u00B0 Real Live';
+        return;
+      }
+      var item = recentArrivals[arrivalIdx % recentArrivals.length];
+      tickerEl.textContent = (item.flag || '\uD83C\uDF10') + ' ' + item.city + ' \u2192 ' + item.table;
+    }
+
+    function fetchRealTelemetry(recordHit) {
+      try {
+        window.fetch(TELEMETRY_URL, {
+          method: recordHit ? 'POST' : 'GET',
+          headers: recordHit ? { 'Content-Type': 'application/json' } : {},
+          body: recordHit ? JSON.stringify({ path: path }) : undefined,
+          cache: 'no-store'
+        })
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (data) {
+            if (!data || !data.ok) return;
+            liveLocations = Array.isArray(data.activeLocations) ? data.activeLocations : [];
+            recentArrivals = Array.isArray(data.recentArrivals) ? data.recentArrivals : [];
+            if (liveLabel) {
+              liveLabel.textContent = (data.activeSessions || 0) + ' Live \u2197';
+            }
+            if (recentArrivals.length > 0 && recentArrivals[0].ts > lastSeenTs) {
+              lastSeenTs = recentArrivals[0].ts;
+              var newest = recentArrivals[0];
+              if (typeof newest.lat === 'number' && typeof newest.lon === 'number') {
+                pings.push({ lat: newest.lat, lon: newest.lon, rad: 0, max: 18 });
+              }
+            }
+            arrivalIdx = 0;
+            refreshTickerText();
+          })
+          .catch(function () {});
+      } catch (_) {}
+    }
+
+    // Always record the real visit once on load
+    fetchRealTelemetry(true);
+
+    // Rotate displayed real arrival & refresh every 15s while visible
+    setInterval(function () {
+      if (hidden || recentArrivals.length === 0) return;
+      arrivalIdx = (arrivalIdx + 1) % recentArrivals.length;
+      refreshTickerText();
+    }, 3200);
+
+    setInterval(function () {
+      if (!hidden) fetchRealTelemetry(false);
+    }, 15000);
 
     function draw() {
       if (hidden || !gCtx) {
@@ -279,6 +323,18 @@
       gCtx.clearRect(0, 0, cv.width, cv.height);
       var cx = cv.width / 2;
       var cy = cv.height / 2;
+
+      // Earth's 23.44° tilted axis line
+      var nPole = applyEarthTransform(0, -r * 1.16, 0);
+      var sPole = applyEarthTransform(0, r * 1.16, 0);
+      gCtx.save();
+      gCtx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+      gCtx.lineWidth = 1.5;
+      gCtx.beginPath();
+      gCtx.moveTo(nPole.x, nPole.y);
+      gCtx.lineTo(sPole.x, sPole.y);
+      gCtx.stroke();
+      gCtx.restore();
 
       var sp = gCtx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
       sp.addColorStop(0, '#10223f');
@@ -306,12 +362,14 @@
         }
       }
 
-      for (var j = 0; j < cities.length; j++) {
-        var cp = proj(cities[j].lat, cities[j].lon);
+      for (var j = 0; j < liveLocations.length; j++) {
+        var loc = liveLocations[j];
+        if (typeof loc.lat !== 'number' || typeof loc.lon !== 'number') continue;
+        var cp = proj(loc.lat, loc.lon);
         if (cp.visible && cp.z > 0) {
           gCtx.beginPath();
-          gCtx.arc(cp.x, cp.y, 2.8, 0, Math.PI * 2);
-          gCtx.fillStyle = '#f59e0b';
+          gCtx.arc(cp.x, cp.y, loc.isActive ? 3.4 : 2.6, 0, Math.PI * 2);
+          gCtx.fillStyle = loc.isActive ? '#10b981' : '#f59e0b';
           gCtx.fill();
         }
       }
@@ -320,11 +378,11 @@
         var ping = pings[k];
         ping.rad += 0.45;
         var pAlpha = 1 - ping.rad / ping.max;
-        var pp = proj(ping.city.lat, ping.city.lon);
+        var pp = proj(ping.lat, ping.lon);
         if (pp.visible && pp.z > 0 && pAlpha > 0) {
           gCtx.beginPath();
           gCtx.arc(pp.x, pp.y, ping.rad, 0, Math.PI * 2);
-          gCtx.strokeStyle = 'rgba(245, 158, 11, ' + pAlpha + ')';
+          gCtx.strokeStyle = 'rgba(16, 185, 129, ' + pAlpha + ')';
           gCtx.lineWidth = 2;
           gCtx.stroke();
         }
@@ -356,6 +414,7 @@
       showBtn.addEventListener('click', function () {
         hidden = false;
         setHiddenPref(false);
+        fetchRealTelemetry(false);
         applyVisibility();
       });
     }

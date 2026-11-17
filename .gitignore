@@ -4,3 +4,5 @@
 DerivedData/
 build/
 Pods/
+visitors/data/
+web/visitors/data/

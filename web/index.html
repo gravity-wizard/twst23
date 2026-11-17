@@ -1141,7 +1141,7 @@
               <span class="table-tag" style="background:#0284c7; color:#fff;">Live Telemetry</span>
             </div>
             <p class="table-desc" style="margin-bottom:12px;">
-              Watch live global parlour arrivals across 46+ nations on our interactive 3D rotating globe: dot-matrix continents, real-time arrival pings, great-circle connection arcs, and live table telemetry.
+              Watch genuine live parlour arrivals on our interactive 3D globe tilted at Earth&rsquo;s true 23.44&deg; axial obliquity: dot-matrix continents, active visitor pins, connection arcs, and real telemetry.
             </p>
             <div id="homeGlobeTicker" style="font-family:ui-monospace, monospace; font-size:0.8rem; color:#38bdf8; background:rgba(15,23,42,0.75); border:1px solid #1e293b; border-radius:10px; padding:8px 12px; margin-bottom:14px;">
               🌐 Connecting global parlour telemetry...
@@ -1641,20 +1641,18 @@
       try { isHidden = localStorage.getItem(STORAGE_KEY) === '1'; } catch (_) {}
       let rafId = null;
 
+      const EARTH_TILT_RAD = (23.44 * Math.PI) / 180;
       const gCtx = cv.getContext('2d');
-      const r = 98;
+      const r = 92;
       let yaw = 0.85;
-      const pitch = 0.26;
-      const cities = [
-        { name: "Tokyo", flag: "🇯🇵", lat: 35.68, lon: 139.65, table: "Backgammon 3D" },
-        { name: "London", flag: "🇬🇧", lat: 51.51, lon: -0.13, table: "Twisted 23 Slider" },
-        { name: "New York", flag: "🇺🇸", lat: 40.71, lon: -74.01, table: "CameLcase Hangman" },
-        { name: "San Francisco", flag: "🇺🇸", lat: 37.77, lon: -122.42, table: "Flipping Dice" },
-        { name: "Paris", flag: "🇫🇷", lat: 48.86, lon: 2.35, table: "TopHat Sudoku" },
-        { name: "Singapore", flag: "🇸🇬", lat: 1.35, lon: 103.82, table: "Botchee" },
-        { name: "Sydney", flag: "🇦🇺", lat: -33.87, lon: 151.21, table: "Backgammon 3D" },
-        { name: "São Paulo", flag: "🇧🇷", lat: -23.55, lon: -46.63, table: "Twisted 23 Slider" }
-      ];
+      const pitch = 0.14;
+      let liveLocations = [];
+      let recentArrivals = [];
+      let arrivalIdx = 0;
+      let lastSeenTs = 0;
+      let activeCount = 0;
+      let unique24h = 0;
+
       const land = [];
       const boxes = [
         { minLat: 15, maxLat: 68, minLon: -140, maxLon: -55 },
@@ -1677,28 +1675,67 @@
         }
       }
       const pings = [];
+      function applyEarthTransform(x0, y0, z0) {
+        const x1 = x0 * Math.cos(EARTH_TILT_RAD) - y0 * Math.sin(EARTH_TILT_RAD);
+        const y1 = x0 * Math.sin(EARTH_TILT_RAD) + y0 * Math.cos(EARTH_TILT_RAD);
+        const z1 = z0;
+        const y2 = y1 * Math.cos(pitch) - z1 * Math.sin(pitch);
+        const z2 = y1 * Math.sin(pitch) + z1 * Math.cos(pitch);
+        return { x: cv.width / 2 + x1, y: cv.height / 2 + y2, z: z2, visible: z2 > -4 };
+      }
       function proj(lat, lon, rad = r) {
         const phi = (lat * Math.PI) / 180;
         const theta = ((lon + 180) * Math.PI) / 180 + yaw;
-        const x = -rad * Math.cos(phi) * Math.cos(theta);
-        const y = -rad * Math.sin(phi);
-        const z = rad * Math.cos(phi) * Math.sin(theta);
-        const yP = y * Math.cos(pitch) - z * Math.sin(pitch);
-        const zP = y * Math.sin(pitch) + z * Math.cos(pitch);
-        return { x: cv.width / 2 + x, y: cv.height / 2 + yP, z: zP, visible: zP > -4 };
+        const x0 = -rad * Math.cos(phi) * Math.cos(theta);
+        const y0 = -rad * Math.sin(phi);
+        const z0 = rad * Math.cos(phi) * Math.sin(theta);
+        return applyEarthTransform(x0, y0, z0);
       }
-      function updateTicker(c) {
+      function refreshHomeTicker() {
         const el = document.getElementById('homeGlobeTicker');
-        if (el) el.textContent = `${c.flag} Live arrival from ${c.name} → ${c.table}`;
+        if (!el) return;
+        if (recentArrivals.length === 0) {
+          el.textContent = `🌐 ${activeCount} active (24h: ${unique24h}) • 23.4° Earth Tilt`;
+          return;
+        }
+        const c = recentArrivals[arrivalIdx % recentArrivals.length];
+        el.textContent = `${c.flag || '🌐'} ${c.city} → ${c.table} • ${activeCount} active (24h: ${unique24h})`;
       }
-      updateTicker(cities[0]);
-      pings.push({ city: cities[0], rad: 0, max: 20 });
+      async function fetchHomeTelemetry(recordHit = false) {
+        try {
+          const res = await fetch('/visitors/telemetry.php', {
+            method: recordHit ? 'POST' : 'GET',
+            headers: recordHit ? { 'Content-Type': 'application/json' } : {},
+            body: recordHit ? JSON.stringify({ path: '/' }) : undefined,
+            cache: 'no-store'
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data || !data.ok) return;
+          liveLocations = Array.isArray(data.activeLocations) ? data.activeLocations : [];
+          recentArrivals = Array.isArray(data.recentArrivals) ? data.recentArrivals : [];
+          activeCount = data.activeSessions || 0;
+          unique24h = data.unique24h || 0;
+          if (recentArrivals.length > 0 && recentArrivals[0].ts > lastSeenTs) {
+            lastSeenTs = recentArrivals[0].ts;
+            const n = recentArrivals[0];
+            if (typeof n.lat === 'number' && typeof n.lon === 'number') {
+              pings.push({ lat: n.lat, lon: n.lon, rad: 0, max: 20 });
+            }
+          }
+          arrivalIdx = 0;
+          refreshHomeTicker();
+        } catch (_) {}
+      }
+      fetchHomeTelemetry(true);
       setInterval(() => {
-        if (isHidden) return;
-        const c = cities[Math.floor(Math.random() * cities.length)];
-        pings.push({ city: c, rad: 0, max: 20 });
-        updateTicker(c);
-      }, 2400);
+        if (isHidden || recentArrivals.length === 0) return;
+        arrivalIdx = (arrivalIdx + 1) % recentArrivals.length;
+        refreshHomeTicker();
+      }, 3200);
+      setInterval(() => {
+        if (!isHidden) fetchHomeTelemetry(false);
+      }, 15000);
 
       function draw() {
         if (isHidden) {
@@ -1707,6 +1744,19 @@
         }
         gCtx.clearRect(0, 0, cv.width, cv.height);
         const cx = cv.width / 2, cy = cv.height / 2;
+
+        // 23.44° Earth Axial Tilt Pole Line
+        const nPole = applyEarthTransform(0, -r * 1.15, 0);
+        const sPole = applyEarthTransform(0, r * 1.15, 0);
+        gCtx.save();
+        gCtx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+        gCtx.lineWidth = 1.4;
+        gCtx.beginPath();
+        gCtx.moveTo(nPole.x, nPole.y);
+        gCtx.lineTo(sPole.x, sPole.y);
+        gCtx.stroke();
+        gCtx.restore();
+
         const sp = gCtx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, r * 0.1, cx, cy, r);
         sp.addColorStop(0, '#10223f');
         sp.addColorStop(0.7, '#091322');
@@ -1731,12 +1781,13 @@
             gCtx.fill();
           }
         });
-        cities.forEach(c => {
-          const pt = proj(c.lat, c.lon);
+        liveLocations.forEach(loc => {
+          if (typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
+          const pt = proj(loc.lat, loc.lon);
           if (pt.visible && pt.z > 0) {
             gCtx.beginPath();
-            gCtx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
-            gCtx.fillStyle = '#f59e0b';
+            gCtx.arc(pt.x, pt.y, loc.isActive ? 3.2 : 2.5, 0, Math.PI * 2);
+            gCtx.fillStyle = loc.isActive ? '#10b981' : '#f59e0b';
             gCtx.fill();
           }
         });
@@ -1744,11 +1795,11 @@
           const ping = pings[i];
           ping.rad += 0.45;
           const alpha = 1 - ping.rad / ping.max;
-          const pt = proj(ping.city.lat, ping.city.lon);
+          const pt = proj(ping.lat, ping.lon);
           if (pt.visible && pt.z > 0 && alpha > 0) {
             gCtx.beginPath();
             gCtx.arc(pt.x, pt.y, ping.rad, 0, Math.PI * 2);
-            gCtx.strokeStyle = `rgba(245, 158, 11, ${alpha})`;
+            gCtx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
             gCtx.lineWidth = 1.8;
             gCtx.stroke();
           }
@@ -1774,6 +1825,7 @@
             if (isHidden) localStorage.setItem(STORAGE_KEY, '1');
             else localStorage.removeItem(STORAGE_KEY);
           } catch (_) {}
+          if (!isHidden) fetchHomeTelemetry(false);
           applyGlobeVisibility();
         });
       }

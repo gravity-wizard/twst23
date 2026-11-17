@@ -217,25 +217,25 @@
 
   <main>
     <h1>World Visitors Live Globe</h1>
-    <div class="sub">Autonomous Planetary Telemetry &amp; Real-Time Table Arrivals</div>
+    <div class="sub">Real-Time Planetary Telemetry &bull; Earth True Axial Tilt (23.44°)</div>
 
     <!-- KPI ROW -->
     <div class="kpi-row">
       <div class="kpi-card">
-        <div class="kpi-label">Active Parlour Sessions</div>
-        <div class="kpi-val emerald" id="kpiActive">52</div>
+        <div class="kpi-label">Active Sessions (5m)</div>
+        <div class="kpi-val emerald" id="kpiActive">—</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">24h Unique Reach</div>
-        <div class="kpi-val cyan" id="kpi24h">3,124</div>
+        <div class="kpi-label">24h Unique Visitors</div>
+        <div class="kpi-val cyan" id="kpi24h">—</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Connected Regions</div>
-        <div class="kpi-val accent">46 Nations</div>
+        <div class="kpi-label">Connected Nations</div>
+        <div class="kpi-val accent" id="kpiRegions">—</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Global Relay Ping</div>
-        <div class="kpi-val" id="kpiPing">29 ms</div>
+        <div class="kpi-label">Telemetry Latency</div>
+        <div class="kpi-val" id="kpiPing">—</div>
       </div>
     </div>
 
@@ -243,26 +243,36 @@
     <div class="globe-stage">
       <div class="canvas-box" id="canvasBox">
         <div class="canvas-overlay-top">
-          <span style="color:#f59e0b;">●</span> Drag to Rotate • Smooth Orbit
+          <span style="color:#10b981;">●</span> Live Real Data &bull; Drag to Rotate &bull; 23.44° Axial Tilt
         </div>
-        <div class="canvas-overlay-coords" id="coordsReadout">YAW: 0° • PITCH: 15°</div>
+        <div class="canvas-overlay-coords" id="coordsReadout">TILT: 23.4° • YAW: 0°</div>
 
         <canvas id="globeCanvas" width="600" height="420"></canvas>
 
         <div class="canvas-controls">
           <button class="btn-globe-ctrl" id="btnSpin">⏸ Pause Orbit</button>
           <span>|</span>
-          <button class="btn-globe-ctrl" id="btnPing">⚡ Simulate Arrival</button>
+          <button class="btn-globe-ctrl" id="btnRefresh">🔄 Refresh Live</button>
         </div>
       </div>
 
       <!-- FEED SIDEBAR -->
       <div class="feed-box">
         <div class="feed-header">
-          <span>Live Arrivals</span>
-          <span style="color:#10b981; font-family:ui-monospace, monospace; font-size:0.75rem;">STREAMING</span>
+          <span>Real Arrivals (24h)</span>
+          <span id="feedStatusBadge" style="color:#10b981; font-family:ui-monospace, monospace; font-size:0.75rem;">CONNECTING</span>
         </div>
-        <div class="feed-list" id="feedList"></div>
+        <div class="feed-list" id="feedList">
+          <div class="feed-item">
+            <div class="feed-info">
+              <span>🌐</span>
+              <div>
+                <div class="feed-city">Loading real visitor telemetry...</div>
+                <div class="feed-game">Querying /visitors/telemetry.php</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -272,31 +282,19 @@
     const ctx = canvas.getContext('2d');
     const box = document.getElementById('canvasBox');
 
-    let radius = 150;
+    const EARTH_TILT_DEG = 23.44;
+    const EARTH_TILT_RAD = (EARTH_TILT_DEG * Math.PI) / 180;
+
+    let radius = 148;
     let yaw = 0.85;
-    let pitch = 0.28;
+    let pitch = 0.14;
     let isSpinning = true;
     let spinSpeed = 0.005;
     let isDragging = false;
     let lastX = 0, lastY = 0;
 
-    const CITIES = [
-      { name: "Tokyo", country: "Japan", flag: "🇯🇵", lat: 35.6762, lon: 139.6503, table: "Backgammon 3D" },
-      { name: "London", country: "United Kingdom", flag: "🇬🇧", lat: 51.5074, lon: -0.1278, table: "Twisted 23 Slider" },
-      { name: "New York", country: "United States", flag: "🇺🇸", lat: 40.7128, lon: -74.0060, table: "CameLcase Hangman" },
-      { name: "San Francisco", country: "United States", flag: "🇺🇸", lat: 37.7749, lon: -122.4194, table: "Flipping Dice Blitz" },
-      { name: "Paris", country: "France", flag: "🇫🇷", lat: 48.8566, lon: 2.3522, table: "Twisted 23 Slider" },
-      { name: "Frankfurt", country: "Germany", flag: "🇩🇪", lat: 50.1109, lon: 8.6821, table: "Backgammon 3D" },
-      { name: "Singapore", country: "Singapore", flag: "🇸🇬", lat: 1.3521, lon: 103.8198, table: "TopHat 24" },
-      { name: "Sydney", country: "Australia", flag: "🇦🇺", lat: -33.8688, lon: 151.2093, table: "CameLcase Hangman" },
-      { name: "São Paulo", country: "Brazil", flag: "🇧🇷", lat: -23.5505, lon: -46.6333, table: "Twisted 23 Slider" },
-      { name: "Dubai", country: "UAE", flag: "🇦🇪", lat: 25.2048, lon: 55.2708, table: "Backgammon 3D" },
-      { name: "Toronto", country: "Canada", flag: "🇨🇦", lat: 43.6532, lon: -79.3832, table: "Flipping Dice Blitz" },
-      { name: "Seoul", country: "South Korea", flag: "🇰🇷", lat: 37.5665, lon: 126.9780, table: "Twisted 23 Slider" },
-      { name: "Mumbai", country: "India", flag: "🇮🇳", lat: 19.0760, lon: 72.8777, table: "CameLcase Hangman" },
-      { name: "Stockholm", country: "Sweden", flag: "🇸🇪", lat: 59.3293, lon: 18.0686, table: "Backgammon 3D" },
-      { name: "Amsterdam", country: "Netherlands", flag: "🇳🇱", lat: 52.3676, lon: 4.9041, table: "Twisted 23 Slider" }
-    ];
+    let LIVE_LOCATIONS = [];
+    let LAST_SEEN_TS = 0;
 
     // Mathematical Dot Matrix Continents
     const LAND_POINTS = [];
@@ -330,33 +328,44 @@
     let activePings = [];
     let activeArcs = [];
 
-    function project(lat, lon, r = radius) {
-      const phi = (lat * Math.PI) / 180;
-      const theta = ((lon + 180) * Math.PI) / 180 + yaw;
-      let x = -r * Math.cos(phi) * Math.cos(theta);
-      let y = -r * Math.sin(phi);
-      let z = r * Math.cos(phi) * Math.sin(theta);
-      const yP = y * Math.cos(pitch) - z * Math.sin(pitch);
-      const zP = y * Math.sin(pitch) + z * Math.cos(pitch);
+    // Rotate point around Earth's polar axis (yaw), apply true 23.44° axial tilt, then camera pitch
+    function applyEarthTransform(x0, y0, z0) {
+      const x1 = x0 * Math.cos(EARTH_TILT_RAD) - y0 * Math.sin(EARTH_TILT_RAD);
+      const y1 = x0 * Math.sin(EARTH_TILT_RAD) + y0 * Math.cos(EARTH_TILT_RAD);
+      const z1 = z0;
+
+      const y2 = y1 * Math.cos(pitch) - z1 * Math.sin(pitch);
+      const z2 = y1 * Math.sin(pitch) + z1 * Math.cos(pitch);
       return {
-        x: canvas.width / 2 + x,
-        y: canvas.height / 2 + yP,
-        z: zP,
-        visible: zP > -5
+        x: canvas.width / 2 + x1,
+        y: canvas.height / 2 + y2,
+        z: z2,
+        visible: z2 > -5
       };
     }
 
-    function triggerCityPing(city) {
+    function project(lat, lon, r = radius) {
+      const phi = (lat * Math.PI) / 180;
+      const theta = ((lon + 180) * Math.PI) / 180 + yaw;
+      const x0 = -r * Math.cos(phi) * Math.cos(theta);
+      const y0 = -r * Math.sin(phi);
+      const z0 = r * Math.cos(phi) * Math.sin(theta);
+      return applyEarthTransform(x0, y0, z0);
+    }
+
+    function triggerLocationPing(loc) {
+      if (!loc || typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
       activePings.push({
-        city: city || CITIES[Math.floor(Math.random() * CITIES.length)],
+        loc,
         radius: 0,
         maxRadius: 30,
         alpha: 1.0
       });
-      const c1 = city || CITIES[Math.floor(Math.random() * CITIES.length)];
-      const c2 = CITIES[Math.floor(Math.random() * CITIES.length)];
-      if (c1 !== c2) {
-        activeArcs.push({ from: c1, to: c2, progress: 0, speed: 0.018 });
+      if (LIVE_LOCATIONS.length > 1) {
+        const other = LIVE_LOCATIONS.find(l => l.lat !== loc.lat || l.lon !== loc.lon);
+        if (other) {
+          activeArcs.push({ from: loc, to: other, progress: 0, speed: 0.018 });
+        }
       }
     }
 
@@ -364,6 +373,32 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
+
+      // Subtle vertical reference line for 23.44° axial comparison
+      ctx.save();
+      ctx.setLineDash([3, 4]);
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - radius * 1.24);
+      ctx.lineTo(cx, cy + radius * 1.24);
+      ctx.stroke();
+      ctx.restore();
+
+      // Earth's True 23.44° Tilted Rotational Axis
+      const northPole = applyEarthTransform(0, -radius * 1.22, 0);
+      const southPole = applyEarthTransform(0, radius * 1.22, 0);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.55)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(northPole.x, northPole.y);
+      ctx.lineTo(southPole.x, southPole.y);
+      ctx.stroke();
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 10px ui-monospace, SFMono-Regular, monospace';
+      ctx.fillText('N (23.4°)', northPole.x + 6, northPole.y + 4);
+      ctx.restore();
 
       // Outer Glow
       const glow = ctx.createRadialGradient(cx, cy, radius * 0.85, cx, cy, radius * 1.35);
@@ -391,8 +426,8 @@
       ctx.stroke();
       ctx.clip();
 
-      // Graticule grid
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+      // Graticule grid tilted with Earth's 23.44° axis
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
       ctx.lineWidth = 1;
       for (let lat = -60; lat <= 60; lat += 30) {
         ctx.beginPath();
@@ -420,8 +455,9 @@
         }
       });
 
-      // Arcs
-      activeArcs.forEach((arc, i) => {
+      // Arcs between real active visitor locations
+      for (let i = activeArcs.length - 1; i >= 0; i--) {
+        const arc = activeArcs[i];
         arc.progress += arc.speed;
         const p1 = project(arc.from.lat, arc.from.lon);
         const p2 = project(arc.to.lat, arc.to.lon);
@@ -445,7 +481,6 @@
           ctx.lineWidth = 1.6;
           ctx.stroke();
 
-          // Particle
           const tP = arc.progress % 1;
           const latP = arc.from.lat * (1 - tP) + arc.to.lat * tP;
           const lonP = arc.from.lon * (1 - tP) + arc.to.lon * tP;
@@ -459,47 +494,49 @@
           }
         }
         if (arc.progress >= 1.0) activeArcs.splice(i, 1);
-      });
+      }
 
-      // City dots
-      CITIES.forEach(c => {
-        const pt = project(c.lat, c.lon);
+      // Real Visitor Location Pins
+      LIVE_LOCATIONS.forEach(loc => {
+        if (typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
+        const pt = project(loc.lat, loc.lon);
         if (pt.visible && pt.z > 0) {
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
-          ctx.fillStyle = '#f59e0b';
+          ctx.arc(pt.x, pt.y, loc.isActive ? 4.2 : 3.0, 0, Math.PI * 2);
+          ctx.fillStyle = loc.isActive ? '#10b981' : '#f59e0b';
           ctx.fill();
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 1.3, 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
           ctx.fillStyle = '#ffffff';
           ctx.fill();
+          ctx.font = '10px ui-monospace, SFMono-Regular, monospace';
+          ctx.fillStyle = 'rgba(248, 250, 252, 0.85)';
+          ctx.fillText(`${loc.flag} ${loc.city}`, pt.x + 7, pt.y + 3);
         }
       });
 
-      // Pings
-      activePings.forEach((ping, idx) => {
+      // Ripple Pings on real new arrivals
+      for (let idx = activePings.length - 1; idx >= 0; idx--) {
+        const ping = activePings[idx];
         ping.radius += 0.7;
         ping.alpha = 1 - (ping.radius / ping.maxRadius);
-        const pt = project(ping.city.lat, ping.city.lon);
+        const pt = project(ping.loc.lat, ping.loc.lon);
         if (pt.visible && pt.z > 0 && ping.alpha > 0) {
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, ping.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(245, 158, 11, ${ping.alpha})`;
+          ctx.strokeStyle = `rgba(16, 185, 129, ${ping.alpha})`;
           ctx.lineWidth = 2;
           ctx.stroke();
-          ctx.font = '11px ui-monospace, SFMono-Regular, monospace';
-          ctx.fillStyle = `rgba(255, 255, 255, ${ping.alpha * 0.95})`;
-          ctx.fillText(`${ping.city.flag} ${ping.city.name}`, pt.x + 8, pt.y - 4);
         }
         if (ping.radius >= ping.maxRadius) activePings.splice(idx, 1);
-      });
+      }
 
       ctx.restore();
 
       if (isSpinning) yaw += spinSpeed;
-      const yawDeg = Math.round((yaw * 180 / Math.PI) % 360);
+      const yawDeg = Math.round(((yaw * 180 / Math.PI) % 360 + 360) % 360);
       const pitchDeg = Math.round(pitch * 180 / Math.PI);
-      document.getElementById('coordsReadout').textContent = `YAW: ${yawDeg}° • PITCH: ${pitchDeg}°`;
+      document.getElementById('coordsReadout').textContent = `TILT: ${EARTH_TILT_DEG}° • YAW: ${yawDeg}° • PITCH: ${pitchDeg}°`;
 
       requestAnimationFrame(render);
     }
@@ -542,44 +579,96 @@
       isSpinning = !isSpinning;
       document.getElementById('btnSpin').textContent = isSpinning ? '⏸ Pause Orbit' : '▶️ Resume Orbit';
     };
-    document.getElementById('btnPing').onclick = () => {
-      const city = CITIES[Math.floor(Math.random() * CITIES.length)];
-      triggerCityPing(city);
-      addFeed(city);
-    };
 
-    // Feed
-    const feed = document.getElementById('feedList');
-    function addFeed(city) {
-      const it = document.createElement('div');
-      it.className = 'feed-item';
-      it.innerHTML = `
-        <div class="feed-info">
-          <span style="font-size:1.15rem;">${city.flag}</span>
-          <div>
-            <div class="feed-city">${city.name}, ${city.country}</div>
-            <div class="feed-game">joined ${city.table}</div>
-          </div>
-        </div>
-        <div class="feed-time">just now</div>
-      `;
-      feed.prepend(it);
-      if (feed.children.length > 7) feed.removeChild(feed.lastChild);
+    function formatAge(sec) {
+      if (sec < 20) return 'just now';
+      if (sec < 60) return `${sec}s ago`;
+      const m = Math.floor(sec / 60);
+      if (m < 60) return `${m}m ago`;
+      return `${Math.floor(m / 60)}h ago`;
     }
 
-    [0, 1, 2, 3].forEach(i => {
-      addFeed(CITIES[i]);
-      triggerCityPing(CITIES[i]);
-    });
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
 
-    setInterval(() => {
-      const city = CITIES[Math.floor(Math.random() * CITIES.length)];
-      triggerCityPing(city);
-      addFeed(city);
-      const act = document.getElementById('kpiActive');
-      const val = parseInt(act.textContent, 10);
-      act.textContent = Math.max(38, val + Math.floor(Math.random() * 5) - 2);
-    }, 3000);
+    function renderTelemetryData(data, rttMs) {
+      document.getElementById('kpiActive').textContent = String(data.activeSessions ?? 0);
+      document.getElementById('kpi24h').textContent = `${data.unique24h ?? 0} (${data.hits24h ?? 0} hits)`;
+      document.getElementById('kpiRegions').textContent = `${data.regionsCount ?? 0} ${data.regionsCount === 1 ? 'Nation' : 'Nations'}`;
+      document.getElementById('kpiPing').textContent = `${Math.round(rttMs)} ms`;
+      document.getElementById('feedStatusBadge').textContent = 'LIVE REAL DATA';
+
+      LIVE_LOCATIONS = Array.isArray(data.activeLocations) ? data.activeLocations : [];
+      const arrivals = Array.isArray(data.recentArrivals) ? data.recentArrivals : [];
+
+      if (arrivals.length > 0 && arrivals[0].ts > LAST_SEEN_TS) {
+        LAST_SEEN_TS = arrivals[0].ts;
+        triggerLocationPing(arrivals[0]);
+      } else if (LIVE_LOCATIONS.length > 0 && activePings.length === 0) {
+        triggerLocationPing(LIVE_LOCATIONS[0]);
+      }
+
+      const feed = document.getElementById('feedList');
+      feed.innerHTML = '';
+      if (arrivals.length === 0) {
+        feed.innerHTML = `
+          <div class="feed-item">
+            <div class="feed-info">
+              <span>🌐</span>
+              <div>
+                <div class="feed-city">Telemetry ready</div>
+                <div class="feed-game">No recorded visits in the last 24h yet</div>
+              </div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      arrivals.slice(0, 8).forEach(ev => {
+        const it = document.createElement('div');
+        it.className = 'feed-item';
+        const youTag = ev.isYou ? ' <span style="color:#38bdf8;font-size:0.7rem;">(You)</span>' : '';
+        it.innerHTML = `
+          <div class="feed-info">
+            <span style="font-size:1.15rem;">${escapeHtml(ev.flag || '🌐')}</span>
+            <div>
+              <div class="feed-city">${escapeHtml(ev.city)}, ${escapeHtml(ev.country)}${youTag}</div>
+              <div class="feed-game">visited ${escapeHtml(ev.table)}</div>
+            </div>
+          </div>
+          <div class="feed-time">${formatAge(ev.secondsAgo || 0)}</div>
+        `;
+        feed.appendChild(it);
+      });
+    }
+
+    async function fetchTelemetry(recordHit = false) {
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/visitors/telemetry.php', {
+          method: recordHit ? 'POST' : 'GET',
+          headers: recordHit ? { 'Content-Type': 'application/json' } : {},
+          body: recordHit ? JSON.stringify({ path: window.location.pathname }) : undefined,
+          cache: 'no-store'
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const rtt = performance.now() - t0;
+        if (data && data.ok) {
+          renderTelemetryData(data, rtt);
+        }
+      } catch (err) {
+        document.getElementById('feedStatusBadge').textContent = 'OFFLINE';
+        document.getElementById('kpiPing').textContent = 'Error';
+      }
+    }
+
+    document.getElementById('btnRefresh').onclick = () => fetchTelemetry(false);
+
+    // Record this real visit on load, then poll real telemetry every 10s
+    fetchTelemetry(true);
+    setInterval(() => fetchTelemetry(false), 10000);
   </script>
 
   <!-- Floating Unmissable Home Button -->
