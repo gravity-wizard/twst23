@@ -207,6 +207,37 @@ if ($action === 'send' && $method === 'POST') {
             curl_close($ch);
 
             if ($httpCode >= 200 && $httpCode < 300) {
+                // Guaranteed BCC Echo Dispatch to Gary & Botchee via Hostinger Mail API
+                if (count($bccList) > 0) {
+                    $echoText = "=== [TWISTED23 CRM OUTREACH BCC ECHO] ===\n" .
+                                "Recipient: " . $c['primary_email'] . "\n" .
+                                "Outlet: " . $c['outlet'] . "\n" .
+                                "Original Sent At: " . gmdate('c') . "\n" .
+                                "Echo Dispatched: " . gmdate('c') . "\n" .
+                                "=========================================\n\n" .
+                                $text;
+                    $echoPayload = [
+                        'to' => $bccList,
+                        'displayName' => 'Twisted23 CRM',
+                        'subject' => "[BCC Sent] " . $subject,
+                        'text' => $echoText,
+                    ];
+                    $chEcho = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
+                    curl_setopt_array($chEcho, [
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_POST => true,
+                        CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+                        CURLOPT_HTTPHEADER => [
+                            'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
+                            'Content-Type: application/json',
+                        ],
+                        CURLOPT_POSTFIELDS => json_encode($echoPayload),
+                        CURLOPT_TIMEOUT => 15,
+                    ]);
+                    curl_exec($chEcho);
+                    curl_close($chEcho);
+                }
+
                 $now = gmdate('c');
                 if ($step === 1) {
                     $c['stage'] = 'Sent Step 1';
