@@ -410,9 +410,36 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
     if ($fromEmail !== '') {
         $data = read_data($DATA_FILE);
         $matched = false;
+        $normFromEmail = preg_replace('/\+[^@]+/', '', strtolower($fromEmail));
+        $fromParts = explode('@', $fromEmail);
+        $fromDomain = strtolower($fromParts[1] ?? '');
+        $subjectLower = strtolower($subject);
+
         foreach ($data['contacts'] as &$c) {
             $cEmail = strtolower($c['primary_email'] ?? $c['email'] ?? '');
-            if ($cEmail === strtolower($fromEmail)) {
+            $normCEmail = preg_replace('/\+[^@]+/', '', $cEmail);
+            $cParts = explode('@', $cEmail);
+            $cDomain = strtolower($cParts[1] ?? '');
+            $cSubject = strtolower($c['subject_line'] ?? '');
+
+            // 1. Direct or plus-normalized email match
+            $emailMatch = ($cEmail !== '' && ($cEmail === strtolower($fromEmail) || $normCEmail === $normFromEmail));
+
+            // 2. Domain match (for organizational replies from company domains)
+            $domainMatch = ($cDomain !== '' && $fromDomain !== '' && $cDomain === $fromDomain && !in_array($fromDomain, ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com']));
+
+            // 3. Subject match (e.g. Steel Media autoresponder quoting our exact subject)
+            $subjectMatch = false;
+            if ($cSubject !== '' && $subjectLower !== '') {
+                $cleanSub = preg_replace('/^(re|fwd):\s*/i', '', $subjectLower);
+                $cleanCSub = preg_replace('/^(re|fwd):\s*/i', '', $cSubject);
+                $subPrefix = substr($cleanCSub, 0, 25);
+                if ($subPrefix !== '' && (str_contains($cleanSub, $subPrefix) || str_contains($subjectLower, $subPrefix))) {
+                    $subjectMatch = true;
+                }
+            }
+
+            if ($emailMatch || $subjectMatch || $domainMatch) {
                 $c['delivery_status'] = 'Replied';
                 $c['stage'] = 'Received Reply';
                 $c['notes'] = ($c['notes'] ? $c['notes'] . " | " : "") . "[hMail: {$subject}] {$snippet}";
