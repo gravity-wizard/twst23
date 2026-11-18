@@ -1,0 +1,834 @@
+/* ==========================================================================
+   FD_too0 & Near-Original Flipping Dice — Tactile Pastel Dark/Light/Spruce UI
+   Pure Vanilla CSS • Zero Purple on Dark • Mobile Touch-First 60fps Tray
+   ========================================================================== */
+
+.fd-app-shell {
+  --fd-bg: #11100f;
+  --fd-surface: #1b1917;
+  --fd-tray: #231f1c;
+  --fd-tray-inset: #161412;
+  --fd-slot: rgba(255, 248, 238, 0.055);
+  --fd-ink: #f6f3ec;
+  --fd-ink-muted: rgba(246, 243, 236, 0.68);
+  --fd-hairline: rgba(246, 243, 236, 0.12);
+  --fd-accent-warm: #d97b43;
+  --fd-accent-sage: #4a8f76;
+  --fd-accent-gold: #e6b84c;
+  --fd-shadow-tray: 0 22px 48px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  /* Pastel Matte-Porcelain Dice Tokens (Dark Mode calibrated) */
+  --die-coral-top: #f7bcb4;
+  --die-coral-body: #ee9e94;
+  --die-coral-base: #b4675e;
+  --die-coral-pip: #2b1816;
+
+  --die-apricot-top: #fbd3b0;
+  --die-apricot-body: #f4b886;
+  --die-apricot-base: #b87c4b;
+  --die-apricot-pip: #2d1b10;
+
+  --die-butter-top: #fceeae;
+  --die-butter-body: #f2dc7e;
+  --die-butter-base: #b59b42;
+  --die-butter-pip: #2b230d;
+
+  --die-mint-top: #c8f0dc;
+  --die-mint-body: #9fdcc0;
+  --die-mint-base: #5f9d81;
+  --die-mint-pip: #122a20;
+
+  --die-sky-top: #c7e7fa;
+  --die-sky-body: #9bcdf0;
+  --die-sky-base: #5b8eb4;
+  --die-sky-pip: #122434;
+
+  --die-rose-top: #fad0dd;
+  --die-rose-body: #eea8be;
+  --die-rose-base: #b06880;
+  --die-rose-pip: #2e151e;
+
+  min-height: 100dvh;
+  background-color: var(--fd-bg);
+  background-image: radial-gradient(circle at 50% 0%, rgba(255, 236, 210, 0.05), transparent 62%);
+  color: var(--fd-ink);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.85rem 1rem 1.5rem;
+  transition: background-color 0.22s ease, color 0.22s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.fd-app-shell.fd-theme-light {
+  --fd-bg: #f7f4ed;
+  --fd-surface: #ffffff;
+  --fd-tray: #ebe4d7;
+  --fd-tray-inset: #dfd6c5;
+  --fd-slot: rgba(34, 28, 22, 0.06);
+  --fd-ink: #1f1b18;
+  --fd-ink-muted: rgba(31, 27, 24, 0.66);
+  --fd-hairline: rgba(31, 27, 24, 0.12);
+  --fd-accent-warm: #c9642b;
+  --fd-accent-sage: #387961;
+  --fd-accent-gold: #b88418;
+  --fd-shadow-tray: 0 18px 38px rgba(45, 35, 22, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+
+  --die-coral-top: #ffd6d0;
+  --die-coral-body: #f5aba1;
+  --die-coral-base: #c5786e;
+
+  --die-apricot-top: #ffe3ca;
+  --die-apricot-body: #f7c396;
+  --die-apricot-base: #c78d5d;
+
+  --die-butter-top: #fff5c8;
+  --die-butter-body: #f5e28f;
+  --die-butter-base: #c4aa50;
+
+  --die-mint-top: #dcf7ea;
+  --die-mint-body: #ade3ca;
+  --die-mint-base: #6fad91;
+
+  --die-sky-top: #dcf0fd;
+  --die-sky-body: #abd6f5;
+  --die-sky-base: #6d9ec2;
+
+  --die-rose-top: #ffe0ea;
+  --die-rose-body: #f3b6c9;
+  --die-rose-base: #bf7990;
+}
+
+.fd-app-shell.fd-theme-spruce {
+  --fd-bg: #1d140e;
+  --fd-surface: #2a1d15;
+  --fd-tray: #3b281c;
+  --fd-tray-inset: #271a12;
+  --fd-slot: rgba(255, 236, 209, 0.07);
+  --fd-ink: #f8efe2;
+  --fd-ink-muted: rgba(248, 239, 226, 0.72);
+  --fd-hairline: rgba(248, 239, 226, 0.15);
+  background-image: repeating-linear-gradient(
+    94deg,
+    rgba(255, 214, 170, 0.018) 0px,
+    rgba(255, 214, 170, 0.018) 3px,
+    transparent 3px,
+    transparent 11px
+  );
+}
+
+.fd-stage-column {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+/* Top Navigation & Flipper Header */
+.fd-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fd-brand-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.fd-flipper-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  border: none;
+  border-radius: 999px;
+  padding: 0.48rem 0.92rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  background: var(--fd-accent-warm);
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+
+.fd-flipper-btn.is-classic {
+  background: var(--fd-accent-sage);
+}
+
+.fd-flipper-btn:hover {
+  filter: brightness(1.06);
+}
+
+.fd-flipper-btn:active {
+  transform: scale(0.97);
+}
+
+.fd-level-trigger {
+  background: var(--fd-surface);
+  border: 1px solid var(--fd-hairline);
+  color: var(--fd-ink);
+  border-radius: 12px;
+  padding: 0.36rem 0.72rem;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.fd-level-trigger:hover {
+  border-color: var(--fd-ink-muted);
+}
+
+.fd-level-num {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.fd-world-caption {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--fd-ink-muted);
+}
+
+.fd-utility-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+}
+
+.fd-icon-btn {
+  background: var(--fd-surface);
+  border: 1px solid var(--fd-hairline);
+  color: var(--fd-ink);
+  border-radius: 10px;
+  padding: 0.42rem 0.62rem;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: transform 0.12s ease, background-color 0.14s ease;
+}
+
+.fd-icon-btn:hover {
+  border-color: var(--fd-ink-muted);
+}
+
+/* Visually subtle semantic h1 for SEO & clarity */
+.fd-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.15rem;
+}
+
+.fd-main-h1 {
+  font-size: 0.96rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.fd-mode-tagline {
+  font-size: 0.73rem;
+  color: var(--fd-ink-muted);
+}
+
+/* ScoreSlat Telemetry Strip (Game_23.swift Heritage) */
+.fd-scoreslat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.45rem;
+}
+
+.fd-slat-card {
+  background: var(--fd-surface);
+  border: 1px solid var(--fd-hairline);
+  border-radius: 12px;
+  padding: 0.42rem 0.5rem;
+  text-align: center;
+}
+
+.fd-slat-label {
+  display: block;
+  font-size: 0.61rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fd-ink-muted);
+}
+
+.fd-slat-val {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.08rem;
+}
+
+.fd-status-banner {
+  background: var(--fd-surface);
+  border: 1px solid var(--fd-hairline);
+  border-radius: 11px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--fd-ink);
+  min-height: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fd-status-banner.is-surge {
+  background: rgba(230, 184, 76, 0.16);
+}
+
+/* Physical Wooden / Obsidian / Birch Dice Tray */
+.fd-tray-outer {
+  position: relative;
+  width: 100%;
+  background: var(--fd-tray);
+  border-radius: 24px;
+  padding: 13px;
+  box-shadow: var(--fd-shadow-tray);
+  border: 1px solid var(--fd-hairline);
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.fd-tray-inner {
+  background: var(--fd-tray-inset);
+  border-radius: 18px;
+  padding: 10px;
+  display: grid;
+  gap: 9px;
+  position: relative;
+}
+
+.fd-sparkle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.fd-cell-slot {
+  aspect-ratio: 1 / 1;
+  border-radius: 15px;
+  background: var(--fd-slot);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.fd-cell-slot.is-tumbling-primary {
+  z-index: 14;
+}
+
+.fd-cell-slot.is-tumbling-secondary {
+  z-index: 12;
+}
+
+.fd-cell-slot.is-hole {
+  background: transparent;
+  pointer-events: none;
+}
+
+.fd-cell-slot.is-empty-target {
+  cursor: pointer;
+}
+
+.fd-pad-emblem {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 800;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.fd-pad-chroma {
+  color: var(--fd-accent-gold);
+}
+
+.fd-pad-twist {
+  color: var(--fd-accent-warm);
+}
+
+.fd-pad-portal {
+  color: #6fd4b6;
+  font-size: 1rem;
+}
+
+/* True 6-Face 3D CSS preserve-3d Pastel Porcelain Cube */
+.fd-tray-inner {
+  --cell-px: 58px;
+  --step-px: calc(var(--cell-px) + 9px);
+  --die-half: calc(var(--cell-px) * 0.43);
+}
+
+.fd-die-btn {
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: grab;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 540px;
+  -webkit-perspective: 540px;
+  overflow: visible;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.fd-die-btn:active {
+  cursor: grabbing;
+}
+
+.fd-cube-rig {
+  width: 92%;
+  height: 92%;
+  position: relative;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.fd-cube-core {
+  position: absolute;
+  inset: 7%;
+  border-radius: 18%;
+  background: var(--cube-base);
+  transform: translateZ(0px);
+  pointer-events: none;
+}
+
+.fd-cube-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 21%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 15.5%;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: linear-gradient(155deg, var(--cube-top) 0%, var(--cube-body) 100%);
+  box-shadow: inset 0 1.5px 1px rgba(255, 255, 255, 0.68), inset 0 -2px 3px rgba(0, 0, 0, 0.14);
+}
+
+.fd-face-top {
+  transform: translateZ(var(--die-half));
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.24), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.74), inset 0 -2.5px 3px rgba(0, 0, 0, 0.12);
+}
+
+.fd-face-bottom {
+  transform: rotateY(180deg) translateZ(var(--die-half));
+  filter: brightness(0.88);
+}
+
+.fd-face-north {
+  transform: rotateX(90deg) translateZ(var(--die-half));
+  filter: brightness(1.03);
+}
+
+.fd-face-south {
+  transform: rotateX(-90deg) translateZ(var(--die-half));
+  filter: brightness(0.89);
+}
+
+.fd-face-east {
+  transform: rotateY(90deg) translateZ(var(--die-half));
+  filter: brightness(0.91);
+}
+
+.fd-face-west {
+  transform: rotateY(-90deg) translateZ(var(--die-half));
+  filter: brightness(0.97);
+}
+
+.fd-hue-coral {
+  --cube-top: var(--die-coral-top);
+  --cube-body: var(--die-coral-body);
+  --cube-base: var(--die-coral-base);
+  --pip-fill: var(--die-coral-pip);
+}
+
+.fd-hue-apricot {
+  --cube-top: var(--die-apricot-top);
+  --cube-body: var(--die-apricot-body);
+  --cube-base: var(--die-apricot-base);
+  --pip-fill: var(--die-apricot-pip);
+}
+
+.fd-hue-butter {
+  --cube-top: var(--die-butter-top);
+  --cube-body: var(--die-butter-body);
+  --cube-base: var(--die-butter-base);
+  --pip-fill: var(--die-butter-pip);
+}
+
+.fd-hue-mint {
+  --cube-top: var(--die-mint-top);
+  --cube-body: var(--die-mint-body);
+  --cube-base: var(--die-mint-base);
+  --pip-fill: var(--die-mint-pip);
+}
+
+.fd-hue-sky {
+  --cube-top: var(--die-sky-top);
+  --cube-body: var(--die-sky-body);
+  --cube-base: var(--die-sky-base);
+  --pip-fill: var(--die-sky-pip);
+}
+
+.fd-hue-rose {
+  --cube-top: var(--die-rose-top);
+  --cube-body: var(--die-rose-body);
+  --cube-base: var(--die-rose-base);
+  --pip-fill: var(--die-rose-pip);
+}
+
+.fd-die-btn.is-selected .fd-cube-rig {
+  transform: translate3d(0, -3px, 10px) rotateX(8deg) rotateY(-8deg);
+}
+
+.fd-die-btn.is-selected .fd-face-top {
+  outline: 2.5px solid var(--fd-ink);
+  outline-offset: -1px;
+}
+
+/* Rabbit 🐇 • TurtLe 🐢 • SnaiL 🐌 Segmented Pace Bar */
+.fd-speed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--fd-surface);
+  border: 1px solid var(--fd-hairline);
+  border-radius: 13px;
+  padding: 0.32rem 0.42rem 0.32rem 0.72rem;
+}
+
+.fd-speed-caption {
+  font-size: 0.71rem;
+  font-weight: 700;
+  color: var(--fd-ink-muted);
+  white-space: nowrap;
+}
+
+.fd-speed-pills {
+  display: inline-flex;
+  gap: 0.28rem;
+  background: var(--fd-tray);
+  padding: 0.2rem;
+  border-radius: 10px;
+}
+
+.fd-speed-pill {
+  border: none;
+  background: transparent;
+  color: var(--fd-ink-muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.32rem 0.64rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+
+.fd-speed-pill:hover {
+  color: var(--fd-ink);
+}
+
+.fd-speed-pill.is-active {
+  background: var(--fd-surface);
+  color: var(--fd-ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+}
+
+/* True 90-Degree 3D Edge-Vault Cube Roll, 180-Degree Twist, Match Glow & Gravity Cascade */
+@keyframes fdTumbleN {
+  0%   { transform: translate3d(0, var(--step-px), 0) rotateX(-90deg); }
+  50%  { transform: translate3d(0, calc(0.5 * var(--step-px)), 13px) rotateX(-45deg); }
+  100% { transform: translate3d(0, 0, 0) rotateX(0deg); }
+}
+@keyframes fdTumbleS {
+  0%   { transform: translate3d(0, calc(-1 * var(--step-px)), 0) rotateX(90deg); }
+  50%  { transform: translate3d(0, calc(-0.5 * var(--step-px)), 13px) rotateX(45deg); }
+  100% { transform: translate3d(0, 0, 0) rotateX(0deg); }
+}
+@keyframes fdTumbleE {
+  0%   { transform: translate3d(calc(-1 * var(--step-px)), 0, 0) rotateY(-90deg); }
+  50%  { transform: translate3d(calc(-0.5 * var(--step-px)), 0, 13px) rotateY(-45deg); }
+  100% { transform: translate3d(0, 0, 0) rotateY(0deg); }
+}
+@keyframes fdTumbleW {
+  0%   { transform: translate3d(var(--step-px), 0, 0) rotateY(90deg); }
+  50%  { transform: translate3d(calc(0.5 * var(--step-px)), 0, 13px) rotateY(45deg); }
+  100% { transform: translate3d(0, 0, 0) rotateY(0deg); }
+}
+@keyframes fdTumbleTWIST {
+  0%   { transform: translate3d(0, 0, 0) rotateY(-180deg); }
+  50%  { transform: translate3d(0, 0, 24px) rotateY(-90deg) scale3d(1.06, 1.06, 1.06); }
+  100% { transform: translate3d(0, 0, 0) rotateY(0deg); }
+}
+
+@keyframes fdMatchGlow {
+  0%   { transform: translate3d(0, 0, 0) scale(1); filter: brightness(1); }
+  45%  { transform: translate3d(0, -3px, 12px) scale(1.07); filter: brightness(1.16); }
+  100% { transform: translate3d(0, -1px, 6px) scale(0.93); filter: brightness(1.22); }
+}
+
+@keyframes fdGravityDrop {
+  0%   { transform: translate3d(0, calc(-0.65 * var(--step-px)), 10px) rotateX(22deg); opacity: 0.78; }
+  75%  { transform: translate3d(0, 2px, 0) rotateX(-3deg); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) rotateX(0deg); opacity: 1; }
+}
+
+.fd-tumble-N .fd-cube-rig { animation: fdTumbleN var(--fd-tumble-ms, 460ms) cubic-bezier(0.24, 0.88, 0.32, 1) both; }
+.fd-tumble-S .fd-cube-rig { animation: fdTumbleS var(--fd-tumble-ms, 460ms) cubic-bezier(0.24, 0.88, 0.32, 1) both; }
+.fd-tumble-E .fd-cube-rig { animation: fdTumbleE var(--fd-tumble-ms, 460ms) cubic-bezier(0.24, 0.88, 0.32, 1) both; }
+.fd-tumble-W .fd-cube-rig { animation: fdTumbleW var(--fd-tumble-ms, 460ms) cubic-bezier(0.24, 0.88, 0.32, 1) both; }
+.fd-tumble-TWIST .fd-cube-rig { animation: fdTumbleTWIST var(--fd-tumble-ms, 460ms) cubic-bezier(0.24, 0.88, 0.32, 1) both; }
+
+.fd-die-btn.is-match-glow .fd-cube-rig {
+  animation: fdMatchGlow var(--fd-glow-ms, 480ms) ease-in-out forwards;
+}
+
+.fd-die-btn.is-match-glow .fd-face-top {
+  outline: 3px solid #f7dc6f;
+  outline-offset: -1px;
+}
+
+.fd-die-btn.is-gravity-drop .fd-cube-rig {
+  animation: fdGravityDrop var(--fd-drop-ms, 450ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Recessed Pip Dots */
+.fd-pip-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fd-pip-dot {
+  width: 68%;
+  height: 68%;
+  border-radius: 50%;
+  background: var(--pip-fill);
+  box-shadow: inset 0 1.5px 2px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+/* Frost & Chain Badges */
+.fd-frost-glaze {
+  position: absolute;
+  inset: 0;
+  border-radius: 22%;
+  background: linear-gradient(135deg, rgba(215, 246, 255, 0.45), rgba(160, 224, 248, 0.18));
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  pointer-events: none;
+}
+
+.fd-frost-tag {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #103242;
+}
+
+.fd-chain-wrap {
+  position: absolute;
+  inset: 1px;
+  border-radius: 22%;
+  border: 2.2px dashed rgba(45, 27, 14, 0.72);
+  pointer-events: none;
+}
+
+.fd-chain-tag {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 0.66rem;
+}
+
+.fd-hint-badge {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(17, 16, 15, 0.86);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* 6-Face Cube Peek Compass */
+.fd-compass-bar {
+  background: var(--fd-surface);
+  border: 1px solid var(--fd-hairline);
+  border-radius: 12px;
+  padding: 0.48rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.fd-compass-previews {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.fd-compass-step {
+  background: var(--fd-tray);
+  border: 1px solid var(--fd-hairline);
+  color: var(--fd-ink);
+  border-radius: 7px;
+  padding: 0.2rem 0.48rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Bottom Action Deck */
+.fd-controls-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.45rem;
+}
+
+.fd-ctrl-btn {
+  background: var(--fd-surface);
+  border: 1px solid var(--fd-hairline);
+  color: var(--fd-ink);
+  border-radius: 12px;
+  padding: 0.58rem 0.4rem;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, background-color 0.14s ease;
+}
+
+.fd-ctrl-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.fd-ctrl-btn.is-armed {
+  background: var(--fd-accent-warm);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* Modals (World Atlas, Rules & Victory) */
+.fd-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 9, 8, 0.72);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+}
+
+.fd-modal-card {
+  background: var(--fd-surface);
+  color: var(--fd-ink);
+  border: 1px solid var(--fd-hairline);
+  border-radius: 22px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 86dvh;
+  overflow-y: auto;
+  padding: 1.25rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.fd-world-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.fd-world-row {
+  background: var(--fd-tray);
+  border: 1px solid var(--fd-hairline);
+  border-radius: 14px;
+  padding: 0.72rem 0.85rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+@media (max-width: 480px) {
+  .fd-app-shell {
+    padding: 0.55rem 0.65rem 1.1rem;
+  }
+  .fd-tray-outer {
+    padding: 9px;
+  }
+  .fd-tray-inner {
+    padding: 7px;
+    gap: 6px;
+  }
+  .fd-slat-val {
+    font-size: 0.82rem;
+  }
+}

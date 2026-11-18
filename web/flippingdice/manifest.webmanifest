@@ -1,0 +1,23 @@
+{
+  "name": "Flipping Dice & FD_too0 — Twisted23 / Gravity Wizards",
+  "short_name": "Flipping Dice",
+  "description": "Play Near-Original Flipping Dice (Classic 6-Face Sum-7 Tray) and FD_too0 across 1,023 Pastel Dice levels.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#11100f",
+  "theme_color": "#11100f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
