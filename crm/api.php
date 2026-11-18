@@ -40,16 +40,24 @@ function read_data(string $path): array {
     return json_decode($raw ?: '{}', true) ?: ['contacts' => [], 'derbies' => [], 'triage' => []];
 }
 
-function write_data(string $path, array $data): void {
-    $fp = fopen($path, 'c+');
-    if ($fp && flock($fp, LOCK_EX)) {
-        ftruncate($fp, 0);
-        rewind($fp);
-        fwrite($fp, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
-        fflush($fp);
-        flock($fp, LOCK_UN);
-        fclose($fp);
+function write_data(string $path, array $data): bool {
+    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
+    $fp = @fopen($path, 'c+');
+    if ($fp) {
+        $locked = @flock($fp, LOCK_EX);
+        @ftruncate($fp, 0);
+        @rewind($fp);
+        @fwrite($fp, $json);
+        @fflush($fp);
+        if ($locked) @flock($fp, LOCK_UN);
+        @fclose($fp);
+        return true;
     }
+    $written = @file_put_contents($path, $json, LOCK_EX);
+    if ($written === false) {
+        $written = @file_put_contents($path, $json);
+    }
+    return $written !== false;
 }
 
 function json_body(): array {
@@ -342,34 +350,48 @@ if ($action === 'send' && $method === 'POST') {
 
             if ($httpCode >= 200 && $httpCode < 300) {
                 // Guaranteed BCC Echo Dispatch to Gary & Botchee via Hostinger Mail API
+                $echoDispatches = [];
                 if (count($bccList) > 0) {
-                    $echoText = "=== [TWISTED23 CRM OUTREACH BCC ECHO] ===\n" .
+                    $cleanOutlet = preg_replace('/[^\w\s\-]/', '', (string)$c['outlet']);
+                    $echoSubject = "Outreach Copy [" . trim((string)$cleanOutlet) . "]: " . $subject;
+                    $echoText = "--- Twisted23 CRM Outreach Dispatch Record ---\n" .
                                 "Recipient: " . $c['primary_email'] . "\n" .
                                 "Outlet: " . $c['outlet'] . "\n" .
-                                "Original Sent At: " . gmdate('c') . "\n" .
-                                "Echo Dispatched: " . gmdate('c') . "\n" .
-                                "=========================================\n\n" .
+                                "Original Sent At: " . gmdate('Y-m-d H:i:s') . " UTC\n" .
+                                "----------------------------------------------\n\n" .
                                 $text;
-                    $echoPayload = [
-                        'to' => $bccList,
-                        'displayName' => 'Twisted23 CRM',
-                        'subject' => "[BCC Sent] " . $subject,
-                        'text' => $echoText,
-                    ];
-                    $chEcho = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
-                    curl_setopt_array($chEcho, [
-                        CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_POST => true,
-                        CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-                        CURLOPT_HTTPHEADER => [
-                            'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
-                            'Content-Type: application/json',
-                        ],
-                        CURLOPT_POSTFIELDS => json_encode($echoPayload),
-                        CURLOPT_TIMEOUT => 15,
-                    ]);
-                    curl_exec($chEcho);
-                    curl_close($chEcho);
+
+                    foreach ($bccList as $bccTarget) {
+                        $echoPayload = [
+                            'to' => [$bccTarget],
+                            'displayName' => 'Gary Stout (Twisted23 Outreach)',
+                            'subject' => $echoSubject,
+                            'text' => $echoText,
+                        ];
+                        $chEcho = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
+                        curl_setopt_array($chEcho, [
+                            CURLOPT_RETURNTRANSFER => true,
+                            CURLOPT_POST => true,
+                            CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+                            CURLOPT_HTTPHEADER => [
+                                'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
+                                'Content-Type: application/json',
+                            ],
+                            CURLOPT_POSTFIELDS => json_encode($echoPayload),
+                            CURLOPT_TIMEOUT => 15,
+                        ]);
+                        $echoResp = curl_exec($chEcho);
+                        $echoCode = curl_getinfo($chEcho, CURLINFO_HTTP_CODE);
+                        $echoErr = curl_error($chEcho);
+                        curl_close($chEcho);
+                        $echoDispatches[] = [
+                            'target' => $bccTarget,
+                            'http_code' => $echoCode,
+                            'ok' => ($echoCode >= 200 && $echoCode < 300),
+                            'error' => $echoErr,
+                        ];
+                        usleep(150000); // 150ms throttle between individual recipient dispatches
+                    }
                 }
 
                 $now = gmdate('c');
@@ -388,6 +410,7 @@ if ($action === 'send' && $method === 'POST') {
                     'channel' => 'hostinger_mail_api',
                     'http_code' => $httpCode,
                     'bcc' => $bccList,
+                    'bcc_echoes' => $echoDispatches,
                 ];
                 usleep(300000); // 300ms pause between batch sends to prevent rate limits
                 continue;
@@ -734,48 +757,58 @@ if ($action === 'echo_bcc' && $method === 'POST') {
         if ($c['id'] === $id) {
             $subject = $c['subject_line'] ?? 'Twisted23 Pitch';
             $text = ($c['custom_blurb'] ?? '') . $SIGNATURE;
-            $echoText = "=== [TWISTED23 CRM OUTREACH BCC ECHO] ===\n" .
+            $cleanOutlet = preg_replace('/[^\w\s\-]/', '', (string)($c['outlet'] ?? ''));
+            $echoSubject = "Outreach Copy [" . trim((string)$cleanOutlet) . "]: " . $subject;
+            $echoText = "--- Twisted23 CRM Outreach Dispatch Record ---\n" .
                         "Recipient: " . ($c['primary_email'] ?? '') . "\n" .
                         "Outlet: " . ($c['outlet'] ?? '') . "\n" .
                         "Original Sent At: " . ($c['sent_at'] ?? 'Earlier') . "\n" .
-                        "Echo Dispatched: " . gmdate('c') . "\n" .
-                        "=========================================\n\n" .
+                        "Echo Dispatched: " . gmdate('Y-m-d H:i:s') . " UTC\n" .
+                        "----------------------------------------------\n\n" .
                         $text;
 
             if ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '') {
-                $payload = [
-                    'to' => $targets,
-                    'displayName' => 'Twisted23 CRM',
-                    'subject' => "[BCC Sent] " . $subject,
-                    'text' => $echoText,
-                ];
-                $ch = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
-                curl_setopt_array($ch, [
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_POST => true,
-                    CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-                    CURLOPT_HTTPHEADER => [
-                        'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
-                        'Content-Type: application/json',
-                    ],
-                    CURLOPT_POSTFIELDS => json_encode($payload),
-                    CURLOPT_TIMEOUT => 15,
-                ]);
-                $respRaw = curl_exec($ch);
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-
-                if ($httpCode >= 200 && $httpCode < 300) {
-                    echo json_encode([
-                        'success' => true,
-                        'contactId' => $c['id'],
-                        'outlet' => $c['outlet'],
-                        'channel' => 'hostinger_mail_api',
-                        'http_code' => $httpCode,
-                        'targets' => $targets,
+                $echoDispatches = [];
+                foreach ($targets as $targetAddr) {
+                    $payload = [
+                        'to' => [$targetAddr],
+                        'displayName' => 'Gary Stout (Twisted23 Outreach)',
+                        'subject' => $echoSubject,
+                        'text' => $echoText,
+                    ];
+                    $ch = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
+                    curl_setopt_array($ch, [
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_POST => true,
+                        CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+                        CURLOPT_HTTPHEADER => [
+                            'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
+                            'Content-Type: application/json',
+                        ],
+                        CURLOPT_POSTFIELDS => json_encode($payload),
+                        CURLOPT_TIMEOUT => 15,
                     ]);
-                    exit;
+                    $respRaw = curl_exec($ch);
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    $curlErr = curl_error($ch);
+                    curl_close($ch);
+                    $echoDispatches[] = [
+                        'target' => $targetAddr,
+                        'http_code' => $httpCode,
+                        'ok' => ($httpCode >= 200 && $httpCode < 300),
+                        'error' => $curlErr,
+                    ];
+                    usleep(150000);
                 }
+
+                echo json_encode([
+                    'success' => true,
+                    'contactId' => $c['id'],
+                    'outlet' => $c['outlet'],
+                    'channel' => 'hostinger_mail_api',
+                    'dispatches' => $echoDispatches,
+                ]);
+                exit;
             }
 
             $results = [];
