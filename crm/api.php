@@ -5,6 +5,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 // Load .env if present
 $envFile = __DIR__ . '/.env';
@@ -263,10 +266,12 @@ if ($action === 'send' && $method === 'POST') {
 
     $data = read_data($DATA_FILE);
     $results = [];
+    $limit = isset($body['limit']) ? (int)$body['limit'] : (is_array($contactIds) ? count($contactIds) : 2);
+    $matchedCount = 0;
 
     foreach ($data['contacts'] as &$c) {
         $match = false;
-        if (is_array($contactIds) && count($contactIds) > 0) {
+        if (is_array($contactIds)) {
             $match = in_array($c['id'], $contactIds, true);
         } elseif ($step === 1) {
             $match = ($c['stage'] ?? '') === 'Queued' && !empty($c['primary_email']);
@@ -274,6 +279,11 @@ if ($action === 'send' && $method === 'POST') {
             $match = in_array($c['stage'] ?? '', ['Sent Step 1', 'Auto-Acknowledged'], true) && empty($c['step_2_sent_at']) && !empty($c['primary_email']);
         }
         if (!$match) continue;
+
+        if ($matchedCount >= $limit) {
+            break;
+        }
+        $matchedCount++;
 
         if (empty($c['primary_email'])) {
             $results[] = ['id' => $c['id'], 'outlet' => $c['outlet'], 'status' => 'skipped', 'reason' => 'No email address'];

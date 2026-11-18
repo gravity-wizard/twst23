@@ -22,6 +22,7 @@
       </div>
       <div class="topbar-status">
         <span id="resend-badge" class="status-pill status-warn">Checking Resend&hellip;</span>
+        <button id="btn-refresh" class="btn btn-secondary" type="button" title="Sync live pipeline state">↻ Refresh</button>
         <button id="btn-dry-run-2" class="btn btn-secondary" type="button">Preview Next 2</button>
         <button id="btn-send-2" class="btn btn-primary" type="button">Send Next 2</button>
       </div>
@@ -30,31 +31,31 @@
 
   <main class="container">
     <section class="summary-strip" aria-label="Pipeline Summary">
-      <div class="metric">
+      <div class="metric" data-stage="all" title="Filter by All Stages">
         <span class="metric-label">Total Contacts</span>
         <strong id="m-total" class="metric-value">0</strong>
       </div>
-      <div class="metric">
+      <div class="metric" data-stage="Queued" title="Filter by Queued">
         <span class="metric-label">Queued</span>
         <strong id="m-queued" class="metric-value">0</strong>
       </div>
-      <div class="metric">
+      <div class="metric" data-stage="Sent Step 1" title="Filter by Sent Step 1">
         <span class="metric-label">Sent Step 1/2</span>
         <strong id="m-sent" class="metric-value">0</strong>
       </div>
-      <div class="metric">
+      <div class="metric" data-stage="Auto-Acknowledged" title="Filter by Auto-Acknowledged">
         <span class="metric-label">Auto-Acknowledged</span>
         <strong id="m-auto" class="metric-value" style="color:#7e22ce;">0</strong>
       </div>
-      <div class="metric">
+      <div class="metric" data-stage="Received Reply" title="Filter by Human Replies">
         <span class="metric-label">Human Replies</span>
         <strong id="m-human" class="metric-value" style="color:#15803d;">0</strong>
       </div>
-      <div class="metric">
+      <div class="metric" data-tab="triage" title="View Open Bug Triage">
         <span class="metric-label">Open Triage</span>
         <strong id="m-triage" class="metric-value">0</strong>
       </div>
-      <div class="metric">
+      <div class="metric" data-stage="Bounced" title="Filter by Bounced">
         <span class="metric-label">Bounced</span>
         <strong id="m-bounced" class="metric-value" style="color:#b91c1c;">0</strong>
       </div>
@@ -236,6 +237,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

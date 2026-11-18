@@ -5,7 +5,11 @@ let serverStatus = { resendConfigured: false };
 const $ = (sel) => document.querySelector(sel);
 
 async function api(url, opts = {}) {
-  const res = await fetch(url, {
+  const method = (opts.method || 'GET').toUpperCase();
+  const sep = url.includes('?') ? '&' : '?';
+  const finalUrl = method === 'GET' ? `${url}${sep}_t=${Date.now()}` : url;
+  const res = await fetch(finalUrl, {
+    cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
     ...opts,
   });
@@ -61,19 +65,33 @@ function renderMetrics() {
 }
 
 function renderContacts() {
-  const q = $('#search-contacts').value.trim().toLowerCase();
-  const stageFilter = $('#filter-stage').value;
+  const q = ($('#search-contacts')?.value || '').trim().toLowerCase();
+  const stageFilter = ($('#filter-stage')?.value || 'all').trim();
 
   const filtered = state.contacts.filter((c) => {
-    if (stageFilter !== 'all' && c.stage !== stageFilter) return false;
+    if (stageFilter !== 'all') {
+      const cStage = (c.stage || '').trim().toLowerCase();
+      const sFilter = stageFilter.toLowerCase();
+      if (sFilter === 'sent step 1' && cStage.startsWith('sent')) {
+        // match
+      } else if (cStage !== sFilter) {
+        return false;
+      }
+    }
     if (!q) return true;
     return [c.outlet, c.primary_email, c.cc_email, c.angle, c.notes]
+      .filter(Boolean)
       .join(' ')
       .toLowerCase()
       .includes(q);
   });
 
   const tbody = $('#contacts-tbody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px 16px;color:var(--muted);font-size:0.9rem;">No contacts found matching filter "<strong>${escapeHtml(stageFilter)}</strong>"${q ? ` and search "<strong>${escapeHtml(q)}</strong>"` : ''}.</td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = filtered
     .map(
       (c) => `
@@ -248,7 +266,7 @@ async function runSendBatch(ids, dryRun, step = 1) {
       )
       .join('');
     showModal(dryRun ? 'Dry-Run Email Preview' : 'Send Results', html || '<p>No eligible contacts.</p>');
-    if (!dryRun) await refresh();
+    await refresh();
   } catch (err) {
     showModal('Error', `<p class="status-pill status-warn">${escapeHtml(err.message)}</p>`);
   }
@@ -295,6 +313,56 @@ $('#search-contacts').addEventListener('input', renderContacts);
 $('#filter-stage').addEventListener('change', renderContacts);
 $('#drawer-close').addEventListener('click', closeDrawer);
 $('#modal-close').addEventListener('click', () => ($('#modal-backdrop').hidden = true));
+
+// Metric cards click-to-filter
+document.querySelectorAll('.metric[data-stage]').forEach((el) => {
+  el.addEventListener('click', () => {
+    const stage = el.dataset.stage;
+    const outreachTab = $('#tab-outreach');
+    if (outreachTab) outreachTab.click();
+    const filterSelect = $('#filter-stage');
+    if (filterSelect) {
+      filterSelect.value = stage;
+      renderContacts();
+    }
+  });
+});
+
+document.querySelectorAll('.metric[data-tab]').forEach((el) => {
+  el.addEventListener('click', () => {
+    const tabBtn = $(`#tab-${el.dataset.tab}`);
+    if (tabBtn) tabBtn.click();
+  });
+});
+
+// Manual refresh button in topbar
+const refreshBtn = $('#btn-refresh');
+if (refreshBtn) {
+  refreshBtn.addEventListener('click', async () => {
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = '↻ Syncing...';
+    try {
+      await refresh();
+      refreshBtn.textContent = '✓ Synced';
+      setTimeout(() => {
+        refreshBtn.textContent = '↻ Refresh';
+        refreshBtn.disabled = false;
+      }, 1000);
+    } catch (e) {
+      refreshBtn.textContent = 'Sync Failed';
+      setTimeout(() => {
+        refreshBtn.textContent = '↻ Refresh';
+        refreshBtn.disabled = false;
+      }, 1800);
+    }
+  });
+}
+
+// Background sync on window focus and tab visibility change
+window.addEventListener('focus', () => { refresh().catch(() => {}); });
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refresh().catch(() => {});
+});
 
 function showDrawerNotice(msg, type = 'ok') {
   const el = $('#drawer-notice');
@@ -811,13 +879,23 @@ function openSendBatchDispatcher(contacts) {
   }
 }
 
-$('#btn-dry-run-2').addEventListener('click', () => {
+$('#btn-dry-run-2').addEventListener('click', async () => {
+  await refresh();
   const next2 = state.contacts.filter((c) => c.stage === 'Queued' && c.primary_email).slice(0, 2).map((c) => c.id);
+  if (next2.length === 0) {
+    showModal('Dry-Run Email Preview', '<p class="status-pill status-info">No queued contacts eligible for Step 1.</p>');
+    return;
+  }
   runSendBatch(next2, true);
 });
 
-$('#btn-send-2').addEventListener('click', () => {
+$('#btn-send-2').addEventListener('click', async () => {
+  await refresh();
   const next2 = state.contacts.filter((c) => c.stage === 'Queued' && c.primary_email).slice(0, 2);
+  if (next2.length === 0) {
+    showModal('Send Outreach', '<p class="status-pill status-info">No contacts currently queued for Step 1.</p>');
+    return;
+  }
   openSendBatchDispatcher(next2);
 });
 
