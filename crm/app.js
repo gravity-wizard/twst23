@@ -24,7 +24,7 @@ function stagePill(stage) {
   if (stage === 'Queued') return 'status-warn';
   if (stage === 'Auto-Acknowledged') return 'status-purple';
   if (stage === 'Received Reply' || stage === 'Replied' || stage === 'Featured') return 'status-ok';
-  if (stage === 'Bounced') return 'status-danger';
+  if (stage === 'Bounced' || stage === 'Dropped') return 'status-danger';
   if (stage && stage.startsWith('Sent')) return 'status-info';
   return 'status-muted';
 }
@@ -33,7 +33,7 @@ function deliveryPill(status) {
   if (!status || status === 'Not Sent') return 'status-muted';
   if (status === 'Auto-Acknowledged') return 'status-purple';
   if (status === 'Human Replied' || status === 'Replied') return 'status-ok';
-  if (status.includes('Bounce') || status.includes('Rejected')) return 'status-danger';
+  if (status.includes('Bounce') || status.includes('Rejected') || status.includes('Dropped')) return 'status-danger';
   if (status.includes('Sent')) return 'status-info';
   return 'status-muted';
 }
