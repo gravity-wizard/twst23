@@ -1,0 +1,24 @@
+name: GwCrm 4:11 PM AK Daily Summary
+
+on:
+  schedule:
+    # 4:11 PM AKDT (UTC-8 -> 00:11 UTC) and 4:11 PM AKST (UTC-9 -> 01:11 UTC)
+    # Server-side America/Anchorage clock + atomic LOCK_EX ensures strictly 1 email/day
+    - cron: '11 0,1 * * *'
+    # Backup retry tick 12 minutes later in case of scheduler delay (no-op if already sent)
+    - cron: '23 0,1 * * *'
+  workflow_dispatch:
+
+jobs:
+  trigger-daily-summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Trigger GwCrm 4:11 PM AK Summary Endpoint
+        env:
+          CRON_TOKEN: ${{ secrets.DAILY_SUMMARY_CRON_TOKEN || 'tw23_gwcrm_411_summary_9b7e2f4a' }}
+        run: |
+          curl -fsS -X POST "https://www.twisted23.com/crm/api.php?action=cron_daily_summary" \
+            -H "X-GwCrm-Cron-Token: ${CRON_TOKEN}" \
+            -H "User-Agent: Twisted23-GitHub-Cron/1.0"
+          echo ""
