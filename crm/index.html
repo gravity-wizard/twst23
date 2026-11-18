@@ -273,8 +273,8 @@
         <input id="d-cc" class="input" type="text" />
       </label>
       <label class="field">
-        <span>BCC Emails (Spy Echo & Archive)</span>
-        <input id="d-bcc" class="input" type="text" placeholder="gary@gravitywizards.com, botchee@icloud.com" />
+        <span>BCC Emails (Optional — Blank = Quota-Saver Mode)</span>
+        <input id="d-bcc" class="input" type="text" placeholder="Leave blank for 0 BCCs (saves 100/day Hostinger quota)" />
       </label>
       <label class="field">
         <span>Subject Line</span>
@@ -293,8 +293,9 @@
         <button id="d-preview" class="btn btn-secondary" type="button">Dry Run Preview</button>
         <button id="d-send-one" class="btn btn-primary" type="button">Send Step 1</button>
         <button id="d-send-step2" class="btn btn-primary" type="button" style="background:#0284c7;">Send Step 2</button>
+        <button id="d-requeue" class="btn btn-secondary" type="button" style="display:none;" title="Reset a rate-limited or bounced contact back to Queued for retry">↺ Re-Queue for Retry</button>
         <button id="d-save" class="btn btn-secondary" type="submit">Save Changes</button>
-        <button id="d-echo-bcc" class="btn btn-secondary" type="button" title="Send BCC echo to botchee@icloud.com &amp; gary@gravitywizards.com">Echo BCC to iCloud</button>
+        <button id="d-echo-bcc" class="btn btn-secondary" type="button" title="Manual on-demand copy to botchee@icloud.com (+1 credit)">Manual Echo to iCloud</button>
       </div>
     </form>
   </aside>
@@ -310,6 +311,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

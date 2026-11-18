@@ -30,7 +30,8 @@ if (is_file($envFile)) {
 $DATA_FILE = __DIR__ . '/data/crm.json';
 $FROM_ADDRESS = getenv('FROM_ADDRESS') ?: 'Gary Stout <media@twisted23.com>';
 $REPLY_TO = getenv('REPLY_TO') ?: 'media@twisted23.com';
-$DEFAULT_BCC = getenv('DEFAULT_BCC') ?: 'gary@gravitywizards.com, botchee@icloud.com';
+$envBcc = getenv('DEFAULT_BCC');
+$DEFAULT_BCC = ($envBcc !== false) ? trim((string)$envBcc) : '';
 $HOSTINGER_MAIL_TOKEN = getenv('HOSTINGER_MAIL_TOKEN') ?: 'a023e730fa37a0813595549dffc89c29b1ce09a294328544f0f377bd6291851a';
 $HOSTINGER_MAILBOX_ID = getenv('HOSTINGER_MAILBOX_ID') ?: 'AC4474ceb28197b9db960e1111ee79';
 $SIGNATURE = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
@@ -53,6 +54,26 @@ function read_sent_ledger(string $logPath): array {
         }
     }
     return $ledger;
+}
+
+function count_recent_sent_stats(string $logPath, int $windowSeconds = 86400): array {
+    if (!is_file($logPath)) {
+        return ['pitches_24h' => 0, 'credits_24h_est' => 0];
+    }
+    $cutoff = time() - $windowSeconds;
+    $pitches = 0;
+    $credits = 0;
+    foreach (file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+        $row = json_decode($line, true);
+        if (!is_array($row) || empty($row['sent_at'])) continue;
+        $ts = strtotime((string)$row['sent_at']);
+        if ($ts !== false && $ts >= $cutoff) {
+            $pitches++;
+            // Legacy entries prior to Quota-Saver did not log recipient_credits and used ~5 credits/pitch
+            $credits += isset($row['recipient_credits']) ? max(1, (int)$row['recipient_credits']) : 5;
+        }
+    }
+    return ['pitches_24h' => $pitches, 'credits_24h_est' => $credits];
 }
 
 function append_sent_ledger(string $logPath, array $entry): void {
@@ -103,17 +124,36 @@ function read_data(string $path): array {
             $rc = $rtById[$cid];
             $seedCopyRev = (int)($sc['copy_rev'] ?? 0);
             $rtCopyRev = (int)($rc['copy_rev'] ?? 0);
+            $seedRequeueRev = (int)($sc['requeue_rev'] ?? 0);
+            $rtRequeueRev = (int)($rc['requeue_rev'] ?? 0);
+            $seedRequeuedTs = !empty($sc['requeued_at']) ? (strtotime((string)$sc['requeued_at']) ?: 0) : 0;
+            $rtSentTs = !empty($rc['sent_at']) ? (strtotime((string)$rc['sent_at']) ?: 0) : 0;
+
             $seedCopyFields = [
                 'angle' => $sc['angle'] ?? '',
                 'subject_line' => $sc['subject_line'] ?? '',
                 'custom_blurb' => $sc['custom_blurb'] ?? '',
+                'bcc_email' => $sc['bcc_email'] ?? '',
                 'copy_rev' => $seedCopyRev,
             ];
+            $seedRequeueFields = [
+                'stage' => $sc['stage'] ?? 'Queued',
+                'delivery_status' => $sc['delivery_status'] ?? 'Rate-Limited (Re-Queued)',
+                'notes' => $sc['notes'] ?? '',
+                'requeue_rev' => $seedRequeueRev,
+                'requeued_at' => $sc['requeued_at'] ?? gmdate('c'),
+                'sent_at' => null,
+            ];
+
             $rtAhead = !empty($rc['sent_at']) || !empty($rc['step_2_sent_at']) || !empty($rc['last_reply']) || !empty($rc['updated_at']) || (($rc['stage'] ?? 'Queued') !== 'Queued');
             if ($rtAhead) {
                 $sc = array_merge($sc, $rc);
                 if ($seedCopyRev > $rtCopyRev) {
                     $sc = array_merge($sc, $seedCopyFields);
+                }
+                // If seed explicitly re-queued a rate-limited/bounced pitch after its failed attempt, restore Queued
+                if ($seedRequeueRev > $rtRequeueRev && ($rtSentTs === 0 || ($seedRequeuedTs > 0 && $rtSentTs < $seedRequeuedTs))) {
+                    $sc = array_merge($sc, $seedRequeueFields);
                 }
             }
         }
@@ -126,7 +166,8 @@ function read_data(string $path): array {
         }
     }
 
-    // Reconcile against append-only sent_log.jsonl so sent pitches never revert to Queued
+    // Reconcile against append-only sent_log.jsonl so genuinely sent pitches never revert to Queued,
+    // while honoring explicit re-queues (requeued_at >= ledger sent_at) and Bounced/Dropped stages.
     $ledger = read_sent_ledger(sent_log_file_for($path));
     if (!empty($ledger)) {
         foreach ($mergedContacts as &$mc) {
@@ -134,12 +175,18 @@ function read_data(string $path): array {
             if ($cid === '') continue;
             if (isset($ledger["{$cid}:1"]) && empty($mc['sent_at'])) {
                 $l1 = $ledger["{$cid}:1"];
-                $mc['sent_at'] = $l1['sent_at'] ?? gmdate('c');
-                if (($mc['stage'] ?? 'Queued') === 'Queued') {
-                    $mc['stage'] = 'Sent Step 1';
-                }
-                if (($mc['delivery_status'] ?? 'Not Sent') === 'Not Sent') {
-                    $mc['delivery_status'] = $l1['delivery_status'] ?? 'Sent (Hostinger Mail API)';
+                $ledgerSentTs = strtotime((string)($l1['sent_at'] ?? '')) ?: 0;
+                $requeuedTs = !empty($mc['requeued_at']) ? (strtotime((string)$mc['requeued_at']) ?: 0) : 0;
+                $isExplicitlyReset = in_array($mc['stage'] ?? '', ['Bounced', 'Dropped'], true)
+                    || ($requeuedTs > 0 && $requeuedTs >= $ledgerSentTs);
+                if (!$isExplicitlyReset) {
+                    $mc['sent_at'] = $l1['sent_at'] ?? gmdate('c');
+                    if (($mc['stage'] ?? 'Queued') === 'Queued') {
+                        $mc['stage'] = 'Sent Step 1';
+                    }
+                    if (($mc['delivery_status'] ?? 'Not Sent') === 'Not Sent') {
+                        $mc['delivery_status'] = $l1['delivery_status'] ?? 'Sent (Hostinger Mail API)';
+                    }
                 }
             }
             if (isset($ledger["{$cid}:2"]) && empty($mc['step_2_sent_at'])) {
@@ -183,6 +230,35 @@ function classify_inbound_message(string $fromEmail, string $fromName, string $s
     $fromNameLower = strtolower(trim($fromName));
     $subjectLower = strtolower(trim($subject));
     $snippetLower = strtolower(trim($snippet));
+
+    // 0. MTA Bounce / Rate-Limit DSN detection (distinct from autoresponders)
+    $isDsnSender = str_contains($fromEmailLower, 'mailer-daemon')
+        || str_contains($fromEmailLower, 'postmaster')
+        || str_contains($fromNameLower, 'mail delivery');
+    $isDsnSubject = str_contains($subjectLower, 'undelivered mail')
+        || str_contains($subjectLower, 'undeliverable')
+        || str_contains($subjectLower, 'delivery status notification')
+        || str_contains($subjectLower, 'failure notice')
+        || str_contains($subjectLower, 'returned mail')
+        || str_contains($subjectLower, 'sending limit');
+    $isDsnBody = str_contains($snippetLower, 'your message could not be delivered')
+        || str_contains($snippetLower, 'action: failed')
+        || str_contains($snippetLower, 'final-recipient:')
+        || str_contains($snippetLower, 'ratelimit exceeded');
+    $isRateLimit = str_contains($snippetLower, 'ratelimit exceeded')
+        || str_contains($snippetLower, '451 4.7.1')
+        || str_contains($snippetLower, 'reached the allowed sending limit')
+        || str_contains($subjectLower, 'sending limit');
+
+    if (($isDsnSender && ($isDsnSubject || $isDsnBody)) || $isRateLimit) {
+        return [
+            'is_auto' => true,
+            'is_bounce' => true,
+            'is_rate_limit' => $isRateLimit,
+            'classification' => $isRateLimit ? 'Rate-Limited (Re-Queued)' : 'Bounced',
+            'reason' => $isRateLimit ? 'MTA 451 4.7.1 sender daily rate limit' : 'MTA delivery failure DSN',
+        ];
+    }
 
     // 1. Sender address checks
     $isBotSender = false;
@@ -266,6 +342,8 @@ function classify_inbound_message(string $fromEmail, string $fromName, string $s
 
     return [
         'is_auto' => $isAuto,
+        'is_bounce' => false,
+        'is_rate_limit' => false,
         'classification' => $isAuto ? 'Auto-Acknowledged' : 'Human Reply',
         'reason' => implode(', ', $reasons),
     ];
@@ -287,12 +365,18 @@ if ($action === 'status' && $method === 'GET') {
     $key = trim((string)(getenv('RESEND_API_KEY') ?: ''));
     $resendConfigured = ($key !== '' && !str_contains($key, 'your_actual_key'));
     $hostingerConfigured = ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '');
+    $quotaStats = count_recent_sent_stats(sent_log_file_for($DATA_FILE));
     echo json_encode([
         'hostingerMailConfigured' => $hostingerConfigured,
         'resendConfigured' => $resendConfigured,
         'mailAvailable' => function_exists('mail'),
         'fromAddress' => $FROM_ADDRESS,
         'replyTo' => $REPLY_TO,
+        'defaultBcc' => $DEFAULT_BCC,
+        'quotaSaverActive' => ($DEFAULT_BCC === ''),
+        'pitchesLast24h' => $quotaStats['pitches_24h'],
+        'creditsLast24hEst' => $quotaStats['credits_24h_est'],
+        'dailyCreditLimit' => 100,
         'authUser' => $authCtx ? tw23_sanitize_user($authCtx['user'], true) : null,
     ]);
     exit;
@@ -309,11 +393,20 @@ if ($action === 'contact' && $method === 'PATCH') {
     $data = read_data($DATA_FILE);
     foreach ($data['contacts'] as &$c) {
         if (($c['id'] ?? '') === $id) {
-            foreach (['primary_email', 'outlet', 'stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'bcc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at'] as $f) {
+            foreach (['primary_email', 'outlet', 'stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'bcc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at', 'requeued_at', 'requeue_rev'] as $f) {
                 if (array_key_exists($f, $body)) $c[$f] = $body[$f];
             }
-            if (array_key_exists('angle', $body) || array_key_exists('subject_line', $body) || array_key_exists('custom_blurb', $body)) {
+            if (array_key_exists('angle', $body) || array_key_exists('subject_line', $body) || array_key_exists('custom_blurb', $body) || array_key_exists('bcc_email', $body)) {
                 $c['copy_rev'] = ((int)($c['copy_rev'] ?? 0)) + 1;
+            }
+            // When staff resets a contact to Queued or Bounced, clear sent_at and stamp requeued_at so retry isn't blocked by sent_log.jsonl
+            if (isset($body['stage']) && in_array($body['stage'], ['Queued', 'Bounced'], true)) {
+                $c['sent_at'] = null;
+                $c['requeued_at'] = gmdate('c');
+                $c['requeue_rev'] = ((int)($c['requeue_rev'] ?? 0)) + 1;
+                if (!array_key_exists('delivery_status', $body)) {
+                    $c['delivery_status'] = $body['stage'] === 'Bounced' ? 'Bounced (Retry Pending)' : 'Re-Queued (Ready)';
+                }
             }
             $c['updated_at'] = gmdate('c');
             write_data($DATA_FILE, $data);
@@ -395,6 +488,9 @@ if ($action === 'send' && $method === 'POST') {
     $data = read_data($DATA_FILE);
     $sentLedger = read_sent_ledger(sent_log_file_for($DATA_FILE));
     $forceResend = !empty($body['forceResend']);
+    $hasExplicitBccFlag = array_key_exists('includeBcc', $body);
+    $includeBcc = !empty($body['includeBcc']);
+    $bccOverride = isset($body['bccTargets']) ? trim((string)$body['bccTargets']) : '';
     $results = [];
     $limit = isset($body['limit']) ? (int)$body['limit'] : (is_array($contactIds) ? count($contactIds) : 2);
     $matchedCount = 0;
@@ -420,9 +516,14 @@ if ($action === 'send' && $method === 'POST') {
             continue;
         }
 
-        // Duplicate-dispatch safety guard: block accidental repeat sends unless forceResend=true
+        // Duplicate-dispatch safety guard: block accidental repeat sends unless forceResend=true or contact was explicitly re-queued/bounced
         $ledgerKey = ($c['id'] ?? '') . ':' . $step;
-        $alreadySentStep = ($step === 1 && !empty($c['sent_at'])) || ($step === 2 && !empty($c['step_2_sent_at'])) || isset($sentLedger[$ledgerKey]);
+        $ledgerEntry = $sentLedger[$ledgerKey] ?? null;
+        $ledgerSentTs = $ledgerEntry ? (strtotime((string)($ledgerEntry['sent_at'] ?? '')) ?: 0) : 0;
+        $requeuedTs = !empty($c['requeued_at']) ? (strtotime((string)$c['requeued_at']) ?: 0) : 0;
+        $ledgerActive = $ledgerEntry !== null
+            && !($step === 1 && (($c['stage'] ?? '') === 'Bounced' || ($requeuedTs > 0 && $requeuedTs >= $ledgerSentTs)));
+        $alreadySentStep = ($step === 1 && !empty($c['sent_at'])) || ($step === 2 && !empty($c['step_2_sent_at'])) || $ledgerActive;
         if (!$dryRun && !$forceResend && $alreadySentStep) {
             $results[] = [
                 'id' => $c['id'],
@@ -434,8 +535,15 @@ if ($action === 'send' && $method === 'POST') {
         }
 
         $ccList = array_values(array_filter(array_map('trim', explode(',', (string)($c['cc_email'] ?? '')))));
-        $bccRaw = !empty($c['bcc_email']) ? (string)$c['bcc_email'] : $DEFAULT_BCC;
+        // Quota-Saver BCC resolution: 0 BCCs by default unless explicitly requested or configured on contact
+        if ($hasExplicitBccFlag) {
+            $bccRaw = $includeBcc ? ($bccOverride !== '' ? $bccOverride : (!empty($c['bcc_email']) ? (string)$c['bcc_email'] : 'botchee@icloud.com')) : '';
+        } else {
+            $bccRaw = !empty($c['bcc_email']) ? (string)$c['bcc_email'] : $DEFAULT_BCC;
+        }
         $bccList = array_values(array_filter(array_map('trim', explode(',', $bccRaw))));
+        $recipientCredits = 1 + count($ccList) + count($bccList);
+
         $subject = $step === 1 ? $c['subject_line'] : 'Re: ' . $c['subject_line'];
         $text = $step === 1
             ? ($c['custom_blurb'] . $SIGNATURE)
@@ -448,6 +556,7 @@ if ($action === 'send' && $method === 'POST') {
                 'to' => $c['primary_email'],
                 'cc' => $ccList,
                 'bcc' => $bccList,
+                'credits_used' => $recipientCredits,
                 'subject' => $subject,
                 'preview' => $text,
                 'status' => 'dry_run',
@@ -455,7 +564,7 @@ if ($action === 'send' && $method === 'POST') {
             continue;
         }
 
-        // 1. Primary Cloud Dispatch: Hostinger Agentic Mail REST API (100% DKIM Signed, Production Outbound)
+        // 1. Primary Cloud Dispatch: Hostinger Agentic Mail REST API (100% DKIM Signed, Quota-Saver Single Envelope)
         if ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '') {
             $payload = [
                 'to' => [$c['primary_email']],
@@ -484,51 +593,6 @@ if ($action === 'send' && $method === 'POST') {
             curl_close($ch);
 
             if ($httpCode >= 200 && $httpCode < 300) {
-                // Guaranteed BCC Echo Dispatch to Gary & Botchee via Hostinger Mail API
-                $echoDispatches = [];
-                if (count($bccList) > 0) {
-                    $cleanOutlet = preg_replace('/[^\w\s\-]/', '', (string)$c['outlet']);
-                    $echoSubject = "Outreach Copy [" . trim((string)$cleanOutlet) . "]: " . $subject;
-                    $echoText = "--- Twisted23 CRM Outreach Dispatch Record ---\n" .
-                                "Recipient: " . $c['primary_email'] . "\n" .
-                                "Outlet: " . $c['outlet'] . "\n" .
-                                "Original Sent At: " . gmdate('Y-m-d H:i:s') . " UTC\n" .
-                                "----------------------------------------------\n\n" .
-                                $text;
-
-                    foreach ($bccList as $bccTarget) {
-                        $echoPayload = [
-                            'to' => [$bccTarget],
-                            'displayName' => 'Gary Stout (Twisted23 Outreach)',
-                            'subject' => $echoSubject,
-                            'text' => $echoText,
-                        ];
-                        $chEcho = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
-                        curl_setopt_array($chEcho, [
-                            CURLOPT_RETURNTRANSFER => true,
-                            CURLOPT_POST => true,
-                            CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-                            CURLOPT_HTTPHEADER => [
-                                'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
-                                'Content-Type: application/json',
-                            ],
-                            CURLOPT_POSTFIELDS => json_encode($echoPayload),
-                            CURLOPT_TIMEOUT => 15,
-                        ]);
-                        $echoResp = curl_exec($chEcho);
-                        $echoCode = curl_getinfo($chEcho, CURLINFO_HTTP_CODE);
-                        $echoErr = curl_error($chEcho);
-                        curl_close($chEcho);
-                        $echoDispatches[] = [
-                            'target' => $bccTarget,
-                            'http_code' => $echoCode,
-                            'ok' => ($echoCode >= 200 && $echoCode < 300),
-                            'error' => $echoErr,
-                        ];
-                        usleep(150000); // 150ms throttle between individual recipient dispatches
-                    }
-                }
-
                 $now = gmdate('c');
                 if ($step === 1) {
                     $c['stage'] = 'Sent Step 1';
@@ -544,50 +608,59 @@ if ($action === 'send' && $method === 'POST') {
                     'to' => $c['primary_email'],
                     'step' => $step,
                     'sent_at' => $now,
+                    'recipient_credits' => $recipientCredits,
                     'delivery_status' => $c['delivery_status'],
                 ]);
                 $results[] = [
                     'id' => $c['id'],
                     'outlet' => $c['outlet'],
+                    'to' => $c['primary_email'],
+                    'cc' => $ccList,
+                    'bcc' => $bccList,
+                    'credits_used' => $recipientCredits,
                     'status' => 'sent',
                     'channel' => 'hostinger_mail_api',
                     'http_code' => $httpCode,
-                    'bcc' => $bccList,
-                    'bcc_echoes' => $echoDispatches,
                 ];
-                usleep(300000); // 300ms pause between batch sends to prevent rate limits
+                usleep(500000); // 500ms pause between batch sends to respect MTA rate limits
                 continue;
             }
+
+            // Do NOT fall through to @mail() when Hostinger API rejects or rate-limits a send; keep contact Queued for retry
+            $respJson = is_string($respRaw) ? (json_decode($respRaw, true) ?: []) : [];
+            $apiErr = trim((string)($respJson['message'] ?? $respJson['error'] ?? ($curlErr ?: "Hostinger Mail API HTTP {$httpCode}")));
+            $isRateLimited = ($httpCode === 429 || $httpCode === 451 || stripos($apiErr, 'limit') !== false || stripos($apiErr, 'rate') !== false);
+            if ($isRateLimited) {
+                $c['delivery_status'] = 'Rate-Limited (Retry Later)';
+                $results[] = [
+                    'id' => $c['id'],
+                    'outlet' => $c['outlet'],
+                    'status' => 'rate_limited',
+                    'http_code' => $httpCode,
+                    'error' => "Hostinger daily sending limit reached ({$apiErr}). Kept Queued for next window.",
+                ];
+                break; // Halt batch immediately so remaining contacts stay untouched
+            }
+            $results[] = [
+                'id' => $c['id'],
+                'outlet' => $c['outlet'],
+                'status' => 'error',
+                'http_code' => $httpCode,
+                'error' => $apiErr,
+            ];
+            continue;
         }
 
-        // Live send: If API is not configured or fails, dispatch via Hostinger PHP mail() fallback
+        // Live send fallback: Hostinger PHP mail() only if neither Hostinger Mail API nor Resend API is configured
         if ($apiKey === '' || str_contains($apiKey, 'your_actual_key')) {
             $headers = "From: " . $FROM_ADDRESS . "\r\n" .
                        "Reply-To: " . $REPLY_TO . "\r\n" .
                        "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
                        "Content-Type: text/plain; charset=UTF-8\r\n";
             if (count($ccList) > 0) $headers .= "Cc: " . implode(', ', $ccList) . "\r\n";
+            if (count($bccList) > 0) $headers .= "Bcc: " . implode(', ', $bccList) . "\r\n";
 
             $sent = @mail($c['primary_email'], $subject, $text, $headers);
-
-            // Send explicit individual copies to all BCC recipients so the server's MTA actually delivers them
-            $bccEchoes = [];
-            foreach ($bccList as $bccAddr) {
-                $bccHeaders = "From: " . $FROM_ADDRESS . "\r\n" .
-                              "Reply-To: " . $REPLY_TO . "\r\n" .
-                              "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
-                              "X-Bcc-Echo-To: " . $c['primary_email'] . "\r\n" .
-                              "Content-Type: text/plain; charset=UTF-8\r\n";
-                $echoText = "=== [TWISTED23 CRM OUTREACH BCC ECHO] ===\n" .
-                            "Recipient: " . $c['primary_email'] . "\n" .
-                            "Outlet: " . $c['outlet'] . "\n" .
-                            "Subject: " . $subject . "\n" .
-                            "Sent At: " . gmdate('c') . "\n" .
-                            "=========================================\n\n" .
-                            $text;
-                $ok = @mail($bccAddr, "[BCC Sent] " . $subject, $echoText, $bccHeaders);
-                $bccEchoes[] = ['address' => $bccAddr, 'sent' => $ok];
-            }
 
             $now = gmdate('c');
             if ($step === 1) {
@@ -604,16 +677,19 @@ if ($action === 'send' && $method === 'POST') {
                 'to' => $c['primary_email'],
                 'step' => $step,
                 'sent_at' => $now,
+                'recipient_credits' => $recipientCredits,
                 'delivery_status' => $c['delivery_status'],
             ]);
             $results[] = [
                 'id' => $c['id'],
                 'outlet' => $c['outlet'],
+                'to' => $c['primary_email'],
+                'cc' => $ccList,
+                'bcc' => $bccList,
+                'credits_used' => $recipientCredits,
                 'status' => 'sent',
                 'channel' => 'hostinger_mail',
                 'mail_ok' => $sent,
-                'bcc' => $bccList,
-                'bcc_echoes' => $bccEchoes,
             ];
             continue;
         }
@@ -670,9 +746,10 @@ if ($action === 'send' && $method === 'POST') {
             'to' => $c['primary_email'],
             'step' => $step,
             'sent_at' => $now,
+            'recipient_credits' => $recipientCredits,
             'delivery_status' => $c['delivery_status'],
         ]);
-        $results[] = ['id' => $c['id'], 'outlet' => $c['outlet'], 'status' => 'sent', 'resend_id' => $c['resend_id']];
+        $results[] = ['id' => $c['id'], 'outlet' => $c['outlet'], 'credits_used' => $recipientCredits, 'status' => 'sent', 'resend_id' => $c['resend_id']];
     }
 
     if (!$dryRun) {
@@ -736,14 +813,23 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
         $fromParts = explode('@', $fromEmail);
         $fromDomain = strtolower($fromParts[1] ?? '');
         $subjectLower = strtolower($subject);
+        $snippetLower = strtolower($snippet);
 
         $cls = classify_inbound_message($fromEmail, $fromName, $subject, $snippet, $headers);
         $isAuto = $cls['is_auto'];
-        $stageVal = $isAuto ? 'Auto-Acknowledged' : 'Received Reply';
-        $statusVal = $isAuto ? 'Auto-Acknowledged' : 'Human Replied';
+        $isBounce = !empty($cls['is_bounce']);
+        $isRateLimit = !empty($cls['is_rate_limit']);
+
+        if ($isBounce) {
+            $stageVal = $isRateLimit ? 'Queued' : 'Bounced';
+            $statusVal = $isRateLimit ? 'Rate-Limited (Re-Queued)' : 'Bounced (DSN)';
+        } else {
+            $stageVal = $isAuto ? 'Auto-Acknowledged' : 'Received Reply';
+            $statusVal = $isAuto ? 'Auto-Acknowledged' : 'Human Replied';
+        }
         $replyObj = [
             'id' => 'REP-' . substr(md5(uniqid('', true)), 0, 8),
-            'type' => $isAuto ? 'auto' : 'human',
+            'type' => $isBounce ? 'bounce' : ($isAuto ? 'auto' : 'human'),
             'classification' => $cls['classification'],
             'from' => $fromEmail,
             'from_name' => $fromName,
@@ -768,7 +854,7 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
                 }
             }
 
-            // 1. Direct or plus-normalized email match across primary and CCs
+            // 1. Direct or plus-normalized email match across primary and CCs (or Final-Recipient inside DSN body)
             $emailMatch = false;
             foreach ($contactEmails as $ce) {
                 $normCe = preg_replace('/\+[^@]+/', '', $ce);
@@ -776,11 +862,15 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
                     $emailMatch = true;
                     break;
                 }
+                if ($isBounce && $ce !== '' && str_contains($snippetLower, $ce)) {
+                    $emailMatch = true;
+                    break;
+                }
             }
 
-            // 2. Domain match across any contact email
+            // 2. Domain match across any contact email (skip for mailer-daemon DSNs so hostinger.com doesn't mismatch)
             $domainMatch = false;
-            if ($fromDomain !== '' && !in_array($fromDomain, ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com', 'hotmail.com'], true)) {
+            if (!$isBounce && $fromDomain !== '' && !in_array($fromDomain, ['gmail.com', 'yahoo.com', 'outlook.com', 'icloud.com', 'hotmail.com', 'hostinger.com', 'mail.hostinger.com'], true)) {
                 foreach ($contactEmails as $ce) {
                     $ceParts = explode('@', $ce);
                     $ceDomain = strtolower($ceParts[1] ?? '');
@@ -791,20 +881,20 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
                 }
             }
 
-            // 3. Subject match (e.g. autoresponders quoting our subject)
+            // 3. Subject match (e.g. autoresponders or DSN headers quoting our subject)
             $subjectMatch = false;
-            if ($cSubject !== '' && $subjectLower !== '') {
+            if ($cSubject !== '' && ($subjectLower !== '' || $snippetLower !== '')) {
                 $cleanSub = preg_replace('/^(re|fwd):\s*/i', '', $subjectLower);
                 $cleanCSub = preg_replace('/^(re|fwd):\s*/i', '', $cSubject);
                 $subPrefix = substr($cleanCSub, 0, 25);
-                if ($subPrefix !== '' && (str_contains($cleanSub, $subPrefix) || str_contains($subjectLower, $subPrefix))) {
+                if ($subPrefix !== '' && (str_contains($cleanSub, $subPrefix) || str_contains($subjectLower, $subPrefix) || ($isBounce && str_contains($snippetLower, $subPrefix)))) {
                     $subjectMatch = true;
                 }
             }
 
             // 4. Outlet name match in sender name or body
             $outletMatch = false;
-            if ($cOutlet !== '') {
+            if (!$isBounce && $cOutlet !== '') {
                 $shortOutlet = trim(preg_replace('/\s*\(.*?\)/', '', $cOutlet));
                 if (strlen($shortOutlet) >= 5 && (str_contains(strtolower($fromName), strtolower($shortOutlet)) || str_contains($snippetLower, strtolower($shortOutlet)))) {
                     $outletMatch = true;
@@ -820,14 +910,18 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
                 }
                 $c['replies'][] = $replyObj;
 
-                if ($isAuto) {
+                if ($isBounce) {
+                    $c['sent_at'] = null;
+                    $c['requeued_at'] = gmdate('c');
+                    $c['requeue_rev'] = ((int)($c['requeue_rev'] ?? 0)) + 1;
+                } elseif ($isAuto) {
                     $c['auto_acknowledged'] = true;
                     $c['auto_acknowledged_at'] = gmdate('c');
                 } else {
                     $c['human_replied_at'] = gmdate('c');
                 }
 
-                $tag = $isAuto ? "[Auto-Ack: {$subject}]" : "[Human Reply: {$subject}]";
+                $tag = $isBounce ? ($isRateLimit ? "[Rate-Limit Re-Queued]" : "[Bounce DSN]") : ($isAuto ? "[Auto-Ack: {$subject}]" : "[Human Reply: {$subject}]");
                 $c['notes'] = ($c['notes'] ? $c['notes'] . " | " : "") . "{$tag} " . substr($snippet, 0, 160);
                 $c['updated_at'] = gmdate('c');
                 $matched = true;
@@ -835,7 +929,7 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
             }
         }
 
-        if (!$matched) {
+        if (!$matched && !$isBounce) {
             $newContact = [
                 'id' => 'GW-C' . str_pad((string)(count($data['contacts']) + 5), 3, '0', STR_PAD_LEFT),
                 'priority' => count($data['contacts']) + 1,
@@ -865,6 +959,7 @@ if ($action === 'webhooks_hostinger' && $method === 'POST') {
         'from' => $fromEmail,
         'classification' => $cls['classification'] ?? 'unknown',
         'is_auto' => $cls['is_auto'] ?? false,
+        'is_bounce' => $cls['is_bounce'] ?? false,
     ]);
     exit;
 }
