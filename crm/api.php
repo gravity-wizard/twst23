@@ -101,9 +101,20 @@ function read_data(string $path): array {
         $seenIds[$cid] = true;
         if ($cid !== '' && isset($rtById[$cid])) {
             $rc = $rtById[$cid];
+            $seedCopyRev = (int)($sc['copy_rev'] ?? 0);
+            $rtCopyRev = (int)($rc['copy_rev'] ?? 0);
+            $seedCopyFields = [
+                'angle' => $sc['angle'] ?? '',
+                'subject_line' => $sc['subject_line'] ?? '',
+                'custom_blurb' => $sc['custom_blurb'] ?? '',
+                'copy_rev' => $seedCopyRev,
+            ];
             $rtAhead = !empty($rc['sent_at']) || !empty($rc['step_2_sent_at']) || !empty($rc['last_reply']) || !empty($rc['updated_at']) || (($rc['stage'] ?? 'Queued') !== 'Queued');
             if ($rtAhead) {
                 $sc = array_merge($sc, $rc);
+                if ($seedCopyRev > $rtCopyRev) {
+                    $sc = array_merge($sc, $seedCopyFields);
+                }
             }
         }
         $mergedContacts[] = $sc;
@@ -300,6 +311,9 @@ if ($action === 'contact' && $method === 'PATCH') {
         if (($c['id'] ?? '') === $id) {
             foreach (['primary_email', 'outlet', 'stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'bcc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at'] as $f) {
                 if (array_key_exists($f, $body)) $c[$f] = $body[$f];
+            }
+            if (array_key_exists('angle', $body) || array_key_exists('subject_line', $body) || array_key_exists('custom_blurb', $body)) {
+                $c['copy_rev'] = ((int)($c['copy_rev'] ?? 0)) + 1;
             }
             $c['updated_at'] = gmdate('c');
             write_data($DATA_FILE, $data);
