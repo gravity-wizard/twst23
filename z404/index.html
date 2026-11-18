@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>z404 — Polar Rim Detour | Twisted23</title>
+  <meta name="description" content="z404 at 89.9°S: Watch a lunar dune buggy with AxLe-Locked 4-pip dice wheels traverse the flagged South Pole crater rim where z and 4 interlock." />
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --vacuum: #05070b;
+      --basalt: #0c111b;
+      --regolith-card: #121926;
+      --seam: rgba(236, 232, 223, 0.12);
+      --ivory: #f4f1ea;
+      --dust: #9ea6b5;
+      --muted: #687385;
+      --kapton: #e5a932;
+      --kapton-dim: rgba(229, 169, 50, 0.16);
+      --ice: #7dd3fc;
+      --ruby: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+      background-color: var(--vacuum);
+      color: var(--ivory);
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-image: radial-gradient(ellipse 80% 45% at 50% 0%, rgba(229, 169, 50, 0.06) 0%, transparent 70%);
+      padding-bottom: 3.5rem;
+    }
+
+    /* Top Bar */
+    header {
+      width: 100%;
+      max-width: 1100px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--seam);
+    }
+
+    .brand-link {
+      color: var(--ivory);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--kapton);
+      transform: rotate(45deg);
+    }
+
+    .nav-return {
+      color: var(--ivory);
+      background: var(--regolith-card);
+      border: 1px solid var(--seam);
+      padding: 0.48rem 0.95rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+    }
+
+    .nav-return:hover {
+      background: #1a2436;
+      border-color: rgba(244, 241, 234, 0.32);
+      transform: translateY(-1px);
+    }
+
+    main {
+      width: 100%;
+      max-width: 1060px;
+      padding: 1.15rem 1.25rem 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Interlocking z404 Hero Header */
+    .hero-lockup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 1.05rem;
+      max-width: 720px;
+    }
+
+    .interlock-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 14px;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .interlock-row:hover {
+      transform: scale(1.02);
+    }
+
+    #z404Svg {
+      width: clamp(230px, 42vw, 330px);
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
+
+    .bulb-trigger {
+      background: var(--regolith-card);
+      border: 1px solid var(--seam);
+      color: var(--kapton);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .bulb-trigger:hover,
+    .bulb-trigger.lit {
+      background: var(--kapton-dim);
+      border-color: rgba(229, 169, 50, 0.55);
+      box-shadow: 0 0 22px rgba(229, 169, 50, 0.35);
+      transform: rotate(8deg) scale(1.08);
+    }
+
+    h1 {
+      font-size: clamp(1.25rem, 2.6vw, 1.65rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ivory);
+      margin-top: 0.45rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .hero-sub {
+      color: var(--dust);
+      font-size: clamp(0.9rem, 1.6vw, 1rem);
+      line-height: 1.55;
+      max-width: 630px;
+    }
+
+    .interlock-whisper {
+      margin-top: 0.55rem;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.76rem;
+      color: var(--kapton);
+      min-height: 1.2em;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s ease;
+    }
+
+    /* Lunar Viewport Frame */
+    .lunar-viewport {
+      width: 100%;
+      background: var(--basalt);
+      border: 1px solid var(--seam);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.72);
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .telemetry-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      padding: 0.6rem 1rem;
+      background: rgba(5, 7, 11, 0.85);
+      border-bottom: 1px solid var(--seam);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.75rem;
+      color: var(--dust);
+    }
+
+    .telemetry-left,
+    .telemetry-right {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .tele-tag {
+      color: var(--ivory);
+      font-weight: 700;
+    }
+
+    .tele-ice {
+      color: var(--ice);
+    }
+
+    .tele-gold {
+      color: var(--kapton);
+    }
+
+    #lunarCanvas {
+      display: block;
+      width: 100%;
+      height: clamp(290px, 41vw, 392px);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    /* Tactile Rover Control Strip */
+    .rover-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      padding: 0.7rem 1rem;
+      background: var(--regolith-card);
+      border-top: 1px solid var(--seam);
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .ctrl-label {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 0.25rem;
+    }
+
+    .ctrl-btn {
+      background: var(--basalt);
+      color: var(--dust);
+      border: 1px solid var(--seam);
+      padding: 0.4rem 0.72rem;
+      border-radius: 7px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .ctrl-btn:hover {
+      color: var(--ivory);
+      border-color: rgba(244, 241, 234, 0.28);
+    }
+
+    .ctrl-btn:active {
+      transform: scale(0.97);
+    }
+
+    .ctrl-btn.active {
+      background: var(--kapton);
+      color: #080b11;
+      border-color: var(--kapton);
+      font-weight: 700;
+    }
+
+    .ctrl-btn.hop-btn {
+      background: rgba(125, 211, 252, 0.1);
+      color: var(--ice);
+      border-color: rgba(125, 211, 252, 0.3);
+    }
+
+    .ctrl-btn.hop-btn:hover {
+      background: rgba(125, 211, 252, 0.2);
+    }
+
+    /* Parlour Escape Links */
+    .parlour-escape {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding-top: 1.35rem;
+      border-top: 1px solid var(--seam);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+    }
+
+    .escape-heading {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .escape-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.55rem;
+      width: 100%;
+    }
+
+    .escape-link {
+      background: var(--regolith-card);
+      border: 1px solid var(--seam);
+      color: var(--ivory);
+      text-decoration: none;
+      padding: 0.58rem 1rem;
+      border-radius: 9px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+    }
+
+    .escape-link:hover {
+      background: #1a2538;
+      border-color: rgba(229, 169, 50, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .escape-link.primary-home {
+      background: var(--kapton);
+      color: #07090e;
+      border-color: var(--kapton);
+      font-weight: 700;
+    }
+
+    .escape-link.primary-home:hover {
+      background: #f0b843;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 0.85rem 1rem;
+      }
+      .telemetry-bar {
+        font-size: 0.68rem;
+        padding: 0.5rem 0.75rem;
+      }
+      .rover-controls {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="brand-link" id="brandHomeLink">
+      <span class="brand-dot"></span>
+      <span>TWISTED23</span>
+    </a>
+    <a href="/" class="nav-return" id="headerReturnBtn">&larr; Return to Parlour Lounge</a>
+  </header>
+
+  <main>
+    <section class="hero-lockup" aria-labelledby="pageTitle">
+      <div class="interlock-row" id="interlockToggle" role="button" tabindex="0" title="Click to flip the topological z + 4 weave">
+        <!-- Custom Topological z404 SVG where z threads right through the closed triangle of 4 -->
+        <svg id="z404Svg" viewBox="0 0 344 126" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="z404 interlocking emblem">
+          <!-- Base '4' (First 4, Lunar Ivory) -->
+          <g id="svgFourBase" stroke="#F4F1EA" stroke-width="14.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="118,14 52,76 136,76" />
+            <line x1="118" y1="14" x2="118" y2="114" />
+          </g>
+
+          <!-- Topological 'z' (Kapton Gold) threading deep into 4's triangular window -->
+          <g id="svgZFull">
+            <!-- Dark vacuum weave gap casing -->
+            <polyline id="svgZCasing" points="14,44 103,44 42,102 134,102" stroke="#05070B" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Gold beam -->
+            <polyline id="svgZBeam" points="14,44 103,44 42,102 134,102" stroke="#E5A932" stroke-width="14.5" stroke-linecap="round" stroke-linejoin="round" />
+          </g>
+
+          <!-- Alternating Weave Over-Bridges (Mode A: z OVER 4-diag at (86,44), 4-crossbar OVER z-diag at (69,76), z-bottom OVER 4-stem at (118,102)) -->
+          <g id="weaveBridgeA">
+            <line x1="54" y1="76" x2="86" y2="76" stroke="#05070B" stroke-width="24" stroke-linecap="square" />
+            <line x1="52" y1="76" x2="94" y2="76" stroke="#F4F1EA" stroke-width="14.5" stroke-linecap="round" />
+          </g>
+
+          <!-- Mode B (Inverted Escher Cycle when bulb clicked: 4-diag OVER z-top, z-diag OVER 4-crossbar, 4-stem OVER z-bottom) -->
+          <g id="weaveBridgeB" style="display:none;">
+            <!-- 4's diagonal passes OVER z's top bar at (86, 44) -->
+            <line x1="99" y1="32" x2="73" y2="56" stroke="#05070B" stroke-width="24" stroke-linecap="square" />
+            <line x1="106" y1="25" x2="66" y2="63" stroke="#F4F1EA" stroke-width="14.5" stroke-linecap="round" />
+            <!-- 4's vertical stem passes OVER z's bottom bar at (118, 102) -->
+            <line x1="118" y1="88" x2="118" y2="112" stroke="#05070B" stroke-width="24" stroke-linecap="square" />
+            <line x1="118" y1="80" x2="118" y2="114" stroke="#F4F1EA" stroke-width="14.5" stroke-linecap="round" />
+          </g>
+
+          <!-- '0' as Side-View AxLe-Locked 4-Pip Die Wheel Ring -->
+          <g id="svgZeroWheel" transform="translate(202, 65)">
+            <rect x="-38" y="-38" width="76" height="76" rx="18" fill="#121926" stroke="#F4F1EA" stroke-width="11" />
+            <g id="svgZeroPips">
+              <circle cx="-15" cy="-15" r="5.2" fill="#E5A932" />
+              <circle cx="15" cy="-15" r="5.2" fill="#E5A932" />
+              <circle cx="-15" cy="15" r="5.2" fill="#E5A932" />
+              <circle cx="15" cy="15" r="5.2" fill="#E5A932" />
+            </g>
+            <circle cx="0" cy="0" r="3.5" fill="#7DD3FC" />
+          </g>
+
+          <!-- Final '4' -->
+          <g stroke="#F4F1EA" stroke-width="14.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="312,14 256,76 330,76" />
+            <line x1="312" y1="14" x2="312" y2="114" />
+          </g>
+        </svg>
+
+        <button type="button" class="bulb-trigger" id="bulbBtn" aria-label="Toggle z and 4 interlock geometry">💡</button>
+      </div>
+
+      <h1 id="pageTitle">Off the Sunlit Rim at 89.9&deg;S</h1>
+      <p class="hero-sub">
+        Every flagged mission is racing for the water-ice hidden in these forever-shadowed craters&mdash;meanwhile your link took a detour along the ridge on square <strong>AxLe-Locked</strong> dice wheels.
+      </p>
+      <div class="interlock-whisper" id="interlockWhisper">
+        z hooks through 4&rsquo;s triangle (OVER &rarr; UNDER &rarr; OVER) &bull; z4 &equiv; 24th Dimension &bull; Click 💡 to invert weave
+      </div>
+    </section>
+
+    <!-- Interactive Moon Buggy Panorama -->
+    <section class="lunar-viewport" aria-label="Lunar South Pole Dice-Wheeled Moon Buggy Simulation">
+      <div class="telemetry-bar">
+        <div class="telemetry-left">
+          <span>LOC <strong class="tele-tag" id="teleLandmark">80.1&deg;S &middot; MALAPERT APPROACH</strong></span>
+          <span class="tele-ice" id="teleIce">H&#8322;O COLD TRAP: 40 K</span>
+        </div>
+        <div class="telemetry-right">
+          <span>SIDE HUB <strong class="tele-gold" id="teleHub">FACE 4 (4 PIPS ROTATING)</strong></span>
+          <span>TREADS <strong class="tele-tag" id="teleTreads">{1 &rarr; 2 &rarr; 6 &rarr; 5}</strong></span>
+        </div>
+      </div>
+
+      <canvas id="lunarCanvas" width="1060" height="400"></canvas>
+
+      <div class="rover-controls">
+        <div class="ctrl-group">
+          <span class="ctrl-label">AxLe Lock:</span>
+          <button type="button" class="ctrl-btn active" id="btnAxle34" data-axle="34">[3&ndash;4] &bull; 4 Pips Side</button>
+          <button type="button" class="ctrl-btn" id="btnAxle25" data-axle="25">[2&ndash;5] &bull; 5 Pips Side</button>
+          <button type="button" class="ctrl-btn" id="btnAxle16" data-axle="16">[1&ndash;6] &bull; 1 Red Hub</button>
+        </div>
+
+        <div class="ctrl-group">
+          <button type="button" class="ctrl-btn hop-btn" id="btnLunarHop">🚀 1/6g Hop</button>
+          <span class="ctrl-label" style="margin-left:0.35rem;">Pace:</span>
+          <button type="button" class="ctrl-btn" id="btnPaceSnail" data-pace="snail">🐌 SnaiL</button>
+          <button type="button" class="ctrl-btn active" id="btnPaceTurtle" data-pace="turtle">🐢 TurtLe</button>
+          <button type="button" class="ctrl-btn" id="btnPaceRabbit" data-pace="rabbit">🐇 Rabbit</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Parlour Escape Navigation -->
+    <nav class="parlour-escape" aria-label="Twisted23 Parlour Destinations">
+      <div class="escape-heading">Roll Back to a Parlour Table</div>
+      <div class="escape-links">
+        <a href="/" class="escape-link primary-home" id="navMainLounge">🏠 Main Parlour Lounge</a>
+        <a href="/backgammon/" class="escape-link" id="navBackgammon">🎲 Backgammon 36-Roll</a>
+        <a href="/flippingdice/" class="escape-link" id="navFlippingDice">✨ Flipping Dice</a>
+        <a href="/botchee/" class="escape-link" id="navBotchee">🎯 Botchee 24-Tile</a>
+        <a href="/botchee/humpty/" class="escape-link" id="navHumpty">🥚 Humpty Dumpty Beta</a>
+        <a href="/slider/" class="escape-link" id="navSlider">🌀 Twisted 23 Slider</a>
+        <a href="/tophat/" class="escape-link" id="navTophat">🎩 Top Hat Sudoku</a>
+        <a href="/hangman/" class="escape-link" id="navHangman">🦉 CameLcase Hangman</a>
+      </div>
+    </nav>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      // =========================================================
+      // 1. INTERLOCKING z + 4 TOPOLOGICAL TOGGLE (💡)
+      // =========================================================
+      let weaveInverted = false;
+      const interlockToggle = document.getElementById('interlockToggle');
+      const bulbBtn = document.getElementById('bulbBtn');
+      const bridgeA = document.getElementById('weaveBridgeA');
+      const bridgeB = document.getElementById('weaveBridgeB');
+      const whisperEl = document.getElementById('interlockWhisper');
+      const svgZeroPips = document.getElementById('svgZeroPips');
+
+      let audioCtx = null;
+      function playTone(freq = 580, dur = 0.08) {
+        try {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return;
+          if (!audioCtx) audioCtx = new Ctx();
+          if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(freq * 1.45, now + dur);
+          gain.gain.setValueAtTime(0.14, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + dur + 0.01);
+        } catch (_) {}
+      }
+
+      function toggleInterlock(e) {
+        if (e) e.stopPropagation();
+        weaveInverted = !weaveInverted;
+        bridgeA.style.display = weaveInverted ? 'none' : 'block';
+        bridgeB.style.display = weaveInverted ? 'block' : 'none';
+        bulbBtn.classList.toggle('lit', weaveInverted);
+        playTone(weaveInverted ? 660 : 495, 0.09);
+        whisperEl.textContent = weaveInverted
+          ? '💡 Polarity Flipped! Now 4 weaves OVER z at apex & stem while z cuts OVER 4’s crossbar — still topologically locked!'
+          : 'z hooks through 4’s triangle (OVER → UNDER → OVER) • z4 ≡ 24th Dimension • Click 💡 to invert weave';
+      }
+
+      interlockToggle.addEventListener('click', toggleInterlock);
+      bulbBtn.addEventListener('click', toggleInterlock);
+      interlockToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleInterlock();
+        }
+      });
+
+      // =========================================================
+      // 2. AXLE-LOCKED DICE WHEEL CONFIGURATIONS
+      //    Right-handed standard die (opposite faces sum to 7):
+      //    - '34' (Default): Outward side hub = Face 4 (4 pips rotating!),
+      //                      Inward hub = Face 3, Rolling treads = [1, 2, 6, 5]
+      //    - '25':           Outward side hub = Face 5 (5 pips rotating),
+      //                      Inward hub = Face 2, Rolling treads = [1, 3, 6, 4]
+      //    - '16':           Outward side hub = Face 1 (1 Ruby center pip + 4 corner bolts),
+      //                      Inward hub = Face 6, Rolling treads = [2, 3, 5, 4]
+      // =========================================================
+      const AXLE_MODES = {
+        '34': {
+          sideFace: 4,
+          innerFace: 3,
+          treads: [1, 2, 6, 5],
+          hubLabel: 'FACE 4 (4 PIPS ROTATING)',
+          treadLabel: '{1 → 2 → 6 → 5}'
+        },
+        '25': {
+          sideFace: 5,
+          innerFace: 2,
+          treads: [1, 3, 6, 4],
+          hubLabel: 'FACE 5 (5 PIPS ROTATING)',
+          treadLabel: '{1 → 3 → 6 → 4}'
+        },
+        '16': {
+          sideFace: 1,
+          innerFace: 6,
+          treads: [2, 3, 5, 4],
+          hubLabel: 'FACE 1 (RUBY AXLE HUB)',
+          treadLabel: '{2 → 3 → 5 → 4}'
+        }
+      };
+
+      let currentAxle = '34';
+      const PACES = { snail: 46, turtle: 96, rabbit: 195 };
+      let currentPace = 'turtle';
+      let manualVel = 0;
+
+      // =========================================================
+      // 3. LUNAR SOUTH POLE CIRCUIT (looping 4200m expedition)
+      //    Landmarks & Flagged Space-Race Sites along 69°S -> 89.9°S
+      // =========================================================
+      const LOOP_LEN = 4200;
+
+      const LANDMARKS = [
+        {
+          x: 340,
+          flag: 'IN',
+          lat: "69.4°S · SOUTHERN POLAR GATEWAY",
+          ice: "SURFACE REGOLITH · SUNLIT BENCH",
+          tag: "69.4°S",
+          lander: 'vikram'
+        },
+        {
+          x: 680,
+          flag: null,
+          isLavaArch: true,
+          lat: "74.8°S · BASALT LAVA-TUBE OVERPASS",
+          ice: "SUBSURFACE SKYLIGHT CAVERN"
+        },
+        {
+          x: 1040,
+          flag: 'JP',
+          lat: "SHIOLI PINPOINT SCARP",
+          ice: "OLIVINE EJECTA SLOPE",
+          tag: "PINPOINT",
+          lander: 'slim' // famous upside-down pinpoint landing!
+        },
+        {
+          x: 1650,
+          flag: 'US',
+          lat: "80.1°S · MALAPERT MASSIF RIM",
+          ice: "PEAK OF QUASI-ETERNAL LIGHT",
+          tag: "80.1°S",
+          lander: 'odysseus'
+        },
+        {
+          x: 2060,
+          flag: null,
+          isShadowCrater: true,
+          lat: "86.3°S · FOREVER-SHADOW COLD TRAP",
+          ice: "CRYOGENIC H₂O WATER-ICE FLOOR (38 K)"
+        },
+        {
+          x: 2560,
+          flag: 'CN',
+          lat: "85.2°S · SOUTH POLE–AITKEN RIM",
+          ice: "FAR-SIDE SAMPLE BASIN",
+          tag: "85.2°S",
+          lander: 'change'
+        },
+        {
+          x: 3060,
+          flag: 'RU',
+          lat: "84.0°S · BOGUSLAWSKY BENCH",
+          ice: "STEEP CRATER WALL",
+          tag: "84.0°S",
+          lander: 'tilted'
+        },
+        {
+          x: 3480,
+          flag: 'EU',
+          lat: "88.4°S · PROSPECT ICE DRILL TERRACE",
+          ice: "SUBSURFACE VOLATILES DETECTED",
+          tag: "88.4°S",
+          lander: 'drill'
+        },
+        {
+          x: 3940,
+          flag: 'TW23',
+          lat: "89.9°S · SHACKLETON SUMMIT (z404)",
+          ice: "ETERNAL SUNLIGHT + H₂O ICE RIM",
+          tag: "89.9°S z404",
+          lander: 'beacon'
+        }
+      ];
+
+      // Smooth periodic terrain profile with interesting geological features:
+      // 1) Natural Basalt Lava-Tube Arch overpass around x=680
+      // 2) Steep Malapert launch ramp at x ~ 1815 dropping into deep H2O Shadow Crater (1880..2240)
+      // 3) Double-mogul suspension test waves (3150..3550)
+      // 4) High Shackleton Peak of Eternal Light summit at x ~ 3920 followed by descending chute!
+      function wrapX(x) {
+        return ((x % LOOP_LEN) + LOOP_LEN) % LOOP_LEN;
+      }
+
+      function gaussian(x, mu, sigma) {
+        let dx = Math.abs(x - mu);
+        if (dx > LOOP_LEN * 0.5) dx = LOOP_LEN - dx;
+        return Math.exp(-(dx * dx) / (2 * sigma * sigma));
+      }
+
+      function terrainHeight(worldX, viewH) {
+        const wx = wrapX(worldX);
+        const u = (wx / LOOP_LEN) * Math.PI * 2;
+        const base = viewH * 0.73;
+
+        // Multi-harmonic rolling ridges (periodic over LOOP_LEN)
+        let h =
+          Math.sin(u * 2) * 18 +
+          Math.cos(u * 3 - 0.6) * 14 +
+          Math.sin(u * 5 + 1.1) * 9 +
+          Math.sin(u * 11) * 4.5;
+
+        // Natural Lava-Tube Arch overpass at x=680
+        h -= 32 * gaussian(wx, 680, 110);
+
+        // Shioli scarp climb around x=1020
+        h -= 24 * gaussian(wx, 1020, 140);
+
+        // Malapert Launch Lip at x=1805 (upward ramp!)
+        h -= 34 * gaussian(wx, 1805, 85);
+
+        // Deep Permanently Shadowed H2O Ice Crater at x=2060!
+        h += 58 * gaussian(wx, 2060, 135);
+
+        // Catch slope on far rim of crater at x=2300
+        h -= 20 * gaussian(wx, 2300, 80);
+
+        // Rhythmic mogul field around x=3280 (works the dice-wheel suspension!)
+        h += Math.sin((wx - 3100) * 0.048) * 11 * gaussian(wx, 3280, 170);
+
+        // Shackleton Peak of Eternal Light high summit at x=3920!
+        h -= 48 * gaussian(wx, 3920, 185);
+
+        return base + h;
+      }
+
+      // Square-wheel geometric cam lift: a rounded cube of half-side R rolling at angle theta
+      // lifts its axle slightly at 45-deg corners and settles at 0/90/180/270 flat faces!
+      function squareWheelCamOffset(theta, halfSide) {
+        const mod = ((theta % (Math.PI / 2)) + (Math.PI / 2)) % (Math.PI / 2);
+        const diagAngle = mod - Math.PI / 4; // -pi/4 .. +pi/4
+        // Rounded corner softens pure secant/cosine peak
+        const cornerPeak = Math.cos(diagAngle * 2); // 1 at corner (45 deg), 0 at flat face
+        return cornerPeak * (halfSide * 0.16);
+      }
+
+      // =========================================================
+      // 4. CANVAS SETUP, STARS, DUST PLUMES & PIP FOOTPRINTS
+      // =========================================================
+      const canvas = document.getElementById('lunarCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const stars = Array.from({ length: 130 }, (_, i) => ({
+        xFrac: ((i * 7919) % 1000) / 1000,
+        yFrac: ((i * 6271) % 620) / 1000,
+        r: (i % 5 === 0) ? 1.45 : ((i % 2 === 0) ? 1.0 : 0.65),
+        alpha: 0.35 + ((i * 31) % 65) / 100
+      }));
+
+      // Ballistic vacuum regolith particles & stamped die footprints
+      const dustParticles = [];
+      const footprints = [];
+      let lastFrontQuad = -1;
+      let lastRearQuad = -1;
+
+      // Rover physical state
+      const rover = {
+        worldX: 1520, // Starts right near 80.1°S Malapert approaching the big H2O Ice Crater jump!
+        wheelBase: 86,
+        wheelHalf: 22, // 44x44px crisp side-view dice wheels!
+        thetaFront: 0,
+        thetaRear: 0.35,
+        yOffset: 0,    // Airborne height (< 0 means above terrain in 1/6g!)
+        vy: 0,
+        airborne: false,
+        strutFront: 0,
+        strutRear: 0,
+        autoJumpCooldown: 0
+      };
+
+      function triggerHop(impulse = -175) {
+        if (!rover.airborne || rover.yOffset > -8) {
+          rover.vy = impulse;
+          rover.airborne = true;
+          playTone(390, 0.11);
+          // Burst of vacuum lunar dust from both wheels
+          for (let i = 0; i < 16; i++) {
+            dustParticles.push({
+              wx: rover.worldX + (i < 8 ? -42 : 42) + (Math.random() - 0.5) * 14,
+              yOff: -2,
+              vx: -40 - Math.random() * 95,
+              vy: -35 - Math.random() * 85,
+              life: 0.55 + Math.random() * 0.45,
+              age: 0,
+              size: 1.8 + Math.random() * 2.4
+            });
+          }
+        }
+      }
+
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        // Check if user clicked near the buggy's wheels to toggle AxLe Lock, else hop!
+        const buggyScreenX = rect.width * 0.38;
+        const gy = terrainHeight(rover.worldX, rect.height) + rover.yOffset;
+        if (Math.abs(clickX - buggyScreenX) < 78 && Math.abs(clickY - (gy - 28)) < 48) {
+          const order = ['34', '25', '16'];
+          const next = order[(order.indexOf(currentAxle) + 1) % order.length];
+          setAxleMode(next);
+        } else {
+          triggerHop(-185);
+        }
+      });
+
+      document.getElementById('btnLunarHop').addEventListener('click', () => triggerHop(-190));
+
+      function setAxleMode(mode) {
+        currentAxle = mode;
+        document.querySelectorAll('[data-axle]').forEach((b) => {
+          b.classList.toggle('active', b.getAttribute('data-axle') === mode);
+        });
+        document.getElementById('teleHub').textContent = AXLE_MODES[mode].hubLabel;
+        document.getElementById('teleTreads').textContent = AXLE_MODES[mode].treadLabel;
+        playTone(520, 0.07);
+      }
+
+      document.querySelectorAll('[data-axle]').forEach((btn) => {
+        btn.addEventListener('click', () => setAxleMode(btn.getAttribute('data-axle')));
+      });
+
+      document.querySelectorAll('[data-pace]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          currentPace = btn.getAttribute('data-pace');
+          document.querySelectorAll('[data-pace]').forEach((b) => {
+            b.classList.toggle('active', b === btn);
+          });
+          playTone(currentPace === 'rabbit' ? 700 : (currentPace === 'turtle' ? 540 : 410), 0.06);
+        });
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' || e.code === 'ArrowUp') {
+          if (document.activeElement === document.body) {
+            e.preventDefault();
+            triggerHop(-185);
+          }
+        } else if (e.code === 'ArrowRight') {
+          manualVel = 90;
+        } else if (e.code === 'ArrowLeft') {
+          manualVel = -180;
+        } else if (e.key === 'a' || e.key === 'A') {
+          const order = ['34', '25', '16'];
+          setAxleMode(order[(order.indexOf(currentAxle) + 1) % order.length]);
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+          manualVel = 0;
+        }
+      });
+
+      // =========================================================
+      // 5. DRAWING HELPERS: FLAGS, LANDERS, DIE WHEELS & ROVER
+      // =========================================================
+      function drawVacuumFlag(ctx, sx, sy, code, labelText) {
+        // Lunar vacuum mast + top horizontal telescoping wire rod (zero wind flutter!)
+        ctx.save();
+        ctx.translate(sx, sy);
+
+        // Base tripod foot
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-7, 2); ctx.lineTo(0, -5); ctx.lineTo(7, 2);
+        ctx.moveTo(0, 2); ctx.lineTo(0, -58);
+        ctx.stroke();
+
+        // Top horizontal rod holding flag stiff in airless vacuum
+        const fw = 36, fh = 23;
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(0, -58);
+        ctx.lineTo(fw + 2, -58);
+        ctx.stroke();
+
+        // Slight crinkled foil bottom edge
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(1, -57);
+        ctx.lineTo(fw, -57);
+        ctx.lineTo(fw, -57 + fh);
+        ctx.lineTo(fw * 0.65, -57 + fh - 1.2);
+        ctx.lineTo(fw * 0.32, -57 + fh + 1.0);
+        ctx.lineTo(1, -57 + fh);
+        ctx.closePath();
+        ctx.clip();
+
+        const fx = 1, fy = -57;
+        if (code === 'US') {
+          ctx.fillStyle = '#dc2626';
+          ctx.fillRect(fx, fy, fw, fh);
+          ctx.fillStyle = '#f8fafc';
+          for (let s = 1; s < 7; s += 2) {
+            ctx.fillRect(fx, fy + (s * fh) / 7, fw, fh / 7);
+          }
+          ctx.fillStyle = '#1e3a8a';
+          ctx.fillRect(fx, fy, fw * 0.46, fh * 0.54);
+          ctx.fillStyle = '#f8fafc';
+          for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 4; c++) {
+              ctx.fillRect(fx + 2.5 + c * 3.6, fy + 2.2 + r * 3.6, 1.3, 1.3);
+            }
+          }
+        } else if (code === 'IN') {
+          ctx.fillStyle = '#f97316';
+          ctx.fillRect(fx, fy, fw, fh / 3);
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(fx, fy + fh / 3, fw, fh / 3);
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(fx, fy + (2 * fh) / 3, fw, fh / 3);
+          ctx.strokeStyle = '#1d4ed8';
+          ctx.lineWidth = 1.1;
+          ctx.beginPath();
+          ctx.arc(fx + fw / 2, fy + fh / 2, 2.8, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (code === 'CN') {
+          ctx.fillStyle = '#dc2626';
+          ctx.fillRect(fx, fy, fw, fh);
+          ctx.fillStyle = '#facc15';
+          ctx.beginPath();
+          ctx.arc(fx + 7, fy + 6.5, 3.2, 0, Math.PI * 2);
+          ctx.fill();
+          [[13, 3], [15.5, 5.5], [15.5, 9], [13, 11.5]].forEach(([dx, dy]) => {
+            ctx.fillRect(fx + dx, fy + dy, 1.6, 1.6);
+          });
+        } else if (code === 'JP') {
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(fx, fy, fw, fh);
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.arc(fx + fw / 2, fy + fh / 2, 5.8, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (code === 'EU') {
+          ctx.fillStyle = '#1e3a8a';
+          ctx.fillRect(fx, fy, fw, fh);
+          ctx.fillStyle = '#facc15';
+          for (let a = 0; a < 8; a++) {
+            const ang = (a / 8) * Math.PI * 2;
+            ctx.fillRect(fx + fw / 2 + Math.cos(ang) * 6.5 - 0.9, fy + fh / 2 + Math.sin(ang) * 6.5 - 0.9, 1.8, 1.8);
+          }
+        } else if (code === 'RU') {
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(fx, fy, fw, fh / 3);
+          ctx.fillStyle = '#1d4ed8';
+          ctx.fillRect(fx, fy + fh / 3, fw, fh / 3);
+          ctx.fillStyle = '#dc2626';
+          ctx.fillRect(fx, fy + (2 * fh) / 3, fw, fh / 3);
+        } else if (code === 'TW23') {
+          ctx.fillStyle = '#0c111b';
+          ctx.fillRect(fx, fy, fw, fh);
+          ctx.strokeStyle = '#e5a932';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(fx + 1, fy + 1, fw - 2, fh - 2);
+          ctx.fillStyle = '#e5a932';
+          ctx.font = 'bold 9px "JetBrains Mono", monospace';
+          ctx.fillText('z4', fx + 6, fy + 14.5);
+          ctx.fillStyle = '#7dd3fc';
+          ctx.beginPath();
+          ctx.arc(fx + 27, fy + 11.5, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // Subtle foil crease highlight
+        ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+        ctx.lineWidth = 0.8;
+        ctx.strokeRect(fx, fy, fw, fh);
+
+        // Surveyor coordinate plaque at base
+        if (labelText) {
+          ctx.font = '700 9.5px "JetBrains Mono", monospace';
+          ctx.fillStyle = 'rgba(244, 241, 234, 0.72)';
+          ctx.textAlign = 'center';
+          ctx.fillText(labelText, 16, 15);
+        }
+
+        ctx.restore();
+      }
+
+      function drawLanderSilhouette(ctx, sx, sy, type, timeSec) {
+        ctx.save();
+        ctx.translate(sx, sy);
+        if (type === 'slim') {
+          // Cheeky homage to SLIM's pinpoint nose-down lunar handstand!
+          ctx.rotate(-0.42);
+          ctx.fillStyle = '#d49b2a';
+          ctx.fillRect(-10, -24, 20, 22);
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-10, -6); ctx.lineTo(-18, 4);
+          ctx.moveTo(10, -18); ctx.lineTo(20, -24);
+          ctx.stroke();
+          // Blinking green alive beacon
+          if (Math.sin(timeSec * 5) > 0) {
+            ctx.fillStyle = '#34d399';
+            ctx.beginPath();
+            ctx.arc(0, -26, 2.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (type === 'tilted') {
+          // Tilted cratered probe mast
+          ctx.rotate(0.55);
+          ctx.strokeStyle = '#64748b';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(0, -6, 8, Math.PI, 0);
+          ctx.moveTo(0, -14); ctx.lineTo(0, -26);
+          ctx.stroke();
+        } else if (type === 'drill') {
+          // Cryogenic ice-core drill tripod
+          ctx.strokeStyle = '#cbd5e1';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-12, 2); ctx.lineTo(0, -28); ctx.lineTo(12, 2);
+          ctx.stroke();
+          ctx.strokeStyle = '#7dd3fc';
+          ctx.beginPath();
+          ctx.moveTo(0, -26); ctx.lineTo(0, 5);
+          ctx.stroke();
+        } else {
+          // Classic gold-foil descent stage
+          ctx.fillStyle = '#c88d22';
+          ctx.fillRect(-13, -18, 26, 12);
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(-13, -8); ctx.lineTo(-21, 2);
+          ctx.moveTo(13, -8); ctx.lineTo(21, 2);
+          ctx.stroke();
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(-15, -22, 30, 3);
+        }
+        ctx.restore();
+      }
+
+      // Draw a single Side-View 3D-in-2D Rounded Die Wheel!
+      // Viewed from the side: shows the locked outward face rotating around the axle hub!
+      function drawDieWheel(ctx, wx, wy, halfSize, theta, axleCode) {
+        const s = halfSize * 2;
+        const r = halfSize * 0.24;
+        const mode = AXLE_MODES[axleCode];
+
+        ctx.save();
+        ctx.translate(wx, wy);
+
+        // 1. Recessed 3D tire tread depth (shifted slightly inward/up-left for 3D wheel thickness!)
+        ctx.save();
+        ctx.translate(-5, -3);
+        ctx.rotate(theta);
+        ctx.fillStyle = '#646d7d';
+        ctx.beginPath();
+        ctx.roundRect(-halfSize, -halfSize, s, s, r);
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+
+        // 2. Outward Side Face of the Die Wheel
+        ctx.rotate(theta);
+
+        // Pearl-ivory die body
+        const grad = ctx.createLinearGradient(-halfSize, -halfSize, halfSize, halfSize);
+        grad.addColorStop(0, '#fbf9f3');
+        grad.addColorStop(0.55, '#ede7d9');
+        grad.addColorStop(1, '#cfc6b4');
+        ctx.fillStyle = grad;
+
+        ctx.beginPath();
+        ctx.roundRect(-halfSize, -halfSize, s, s, r);
+        ctx.fill();
+
+        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = '#475569';
+        ctx.stroke();
+
+        // Subtle rubberized lunar grip notches on the 4 flat edges
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.28)';
+        for (let edge = 0; edge < 4; edge++) {
+          ctx.save();
+          ctx.rotate((edge * Math.PI) / 2);
+          ctx.fillRect(-7, -halfSize - 0.5, 4, 2.4);
+          ctx.fillRect(3, -halfSize - 0.5, 4, 2.4);
+          ctx.restore();
+        }
+
+        // 3. Pips on the outward side face!
+        //    Default '34': Face 4 -> 4 crisp corner pips rotating around the central axle!
+        const off = halfSize * 0.50;
+        const pipR = halfSize * 0.175;
+
+        const drawPip = (px, py, col, rad = pipR) => {
+          // Recessed rim highlight
+          ctx.beginPath();
+          ctx.arc(px + 0.6, py + 0.8, rad + 0.8, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.65)';
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(px, py, rad, 0, Math.PI * 2);
+          ctx.fillStyle = col;
+          ctx.fill();
+        };
+
+        if (mode.sideFace === 4) {
+          // 4 PIPS ROTATING VIEWED FROM THE SIDE!
+          drawPip(-off, -off, '#0f172a');
+          drawPip(off, -off, '#0f172a');
+          drawPip(-off, off, '#0f172a');
+          drawPip(off, off, '#0f172a');
+        } else if (mode.sideFace === 5) {
+          drawPip(-off, -off, '#0f172a');
+          drawPip(off, -off, '#0f172a');
+          drawPip(-off, off, '#0f172a');
+          drawPip(off, off, '#0f172a');
+          drawPip(0, 0, '#0f172a', pipR * 0.95);
+        } else if (mode.sideFace === 1) {
+          // Big Ruby Crimson 1-pip right on the axle!
+          drawPip(0, 0, '#dc2626', pipR * 1.48);
+        }
+
+        // 4. Central Titanium/Gold AxLe Locking Pin & Cotter Ring
+        ctx.beginPath();
+        ctx.arc(0, 0, 4.3, 0, Math.PI * 2);
+        ctx.fillStyle = '#e5a932';
+        ctx.fill();
+        ctx.lineWidth = 1.3;
+        ctx.strokeStyle = '#0f172a';
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function drawMoonBuggy(ctx, rearWheelPos, frontWheelPos, roverState, timeSec) {
+        const dx = frontWheelPos.x - rearWheelPos.x;
+        const dy = frontWheelPos.y - rearWheelPos.y;
+        const pitch = Math.atan2(dy, dx);
+        const midX = (rearWheelPos.x + frontWheelPos.x) * 0.5;
+        const midY = (rearWheelPos.y + frontWheelPos.y) * 0.5;
+
+        // Suspension spring bounce offset for chassis body (clears 31.1px 45-deg die corners cleanly)
+        const suspLift = -35 + (roverState.strutFront + roverState.strutRear) * 0.35;
+
+        ctx.save();
+        ctx.translate(midX, midY);
+        ctx.rotate(pitch);
+
+        const halfWB = roverState.wheelBase * 0.5;
+
+        // 1. Articulated Rocker-Suspension A-Arms & Coilover Shocks (Chassis -> Wheel Hubs)
+        const rearHubLocalY = -suspLift;
+        const frontHubLocalY = -suspLift;
+
+        // Draw golden coilover struts
+        const drawStrut = (topX, topY, botX, botY) => {
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 3.2;
+          ctx.beginPath();
+          ctx.moveTo(topX, topY);
+          ctx.lineTo(botX, botY);
+          ctx.stroke();
+
+          // Coil spring wraps
+          ctx.strokeStyle = '#e5a932';
+          ctx.lineWidth = 2;
+          const steps = 5;
+          ctx.beginPath();
+          for (let i = 1; i <= steps; i++) {
+            const t = i / (steps + 1);
+            const sx = topX + (botX - topX) * t + (i % 2 === 0 ? -3 : 3);
+            const sy = topY + (botY - topY) * t;
+            if (i === 1) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.stroke();
+        };
+
+        ctx.save();
+        ctx.translate(0, suspLift);
+
+        drawStrut(-halfWB + 14, 4, -halfWB, rearHubLocalY);
+        drawStrut(halfWB - 14, 4, halfWB, frontHubLocalY);
+
+        // Lower tubular spaceframe chassis rail
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.roundRect(-halfWB - 12, -4, roverState.wheelBase + 26, 10, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Concentric golden fender flares arched cleanly outside the 31.1px spinning die corners!
+        ctx.strokeStyle = '#e5a932';
+        ctx.lineWidth = 2.8;
+        ctx.beginPath();
+        ctx.arc(-halfWB, rearHubLocalY, 34.5, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(halfWB, frontHubLocalY, 34.5, Math.PI * 1.15, Math.PI * 1.87);
+        ctx.stroke();
+
+        // Rear RTG / Auxiliary Equipment Rack + "z404" Rover License Plate
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1.6;
+        ctx.fillRect(-halfWB - 16, -20, 22, 16);
+        ctx.strokeRect(-halfWB - 16, -20, 22, 16);
+        ctx.fillStyle = '#e5a932';
+        ctx.font = '700 8px "JetBrains Mono", monospace';
+        ctx.fillText('z404', -halfWB - 15, -9);
+
+        // Front Kapton Gold Thermal Foil Battery Bay
+        const kapGrad = ctx.createLinearGradient(halfWB - 14, -18, halfWB + 16, 0);
+        kapGrad.addColorStop(0, '#fbbf24');
+        kapGrad.addColorStop(0.5, '#d99621');
+        kapGrad.addColorStop(1, '#925f0e');
+        ctx.fillStyle = kapGrad;
+        ctx.beginPath();
+        ctx.moveTo(halfWB - 14, -4);
+        ctx.lineTo(halfWB - 10, -17);
+        ctx.lineTo(halfWB + 15, -13);
+        ctx.lineTo(halfWB + 18, -4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#fde68a';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Volumetric Warm-White Lunar Headlight Cone!
+        const beamGrad = ctx.createLinearGradient(halfWB + 18, -10, halfWB + 195, 38);
+        beamGrad.addColorStop(0, 'rgba(254, 249, 195, 0.36)');
+        beamGrad.addColorStop(0.5, 'rgba(186, 230, 253, 0.11)');
+        beamGrad.addColorStop(1, 'rgba(186, 230, 253, 0)');
+        ctx.fillStyle = beamGrad;
+        ctx.beginPath();
+        ctx.moveTo(halfWB + 18, -12);
+        ctx.lineTo(halfWB + 205, -26);
+        ctx.lineTo(halfWB + 205, 52);
+        ctx.lineTo(halfWB + 18, -6);
+        ctx.closePath();
+        ctx.fill();
+
+        // Bright LED Headlamp lens
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(halfWB + 18, -9, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Roll-cage & Astronaut Driver Seat
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(-22, -4);
+        ctx.lineTo(-16, -34);
+        ctx.lineTo(8, -34);
+        ctx.lineTo(18, -4);
+        ctx.stroke();
+
+        // Ribbed LRV Lawn-Chair Seat
+        ctx.strokeStyle = '#e5a932';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-13, -5);
+        ctx.lineTo(-18, -26);
+        ctx.moveTo(-13, -5);
+        ctx.lineTo(3, -5);
+        ctx.stroke();
+
+        // Spacesuited Astronaut Driver (bobs subtly with square-wheel rhythm!)
+        const astroBob = Math.sin(roverState.thetaFront * 4) * 1.3;
+        ctx.save();
+        ctx.translate(-5, -14 + astroBob);
+        // PLSS Backpack
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(-13, -14, 7, 15);
+        // White EVA Suit Torso & Legs
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.roundRect(-7, -13, 11, 14, 4);
+        ctx.fill();
+        // Arm reaching to T-handle joystick controller
+        ctx.strokeStyle = '#f8fafc';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(1, -9);
+        ctx.lineTo(11, -6);
+        ctx.lineTo(16, -11);
+        ctx.stroke();
+        // Joystick post
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(16, 10);
+        ctx.lineTo(16, -13);
+        ctx.stroke();
+        // EVA Bubble Helmet + Reflective Gold Sun Visor!
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.arc(-1, -21, 8.2, 0, Math.PI * 2);
+        ctx.fill();
+        const visorGrad = ctx.createLinearGradient(-2, -27, 7, -16);
+        visorGrad.addColorStop(0, '#fde047');
+        visorGrad.addColorStop(0.55, '#d97706');
+        visorGrad.addColorStop(1, '#78350f');
+        ctx.fillStyle = visorGrad;
+        ctx.beginPath();
+        ctx.arc(1.5, -21, 6.2, -Math.PI * 0.48, Math.PI * 0.48);
+        ctx.closePath();
+        ctx.fill();
+        // Tiny glint on visor
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(3.5, -23.5, 1.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // High-Gain S-Band Umbrella Dish Antenna on Front Mast
+        const dishSway = Math.sin(timeSec * 6 + roverState.thetaFront * 2) * 0.05;
+        ctx.save();
+        ctx.translate(halfWB - 4, -16);
+        ctx.rotate(dishSway);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(2, -24);
+        ctx.stroke();
+
+        // Gold mesh parabolic dish aimed toward low-horizon Earth!
+        ctx.translate(2, -24);
+        ctx.rotate(-0.45);
+        ctx.strokeStyle = '#e5a932';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 11, Math.PI * 0.15, Math.PI * 0.85);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(229, 169, 50, 0.22)';
+        ctx.fill();
+        // Feed horn spike
+        ctx.strokeStyle = '#7dd3fc';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(0, 10);
+        ctx.lineTo(0, 2);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.restore(); // end suspLift
+        ctx.restore(); // end chassis transform
+
+        // 2. Finally, render the TWO DICE WHEELS in the foreground so the 4 rotating pips are 100% unobstructed!
+        drawDieWheel(ctx, rearWheelPos.x, rearWheelPos.y, roverState.wheelHalf, roverState.thetaRear, currentAxle);
+        drawDieWheel(ctx, frontWheelPos.x, frontWheelPos.y, roverState.wheelHalf, roverState.thetaFront, currentAxle);
+      }
+
+      // =========================================================
+      // 6. MAIN ANIMATION LOOP
+      // =========================================================
+      let lastTs = performance.now();
+
+      function tick(now) {
+        const dt = Math.min(0.05, Math.max(0.001, (now - lastTs) / 1000));
+        lastTs = now;
+        const timeSec = now * 0.001;
+
+        // Match HiDPI canvas backing store cleanly
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const cssW = canvas.clientWidth || 1060;
+        const cssH = canvas.clientHeight || 440;
+        if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
+          canvas.width = Math.round(cssW * dpr);
+          canvas.height = Math.round(cssH * dpr);
+        }
+
+        ctx.save();
+        ctx.scale(dpr, dpr);
+
+        // --- A. UPDATE PHYSICS ---
+        const speed = PACES[currentPace] + manualVel;
+        const prevWX = rover.worldX;
+        rover.worldX = wrapX(rover.worldX + speed * dt);
+
+        // Rotate dice wheels proportional to distance traveled!
+        const effRadius = rover.wheelHalf * 1.12;
+        const dTheta = (speed * dt) / effRadius;
+        rover.thetaFront += dTheta;
+        rover.thetaRear += dTheta;
+
+        // Also sync the '0' wheel pips in the z404 SVG header!
+        if (svgZeroPips) {
+          const deg = ((rover.thetaFront * 180) / Math.PI) % 360;
+          svgZeroPips.setAttribute('transform', `rotate(${deg.toFixed(1)})`);
+        }
+
+        // Auto low-G launch off the Malapert Launch Lip (around x = 1815) so the buggy vaults the H2O Ice Crater!
+        if (rover.autoJumpCooldown > 0) rover.autoJumpCooldown -= dt;
+        const wxNorm = rover.worldX;
+        if (!rover.airborne && speed > 70 && wxNorm > 1795 && wxNorm < 1835 && rover.autoJumpCooldown <= 0) {
+          const jumpBoost = currentPace === 'rabbit' ? -205 : -162;
+          triggerHop(jumpBoost);
+          rover.autoJumpCooldown = 3.0;
+        }
+
+        // Low lunar gravity (1/6 g feel!)
+        const LUNAR_GRAV = 250; // px/s^2 floaty 1/6g hangtime
+        if (rover.airborne) {
+          rover.vy += LUNAR_GRAV * dt;
+          rover.yOffset += rover.vy * dt;
+          if (rover.yOffset >= 0) {
+            rover.yOffset = 0;
+            rover.vy = 0;
+            rover.airborne = false;
+            rover.strutFront = 7;
+            rover.strutRear = 7;
+            // Landing regolith spray
+            for (let i = 0; i < 12; i++) {
+              dustParticles.push({
+                wx: wrapX(rover.worldX + (i < 6 ? -40 : 44)),
+                yOff: 0,
+                vx: -30 - Math.random() * 75,
+                vy: -25 - Math.random() * 65,
+                life: 0.5 + Math.random() * 0.4,
+                age: 0,
+                size: 1.6 + Math.random() * 2.2
+              });
+            }
+          }
+        } else {
+          rover.strutFront *= Math.pow(0.04, dt);
+          rover.strutRear *= Math.pow(0.04, dt);
+        }
+
+        // Stamp die tread pip numbers into the lunar regolith every 90-degree quarter-turn!
+        const treads = AXLE_MODES[currentAxle].treads;
+        const rearQuad = Math.floor(((rover.thetaRear % (Math.PI * 2)) + Math.PI * 2) / (Math.PI / 2)) % 4;
+        if (!rover.airborne && rearQuad !== lastRearQuad && Math.abs(speed) > 5) {
+          lastRearQuad = rearQuad;
+          const stampedPip = treads[rearQuad];
+          footprints.push({
+            wx: wrapX(rover.worldX - rover.wheelBase * 0.5),
+            pip: stampedPip,
+            age: 0,
+            life: 6.5
+          });
+          if (footprints.length > 26) footprints.shift();
+
+          // Kick up tiny square-wheel corner clunk dust puff
+          for (let k = 0; k < 3; k++) {
+            dustParticles.push({
+              wx: wrapX(rover.worldX - rover.wheelBase * 0.5 - 8),
+              yOff: 0,
+              vx: -20 - Math.random() * 45,
+              vy: -18 - Math.random() * 35,
+              life: 0.4 + Math.random() * 0.3,
+              age: 0,
+              size: 1.4 + Math.random() * 1.6
+            });
+          }
+        }
+
+        // Update nearest landmark telemetry
+        let nearest = LANDMARKS[0];
+        let bestDist = Infinity;
+        for (const lm of LANDMARKS) {
+          let d = Math.abs(rover.worldX - lm.x);
+          if (d > LOOP_LEN * 0.5) d = LOOP_LEN - d;
+          if (d < bestDist) {
+            bestDist = d;
+            nearest = lm;
+          }
+        }
+        document.getElementById('teleLandmark').textContent = nearest.lat;
+        document.getElementById('teleIce').textContent = nearest.ice;
+
+        // --- B. RENDER LUNAR SOUTH POLE SCENE ---
+        // 1. Deep Airless Vacuum Sky
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, cssH);
+        skyGrad.addColorStop(0, '#030508');
+        skyGrad.addColorStop(0.65, '#070b13');
+        skyGrad.addColorStop(1, '#101827');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, cssW, cssH);
+
+        // Pinpoint un-twinkling lunar stars
+        for (const st of stars) {
+          ctx.fillStyle = `rgba(244, 241, 234, ${st.alpha})`;
+          ctx.beginPath();
+          ctx.arc(st.xFrac * cssW, st.yFrac * cssH, st.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 2. Low-Horizon Crescent Blue Earth (hovering at ~9 deg elevation, Lunar South Pole view!)
+        const earthX = cssW * 0.16;
+        const earthY = cssH * 0.24;
+        const earthR = 22;
+        // Subtle atmospheric earthshine halo
+        const earthGlow = ctx.createRadialGradient(earthX, earthY, earthR * 0.4, earthX, earthY, earthR * 2.1);
+        earthGlow.addColorStop(0, 'rgba(56, 189, 248, 0.26)');
+        earthGlow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = earthGlow;
+        ctx.beginPath();
+        ctx.arc(earthX, earthY, earthR * 2.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(earthX, earthY, earthR, 0, Math.PI * 2);
+        ctx.clip();
+
+        // Sunlit sapphire ocean + cloud bands
+        const oceanGrad = ctx.createLinearGradient(earthX - earthR, earthY, earthX + earthR, earthY);
+        oceanGrad.addColorStop(0, '#1e3a8a');
+        oceanGrad.addColorStop(0.6, '#2563eb');
+        oceanGrad.addColorStop(1, '#7dd3fc');
+        ctx.fillStyle = oceanGrad;
+        ctx.fillRect(earthX - earthR, earthY - earthR, earthR * 2, earthR * 2);
+
+        // Subtle emerald continent & swirled white cloud wisps
+        ctx.fillStyle = 'rgba(52, 211, 153, 0.45)';
+        ctx.beginPath();
+        ctx.ellipse(earthX + 7, earthY - 4, 8, 5, 0.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(248, 250, 252, 0.85)';
+        ctx.beginPath();
+        ctx.ellipse(earthX + 6, earthY - 8, 10, 2.8, -0.25, 0, Math.PI * 2);
+        ctx.ellipse(earthX + 8, earthY + 6, 11, 3.0, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Crisp spherical night terminator leaving a bright right-side crescent facing the sun!
+        ctx.fillStyle = 'rgba(4, 7, 13, 0.92)';
+        ctx.beginPath();
+        ctx.arc(earthX - 10, earthY + 2, earthR * 1.06, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // 3. Grazing Polar Horizon Sun ("Peak of Eternal Light" skimming the mountain rim!)
+        const sunX = cssW * 0.84;
+        const sunY = cssH * 0.43;
+        const sunGlow = ctx.createRadialGradient(sunX, sunY, 3, sunX, sunY, 130);
+        sunGlow.addColorStop(0, 'rgba(255, 251, 235, 0.95)');
+        sunGlow.addColorStop(0.14, 'rgba(253, 224, 71, 0.45)');
+        sunGlow.addColorStop(0.45, 'rgba(229, 169, 50, 0.12)');
+        sunGlow.addColorStop(1, 'rgba(229, 169, 50, 0)');
+        ctx.fillStyle = sunGlow;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, 130, 0, Math.PI * 2);
+        ctx.fill();
+        // Horizontal Hasselblad lens flare streak
+        ctx.fillStyle = 'rgba(254, 243, 199, 0.22)';
+        ctx.fillRect(sunX - 95, sunY - 1, 190, 2);
+
+        // 4. Distant Parallax Lunar South Pole Massifs (Malapert & Mons Mouton) + Z-Switchback Trail!
+        ctx.beginPath();
+        ctx.moveTo(0, cssH);
+        for (let sx = 0; sx <= cssW + 20; sx += 20) {
+          const px = (sx + rover.worldX * 0.18);
+          const mh = cssH * 0.49
+            - Math.sin(px * 0.0045) * 38
+            - Math.cos(px * 0.011) * 20
+            - Math.abs(Math.sin(px * 0.008)) * 24;
+          ctx.lineTo(sx, mh);
+        }
+        ctx.lineTo(cssW, cssH);
+        ctx.closePath();
+        const massifGrad = ctx.createLinearGradient(0, cssH * 0.34, 0, cssH * 0.75);
+        massifGrad.addColorStop(0, '#303846');
+        massifGrad.addColorStop(0.45, '#1b2230');
+        massifGrad.addColorStop(1, '#0d121c');
+        ctx.fillStyle = massifGrad;
+        ctx.fill();
+
+        // Subtle distant Z-switchback rover track etched onto the far massif flank!
+        const switchbackScreenX = ((2600 - rover.worldX * 0.18) % (cssW + 300) + (cssW + 300)) % (cssW + 300) - 150;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(229, 169, 50, 0.24)';
+        ctx.lineWidth = 1.6;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(switchbackScreenX - 45, cssH * 0.43);
+        ctx.lineTo(switchbackScreenX + 38, cssH * 0.45);
+        ctx.lineTo(switchbackScreenX - 30, cssH * 0.52);
+        ctx.lineTo(switchbackScreenX + 55, cssH * 0.56);
+        ctx.stroke();
+        ctx.restore();
+
+        // Mid-ground cratered ridge parallax layer
+        ctx.beginPath();
+        ctx.moveTo(0, cssH);
+        for (let sx = 0; sx <= cssW + 16; sx += 16) {
+          const px = sx + rover.worldX * 0.45;
+          const mh = cssH * 0.61
+            + Math.sin(px * 0.007 + 1.4) * 20
+            + Math.cos(px * 0.017) * 10;
+          ctx.lineTo(sx, mh);
+        }
+        ctx.lineTo(cssW, cssH);
+        ctx.closePath();
+        ctx.fillStyle = '#202632';
+        ctx.fill();
+
+        // Camera anchor: Rover sits dynamically around 36%..41% of screen width
+        const camWorldLeft = rover.worldX - cssW * (0.37 + Math.sin(timeSec * 0.7) * 0.025);
+
+        const worldToScreenX = (wx) => {
+          let diff = wx - camWorldLeft;
+          while (diff < -LOOP_LEN * 0.5) diff += LOOP_LEN;
+          while (diff > LOOP_LEN * 0.5) diff -= LOOP_LEN;
+          return diff;
+        };
+
+        // 5. Foreground Lunar Regolith Surface + Permanently Shadowed H2O Ice Crater!
+        ctx.beginPath();
+        ctx.moveTo(0, cssH);
+        for (let sx = -8; sx <= cssW + 8; sx += 6) {
+          const wx = camWorldLeft + sx;
+          ctx.lineTo(sx, terrainHeight(wx, cssH));
+        }
+        ctx.lineTo(cssW + 8, cssH);
+        ctx.closePath();
+
+        const regGrad = ctx.createLinearGradient(0, cssH * 0.58, 0, cssH);
+        regGrad.addColorStop(0, '#a8a49c');
+        regGrad.addColorStop(0.28, '#6e6b65');
+        regGrad.addColorStop(0.7, '#34363d');
+        regGrad.addColorStop(1, '#141821');
+        ctx.fillStyle = regGrad;
+        ctx.fill();
+
+        // Sunlit top rim crust highlight
+        ctx.beginPath();
+        for (let sx = -8; sx <= cssW + 8; sx += 6) {
+          const wx = camWorldLeft + sx;
+          const ty = terrainHeight(wx, cssH);
+          if (sx === -8) ctx.moveTo(sx, ty);
+          else ctx.lineTo(sx, ty);
+        }
+        ctx.strokeStyle = '#dfd9ce';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Render Hollow Subsurface Basalt Lava-Tube Skylight Cavern beneath the arch at wx = 680!
+        const archSX = worldToScreenX(680);
+        if (archSX > -220 && archSX < cssW + 220) {
+          const archTopY = terrainHeight(680, cssH);
+          const cavY = archTopY + 52;
+          ctx.save();
+          // Vaulted dark basalt lava-tube window under natural bridge
+          ctx.beginPath();
+          ctx.ellipse(archSX, cavY, 84, 28, 0, Math.PI, 0, false);
+          ctx.lineTo(archSX + 72, cavY + 18);
+          ctx.quadraticCurveTo(archSX, cavY + 26, archSX - 72, cavY + 18);
+          ctx.closePath();
+
+          const cavGrad = ctx.createRadialGradient(archSX, cavY - 4, 6, archSX, cavY + 8, 86);
+          cavGrad.addColorStop(0, '#04070d');
+          cavGrad.addColorStop(0.65, '#0b1322');
+          cavGrad.addColorStop(1, '#1e2430');
+          ctx.fillStyle = cavGrad;
+          ctx.fill();
+
+          // Warm mineral & frost rim inside lava tube roof
+          ctx.strokeStyle = 'rgba(229, 169, 50, 0.38)';
+          ctx.lineWidth = 1.8;
+          ctx.stroke();
+
+          // Subtle skylight shaft & glowing subsurface ice crystals
+          const shaftGrad = ctx.createLinearGradient(archSX - 16, cavY - 26, archSX + 18, cavY + 20);
+          shaftGrad.addColorStop(0, 'rgba(125, 211, 252, 0.20)');
+          shaftGrad.addColorStop(1, 'rgba(125, 211, 252, 0)');
+          ctx.fillStyle = shaftGrad;
+          ctx.beginPath();
+          ctx.moveTo(archSX - 14, cavY - 26);
+          ctx.lineTo(archSX + 8, cavY - 26);
+          ctx.lineTo(archSX + 28, cavY + 18);
+          ctx.lineTo(archSX - 4, cavY + 18);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.font = '700 9.5px "JetBrains Mono", monospace';
+          ctx.fillStyle = 'rgba(229, 169, 50, 0.78)';
+          ctx.textAlign = 'center';
+          ctx.fillText('🕳 LAVA-TUBE SKYLIGHT ARCH', archSX, cavY + 34);
+          ctx.restore();
+        }
+
+        // Render Cryogenic H2O Water-Ice Crystals inside the Forever-Shadow Crater (around wx = 2060)!
+        const craterSX = worldToScreenX(2060);
+        if (craterSX > -260 && craterSX < cssW + 260) {
+          ctx.save();
+          // Dark cold-trap pocket shading
+          const iceGlow = ctx.createRadialGradient(craterSX, terrainHeight(2060, cssH) - 6, 8, craterSX, terrainHeight(2060, cssH), 145);
+          iceGlow.addColorStop(0, 'rgba(14, 165, 233, 0.28)');
+          iceGlow.addColorStop(0.6, 'rgba(8, 47, 73, 0.35)');
+          iceGlow.addColorStop(1, 'rgba(8, 47, 73, 0)');
+          ctx.fillStyle = iceGlow;
+          ctx.beginPath();
+          ctx.ellipse(craterSX, terrainHeight(2060, cssH) + 8, 145, 42, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Sparkling water-ice facets along the shadowed crater floor
+          for (let c = -5; c <= 5; c++) {
+            const ix = 2060 + c * 22;
+            const isx = worldToScreenX(ix);
+            const isy = terrainHeight(ix, cssH) + 4;
+            const twinkle = 0.45 + 0.55 * Math.abs(Math.sin(timeSec * 3.2 + c * 1.7));
+            ctx.fillStyle = `rgba(125, 211, 252, ${twinkle})`;
+            ctx.beginPath();
+            ctx.moveTo(isx, isy - 5);
+            ctx.lineTo(isx + 4, isy);
+            ctx.lineTo(isx, isy + 3);
+            ctx.lineTo(isx - 4, isy);
+            ctx.closePath();
+            ctx.fill();
+          }
+
+          ctx.font = '700 10px "JetBrains Mono", monospace';
+          ctx.fillStyle = 'rgba(125, 211, 252, 0.85)';
+          ctx.textAlign = 'center';
+          ctx.fillText('❄ H₂O ICE COLD TRAP (40 K)', craterSX, terrainHeight(2060, cssH) + 25);
+          ctx.restore();
+        }
+
+        // 6. Stamped Die Tread Numbers in the Regolith Dust Behind the Buggy! (e.g. 1 · 2 · 6 · 5)
+        for (let i = footprints.length - 1; i >= 0; i--) {
+          const fp = footprints[i];
+          fp.age += dt;
+          if (fp.age >= fp.life) {
+            footprints.splice(i, 1);
+            continue;
+          }
+          const fsx = worldToScreenX(fp.wx);
+          if (fsx < -30 || fsx > cssW + 30) continue;
+          const fsy = terrainHeight(fp.wx, cssH);
+          const alpha = (1 - fp.age / fp.life) * 0.72;
+          ctx.save();
+          ctx.translate(fsx, fsy + 12);
+          ctx.fillStyle = `rgba(15, 23, 42, ${alpha * 0.65})`;
+          ctx.fillRect(-9, -7, 18, 13);
+          ctx.font = '700 10px "JetBrains Mono", monospace';
+          ctx.fillStyle = fp.pip === 1 ? `rgba(248, 113, 113, ${alpha})` : `rgba(229, 169, 50, ${alpha})`;
+          ctx.textAlign = 'center';
+          ctx.fillText(String(fp.pip), 0, 3);
+          ctx.restore();
+        }
+
+        // 7. Planted Space-Race Country Flags & Polar Landers!
+        for (const lm of LANDMARKS) {
+          if (!lm.flag) continue;
+          const lsx = worldToScreenX(lm.x);
+          if (lsx < -90 || lsx > cssW + 90) continue;
+          const lsy = terrainHeight(lm.x, cssH);
+          if (lm.lander) {
+            const landerSX = worldToScreenX(lm.x - 42);
+            const landerSY = terrainHeight(lm.x - 42, cssH);
+            drawLanderSilhouette(ctx, landerSX, landerSY, lm.lander, timeSec);
+          }
+          drawVacuumFlag(ctx, lsx, lsy, lm.flag, lm.tag);
+        }
+
+        // 8. Compute Exact Front & Rear Dice Wheel Positions on Terrain + Square-Wheel Cam!
+        const rearWX = rover.worldX - rover.wheelBase * 0.5;
+        const frontWX = rover.worldX + rover.wheelBase * 0.5;
+
+        const rearGroundY = terrainHeight(rearWX, cssH);
+        const frontGroundY = terrainHeight(frontWX, cssH);
+
+        const rearCamLift = rover.airborne ? 0 : squareWheelCamOffset(rover.thetaRear, rover.wheelHalf);
+        const frontCamLift = rover.airborne ? 0 : squareWheelCamOffset(rover.thetaFront, rover.wheelHalf);
+
+        const rearPos = {
+          x: worldToScreenX(rearWX),
+          y: rearGroundY - rover.wheelHalf - rearCamLift + rover.yOffset
+        };
+        const frontPos = {
+          x: worldToScreenX(frontWX),
+          y: frontGroundY - rover.wheelHalf - frontCamLift + rover.yOffset
+        };
+
+        // Soft rover shadow on lunar regolith directly underneath
+        const shadowMidX = (rearPos.x + frontPos.x) * 0.5;
+        const shadowGroundY = (rearGroundY + frontGroundY) * 0.5;
+        const heightAbove = Math.max(0, -rover.yOffset);
+        const shadowScale = Math.max(0.35, 1 - heightAbove / 220);
+        ctx.fillStyle = `rgba(3, 5, 8, ${0.58 * shadowScale})`;
+        ctx.beginPath();
+        ctx.ellipse(shadowMidX, shadowGroundY + 2, 66 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 9. Draw the Dice-Wheeled Moon Buggy!
+        drawMoonBuggy(ctx, rearPos, frontPos, rover, timeSec);
+
+        // 10. Ballistic Vacuum Regolith Dust Particles
+        for (let i = dustParticles.length - 1; i >= 0; i--) {
+          const p = dustParticles[i];
+          p.age += dt;
+          if (p.age >= p.life) {
+            dustParticles.splice(i, 1);
+            continue;
+          }
+          p.wx = wrapX(p.wx + p.vx * dt);
+          p.vy += 170 * dt; // 1/6 g ballistic arc without air drag!
+          p.yOff += p.vy * dt;
+          const psx = worldToScreenX(p.wx);
+          const psy = terrainHeight(p.wx, cssH) + p.yOff;
+          const alpha = (1 - p.age / p.life) * 0.75;
+          ctx.fillStyle = `rgba(214, 211, 203, ${alpha})`;
+          ctx.fillRect(psx, psy, p.size, p.size);
+        }
+
+        // 11. Subtle Apollo Hasselblad Réseau Crosshair Fiducials (+) on lens
+        ctx.strokeStyle = 'rgba(244, 241, 234, 0.16)';
+        ctx.lineWidth = 1;
+        const crossPts = [
+          [cssW * 0.2, cssH * 0.25],
+          [cssW * 0.5, cssH * 0.5],
+          [cssW * 0.8, cssH * 0.25],
+          [cssW * 0.2, cssH * 0.78],
+          [cssW * 0.8, cssH * 0.78]
+        ];
+        for (const [cx, cy] of crossPts) {
+          ctx.beginPath();
+          ctx.moveTo(cx - 6, cy); ctx.lineTo(cx + 6, cy);
+          ctx.moveTo(cx, cy - 6); ctx.lineTo(cx, cy + 6);
+          ctx.stroke();
+        }
+
+        // 12. 90°S Polar Azimuthal Mini-Radar (shows the winding polar rim circuit & flag pins!)
+        if (cssW >= 520) {
+          const rcx = cssW - 58;
+          const rcy = 54;
+          const rOuter = 38;
+          const polarPt = (frac) => {
+            const ang = frac * Math.PI * 2 - Math.PI * 0.5;
+            // Interesting multi-lobe polar rim winding curve (dips close to 90°S pole at Shackleton!)
+            const rad = rOuter * (0.64 + 0.22 * Math.sin(ang * 3 + 0.5) + 0.10 * Math.cos(ang * 5));
+            return [rcx + Math.cos(ang) * rad, rcy + Math.sin(ang) * rad];
+          };
+
+          ctx.save();
+          // Translucent carbon glass radar disc
+          ctx.fillStyle = 'rgba(7, 11, 19, 0.72)';
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(rcx, rcy, rOuter + 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // 80°S / 85°S latitude rings + Shackleton 90°S Eternal Shadow bullseye
+          ctx.strokeStyle = 'rgba(125, 211, 252, 0.16)';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.arc(rcx, rcy, rOuter * 0.62, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.fillStyle = 'rgba(14, 165, 233, 0.22)';
+          ctx.beginPath();
+          ctx.arc(rcx, rcy, 9, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Quirky winding rover loop around the South Pole rim
+          ctx.strokeStyle = 'rgba(229, 169, 50, 0.42)';
+          ctx.lineWidth = 1.4;
+          ctx.setLineDash([2.5, 2.5]);
+          ctx.beginPath();
+          for (let s = 0; s <= 72; s++) {
+            const [px, py] = polarPt(s / 72);
+            if (s === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Flagged nation markers along the polar loop
+          for (const lm of LANDMARKS) {
+            if (!lm.flag) continue;
+            const [fx, fy] = polarPt(lm.x / LOOP_LEN);
+            ctx.fillStyle = lm.flag === 'TW23' ? '#e5a932' : '#7dd3fc';
+            ctx.beginPath();
+            ctx.arc(fx, fy, 2.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Live glowing Rover position dot on radar!
+          const [rvx, rvy] = polarPt(rover.worldX / LOOP_LEN);
+          ctx.fillStyle = '#fde047';
+          ctx.beginPath();
+          ctx.arc(rvx, rvy, 3.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(253, 224, 71, 0.45)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(rvx, rvy, 5.5 + Math.sin(timeSec * 6) * 1.5, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Center 90°S label
+          ctx.font = '700 7.5px "JetBrains Mono", monospace';
+          ctx.fillStyle = 'rgba(244, 241, 234, 0.78)';
+          ctx.textAlign = 'center';
+          ctx.fillText('90°S', rcx, rcy + 2.5);
+          ctx.restore();
+        }
+
+        ctx.restore();
+        requestAnimationFrame(tick);
+      }
+
+      requestAnimationFrame(tick);
+    })();
+  </script>
+  <script src="/visitors-widget.js"></script>
+</body>
+</html>
