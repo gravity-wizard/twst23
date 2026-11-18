@@ -311,11 +311,11 @@
       "angle": "DIY Physics: Ditching the 40ft Pinewood Track for Trackless Bouncing FOBBs",
       "subject_line": "Tip: Ditching the 40ft Pinewood Derby track for trackless bouncing FOBBs & 3D-in-2D spatial lab",
       "custom_blurb": "Hi Hackaday team, The classic Pinewood Derby is a staple of childhood STEM, but building or storing a 40-foot wooden track is an impossible barrier for most living rooms, classrooms, and small clubs. In Anchorage, Alaska, we founded Gravity Wizards (https://gravitywizards.com) to reinvent the derby without tracks: Flying Objects Built to Bounce (FOBBs) powered by pure gravity, rolling on floor or carpet between simple wood guide-boards. Alongside that, we built a free browser-based 3D-in-2D Cube Geometry Lab (https://flippingdice.twisted23.com) exploring 24-state axle-locked spatial rotations. Would love to share this grassroots maker engineering with the Hackaday community!",
-      "stage": "Queued",
-      "notes": "Ready for batch review and dispatch.",
-      "delivery_status": "Not Sent",
+      "stage": "Sent Step 1",
+      "notes": "Dispatched Step 1 via Hostinger Mail API (2026-11-18 07:38 UTC; repeat send 18:06 UTC before Git sync fix).",
+      "delivery_status": "Sent (Hostinger Mail API)",
       "resend_id": null,
-      "sent_at": null,
+      "sent_at": "2026-11-18T18:06:30+00:00",
       "step_2_sent_at": null
     },
     {
@@ -328,11 +328,11 @@
       "angle": "Flash Puzzle Archaeology + Rescuing Lost Web History with Guaranteed Unique Math",
       "subject_line": "Story Pitch: When a Flash developer vanished, an Anchorage inventor tapped his orphaned database—and fixed its math",
       "custom_blurb": "Hi Polygon team, When the developer (Domas) of classic Flash puzzler tophatpuzzle.com vanished years ago, thousands of crafted Sudoku variations were left orphaned by the death of Flash. From here in Anchorage, Alaska, I tapped the abandoned database, engineered a solver algorithm to resolve its long-standing multi-solution flaw, and revived it on the modern open web as Tophat Sudoku (https://twisted23.com). In parallel, we built Flipping Dice (https://flippingdice.twisted23.com)—a browser thinky gym translating 3D cube mechanics into a 2D spatial puzzle without engines or bloat. Thought your readers would love this tale of web archaeology and pure puzzle preservation.",
-      "stage": "Queued",
-      "notes": "Ready for batch review and dispatch.",
-      "delivery_status": "Not Sent",
+      "stage": "Sent Step 1",
+      "notes": "Dispatched Step 1 via Hostinger Mail API (2026-11-18 07:38 UTC; repeat send 18:06 UTC before Git sync fix).",
+      "delivery_status": "Sent (Hostinger Mail API)",
       "resend_id": null,
-      "sent_at": null,
+      "sent_at": "2026-11-18T18:06:31+00:00",
       "step_2_sent_at": null
     },
     {

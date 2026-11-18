@@ -35,14 +35,32 @@ $HOSTINGER_MAIL_TOKEN = getenv('HOSTINGER_MAIL_TOKEN') ?: 'a023e730fa37a08135955
 $HOSTINGER_MAILBOX_ID = getenv('HOSTINGER_MAILBOX_ID') ?: 'AC4474ceb28197b9db960e1111ee79';
 $SIGNATURE = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
 
-function read_data(string $path): array {
-    $raw = file_get_contents($path);
-    return json_decode($raw ?: '{}', true) ?: ['contacts' => [], 'derbies' => [], 'triage' => []];
+function runtime_file_for(string $path): string {
+    return dirname($path) . '/crm.runtime.json';
 }
 
-function write_data(string $path, array $data): bool {
-    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
-    $fp = @fopen($path, 'c+');
+function sent_log_file_for(string $path): string {
+    return dirname($path) . '/sent_log.jsonl';
+}
+
+function read_sent_ledger(string $logPath): array {
+    if (!is_file($logPath)) return [];
+    $ledger = [];
+    foreach (file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+        $row = json_decode($line, true);
+        if (is_array($row) && !empty($row['id']) && !empty($row['step'])) {
+            $ledger[$row['id'] . ':' . (int)$row['step']] = $row;
+        }
+    }
+    return $ledger;
+}
+
+function append_sent_ledger(string $logPath, array $entry): void {
+    @file_put_contents($logPath, json_encode($entry, JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+}
+
+function write_single_json(string $target, string $json): bool {
+    $fp = @fopen($target, 'c+');
     if ($fp) {
         $locked = @flock($fp, LOCK_EX);
         @ftruncate($fp, 0);
@@ -53,11 +71,89 @@ function write_data(string $path, array $data): bool {
         @fclose($fp);
         return true;
     }
-    $written = @file_put_contents($path, $json, LOCK_EX);
+    $written = @file_put_contents($target, $json, LOCK_EX);
     if ($written === false) {
-        $written = @file_put_contents($path, $json);
+        $written = @file_put_contents($target, $json);
     }
     return $written !== false;
+}
+
+function read_data(string $path): array {
+    $seedRaw = is_file($path) ? file_get_contents($path) : '';
+    $seed = json_decode($seedRaw ?: '{}', true) ?: ['contacts' => [], 'derbies' => [], 'triage' => []];
+
+    $runtimePath = runtime_file_for($path);
+    $runtime = [];
+    if (is_file($runtimePath)) {
+        $rtRaw = file_get_contents($runtimePath);
+        $runtime = json_decode($rtRaw ?: '{}', true) ?: [];
+    }
+
+    $rtById = [];
+    foreach (($runtime['contacts'] ?? []) as $rc) {
+        if (!empty($rc['id'])) $rtById[$rc['id']] = $rc;
+    }
+
+    $mergedContacts = [];
+    $seenIds = [];
+    foreach (($seed['contacts'] ?? []) as $sc) {
+        $cid = $sc['id'] ?? '';
+        $seenIds[$cid] = true;
+        if ($cid !== '' && isset($rtById[$cid])) {
+            $rc = $rtById[$cid];
+            $rtAhead = !empty($rc['sent_at']) || !empty($rc['step_2_sent_at']) || !empty($rc['last_reply']) || !empty($rc['updated_at']) || (($rc['stage'] ?? 'Queued') !== 'Queued');
+            if ($rtAhead) {
+                $sc = array_merge($sc, $rc);
+            }
+        }
+        $mergedContacts[] = $sc;
+    }
+    foreach (($runtime['contacts'] ?? []) as $rc) {
+        $cid = $rc['id'] ?? '';
+        if ($cid !== '' && empty($seenIds[$cid])) {
+            $mergedContacts[] = $rc;
+        }
+    }
+
+    // Reconcile against append-only sent_log.jsonl so sent pitches never revert to Queued
+    $ledger = read_sent_ledger(sent_log_file_for($path));
+    if (!empty($ledger)) {
+        foreach ($mergedContacts as &$mc) {
+            $cid = $mc['id'] ?? '';
+            if ($cid === '') continue;
+            if (isset($ledger["{$cid}:1"]) && empty($mc['sent_at'])) {
+                $l1 = $ledger["{$cid}:1"];
+                $mc['sent_at'] = $l1['sent_at'] ?? gmdate('c');
+                if (($mc['stage'] ?? 'Queued') === 'Queued') {
+                    $mc['stage'] = 'Sent Step 1';
+                }
+                if (($mc['delivery_status'] ?? 'Not Sent') === 'Not Sent') {
+                    $mc['delivery_status'] = $l1['delivery_status'] ?? 'Sent (Hostinger Mail API)';
+                }
+            }
+            if (isset($ledger["{$cid}:2"]) && empty($mc['step_2_sent_at'])) {
+                $l2 = $ledger["{$cid}:2"];
+                $mc['step_2_sent_at'] = $l2['sent_at'] ?? gmdate('c');
+                if (in_array($mc['stage'] ?? '', ['Queued', 'Sent Step 1'], true)) {
+                    $mc['stage'] = 'Sent Step 2';
+                }
+            }
+        }
+        unset($mc);
+    }
+
+    return [
+        'contacts' => $mergedContacts,
+        'derbies' => !empty($runtime['derbies']) ? $runtime['derbies'] : ($seed['derbies'] ?? []),
+        'triage' => !empty($runtime['triage']) ? $runtime['triage'] : ($seed['triage'] ?? []),
+    ];
+}
+
+function write_data(string $path, array $data): bool {
+    $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
+    $okRuntime = write_single_json(runtime_file_for($path), $json);
+    $okSeed = write_single_json($path, $json);
+    return $okRuntime || $okSeed;
 }
 
 function json_body(): array {
@@ -273,6 +369,8 @@ if ($action === 'send' && $method === 'POST') {
     $apiKey = trim((string)(getenv('RESEND_API_KEY') ?: ''));
 
     $data = read_data($DATA_FILE);
+    $sentLedger = read_sent_ledger(sent_log_file_for($DATA_FILE));
+    $forceResend = !empty($body['forceResend']);
     $results = [];
     $limit = isset($body['limit']) ? (int)$body['limit'] : (is_array($contactIds) ? count($contactIds) : 2);
     $matchedCount = 0;
@@ -295,6 +393,19 @@ if ($action === 'send' && $method === 'POST') {
 
         if (empty($c['primary_email'])) {
             $results[] = ['id' => $c['id'], 'outlet' => $c['outlet'], 'status' => 'skipped', 'reason' => 'No email address'];
+            continue;
+        }
+
+        // Duplicate-dispatch safety guard: block accidental repeat sends unless forceResend=true
+        $ledgerKey = ($c['id'] ?? '') . ':' . $step;
+        $alreadySentStep = ($step === 1 && !empty($c['sent_at'])) || ($step === 2 && !empty($c['step_2_sent_at'])) || isset($sentLedger[$ledgerKey]);
+        if (!$dryRun && !$forceResend && $alreadySentStep) {
+            $results[] = [
+                'id' => $c['id'],
+                'outlet' => $c['outlet'],
+                'status' => 'skipped_duplicate',
+                'reason' => "Already dispatched Step {$step} earlier (duplicate protection active)",
+            ];
             continue;
         }
 
@@ -403,6 +514,14 @@ if ($action === 'send' && $method === 'POST') {
                     $c['step_2_sent_at'] = $now;
                 }
                 $c['delivery_status'] = 'Sent (Hostinger Mail API)';
+                append_sent_ledger(sent_log_file_for($DATA_FILE), [
+                    'id' => $c['id'],
+                    'outlet' => $c['outlet'],
+                    'to' => $c['primary_email'],
+                    'step' => $step,
+                    'sent_at' => $now,
+                    'delivery_status' => $c['delivery_status'],
+                ]);
                 $results[] = [
                     'id' => $c['id'],
                     'outlet' => $c['outlet'],
@@ -455,6 +574,14 @@ if ($action === 'send' && $method === 'POST') {
                 $c['step_2_sent_at'] = $now;
             }
             $c['delivery_status'] = $sent ? 'Sent (Hostinger Mail)' : 'Sent (Stage Logged)';
+            append_sent_ledger(sent_log_file_for($DATA_FILE), [
+                'id' => $c['id'],
+                'outlet' => $c['outlet'],
+                'to' => $c['primary_email'],
+                'step' => $step,
+                'sent_at' => $now,
+                'delivery_status' => $c['delivery_status'],
+            ]);
             $results[] = [
                 'id' => $c['id'],
                 'outlet' => $c['outlet'],
@@ -513,6 +640,14 @@ if ($action === 'send' && $method === 'POST') {
         }
         $c['resend_id'] = $respBody['id'] ?? null;
         $c['delivery_status'] = 'Sent to Resend';
+        append_sent_ledger(sent_log_file_for($DATA_FILE), [
+            'id' => $c['id'],
+            'outlet' => $c['outlet'],
+            'to' => $c['primary_email'],
+            'step' => $step,
+            'sent_at' => $now,
+            'delivery_status' => $c['delivery_status'],
+        ]);
         $results[] = ['id' => $c['id'], 'outlet' => $c['outlet'], 'status' => 'sent', 'resend_id' => $c['resend_id']];
     }
 
