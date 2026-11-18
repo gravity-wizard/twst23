@@ -288,7 +288,7 @@ function geolocate_ip(string $ip, string $dataDir, int $now): array {
  * Cached 60s on disk so telemetry responses remain instant.
  */
 function fetch_federated_realms(string $dataDir, int $now): array {
-    $cacheFile = $dataDir . '/federated_realms.json';
+    $cacheFile = $dataDir . '/federated_realms_v2.json';
     if (is_file($cacheFile)) {
         $raw = @file_get_contents($cacheFile);
         $cached = $raw ? json_decode($raw, true) : null;
@@ -331,7 +331,8 @@ function fetch_federated_realms(string $dataDir, int $now): array {
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_TIMEOUT => 3,
             CURLOPT_CONNECTTIMEOUT => 2,
-            CURLOPT_USERAGENT => 'Twisted23-Universe-Globe/2.0',
+            CURLOPT_IPRESOLVE => defined('CURL_IPRESOLVE_V4') ? CURL_IPRESOLVE_V4 : 1,
+            CURLOPT_USERAGENT => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36 Twisted23-Universe-Globe/2.0',
         ]);
         $slogHtml = curl_exec($ch1);
         $slogCode = (int)curl_getinfo($ch1, CURLINFO_HTTP_CODE);
@@ -357,21 +358,26 @@ function fetch_federated_realms(string $dataDir, int $now): array {
         }
 
         // 2. Live Gravity Wizards Storefront / WebMCP Pulse
-        $ch2 = curl_init('https://gravitywizards.com/webmcp.json');
-        curl_setopt_array($ch2, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_TIMEOUT => 3,
-            CURLOPT_CONNECTTIMEOUT => 2,
-            CURLOPT_USERAGENT => 'Twisted23-Universe-Globe/2.0',
-        ]);
-        $gwBody = curl_exec($ch2);
-        $gwCode = (int)curl_getinfo($ch2, CURLINFO_HTTP_CODE);
-        curl_close($ch2);
+        foreach (['https://gravitywizards.com/webmcp.json', 'https://www.gravitywizards.com/robots.txt', 'https://gpada.org/'] as $gwUrl) {
+            $ch2 = curl_init($gwUrl);
+            curl_setopt_array($ch2, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 3,
+                CURLOPT_CONNECTTIMEOUT => 2,
+                CURLOPT_IPRESOLVE => defined('CURL_IPRESOLVE_V4') ? CURL_IPRESOLVE_V4 : 1,
+                CURLOPT_USERAGENT => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36 Twisted23-Universe-Globe/2.0',
+                CURLOPT_HTTPHEADER => ['Accept: application/json,text/plain,text/html;q=0.9,*/*;q=0.8'],
+            ]);
+            $gwBody = curl_exec($ch2);
+            $gwCode = (int)curl_getinfo($ch2, CURLINFO_HTTP_CODE);
+            curl_close($ch2);
 
-        if (is_string($gwBody) && $gwCode >= 200 && $gwCode < 400) {
-            $gw['reachable'] = true;
-            $gw['onlineStatus'] = 'FOBB & FD_too0 Storefront Live';
+            if (is_string($gwBody) && $gwCode >= 200 && $gwCode < 400) {
+                $gw['reachable'] = true;
+                $gw['onlineStatus'] = 'FOBB & FD_too0 Storefront Live';
+                break;
+            }
         }
     }
 
