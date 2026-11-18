@@ -24,6 +24,7 @@ function stagePill(stage) {
   if (stage === 'Queued') return 'status-warn';
   if (stage === 'Auto-Acknowledged') return 'status-purple';
   if (stage === 'Received Reply' || stage === 'Replied' || stage === 'Featured') return 'status-ok';
+  if (stage === 'Bounced') return 'status-danger';
   if (stage && stage.startsWith('Sent')) return 'status-info';
   return 'status-muted';
 }
@@ -32,6 +33,7 @@ function deliveryPill(status) {
   if (!status || status === 'Not Sent') return 'status-muted';
   if (status === 'Auto-Acknowledged') return 'status-purple';
   if (status === 'Human Replied' || status === 'Replied') return 'status-ok';
+  if (status.includes('Bounce') || status.includes('Rejected')) return 'status-danger';
   if (status.includes('Sent')) return 'status-info';
   return 'status-muted';
 }
@@ -54,6 +56,8 @@ function renderMetrics() {
   if (humanEl) humanEl.textContent = contacts.filter((c) => c.stage === 'Received Reply' || c.delivery_status === 'Human Replied').length;
   const triageEl = $('#m-triage');
   if (triageEl) triageEl.textContent = state.triage.filter((t) => t.status !== 'Resolved').length;
+  const bounceEl = $('#m-bounced');
+  if (bounceEl) bounceEl.textContent = contacts.filter((c) => c.stage === 'Bounced' || (c.delivery_status && c.delivery_status.includes('Bounce'))).length;
 }
 
 function renderContacts() {
@@ -143,6 +147,8 @@ function openDrawer(id) {
   $('#drawer-id').textContent = `${c.id} · Priority #${c.priority}`;
   $('#drawer-title').textContent = c.outlet;
   $('#d-stage').value = c.stage;
+  const emailInput = $('#d-email');
+  if (emailInput) emailInput.value = c.primary_email || '';
   $('#d-cc').value = c.cc_email || '';
   $('#d-bcc').value = c.bcc_email || 'gary@gravitywizards.com, botchee@icloud.com';
   $('#d-subject').value = c.subject_line || '';
@@ -191,8 +197,9 @@ function openDrawer(id) {
   const step1Btn = $('#d-send-one');
   const step2Btn = $('#d-send-step2');
   if (step1Btn && step2Btn) {
-    if (c.stage === 'Queued') {
+    if (c.stage === 'Queued' || c.stage === 'Bounced') {
       step1Btn.style.display = 'inline-block';
+      step1Btn.textContent = c.stage === 'Bounced' ? 'Re-send Step 1 (Updated Email)' : 'Send Step 1';
       step2Btn.style.display = 'none';
     } else {
       step1Btn.style.display = 'none';
@@ -309,16 +316,20 @@ async function handleSaveContact() {
     saveBtn.textContent = 'Saving...';
   }
   try {
+    const payload = {
+      stage: $('#d-stage').value,
+      cc_email: $('#d-cc').value,
+      bcc_email: $('#d-bcc').value,
+      subject_line: $('#d-subject').value,
+      custom_blurb: $('#d-blurb').value,
+      notes: $('#d-notes').value,
+    };
+    const emailInput = $('#d-email');
+    if (emailInput) payload.primary_email = emailInput.value.trim().toLowerCase();
+
     const updated = await api(`api.php?action=contact&id=${encodeURIComponent(activeContactId)}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        stage: $('#d-stage').value,
-        cc_email: $('#d-cc').value,
-        bcc_email: $('#d-bcc').value,
-        subject_line: $('#d-subject').value,
-        custom_blurb: $('#d-blurb').value,
-        notes: $('#d-notes').value,
-      }),
+      body: JSON.stringify(payload),
     });
     const idx = state.contacts.findIndex((x) => x.id === activeContactId);
     if (idx !== -1) {

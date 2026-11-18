@@ -243,6 +243,7 @@ code {
 .status-info { background: var(--info-bg); color: var(--info-text); }
 .status-muted { background: var(--surface-alt); color: var(--muted); }
 .status-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+.status-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
 .table-wrap {
   background: var(--surface);

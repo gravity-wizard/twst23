@@ -181,7 +181,7 @@ if ($action === 'contact' && $method === 'PATCH') {
     $data = read_data($DATA_FILE);
     foreach ($data['contacts'] as &$c) {
         if (($c['id'] ?? '') === $id) {
-            foreach (['stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'bcc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at'] as $f) {
+            foreach (['primary_email', 'outlet', 'stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'bcc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at'] as $f) {
                 if (array_key_exists($f, $body)) $c[$f] = $body[$f];
             }
             $c['updated_at'] = gmdate('c');

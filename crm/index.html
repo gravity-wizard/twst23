@@ -54,6 +54,10 @@
         <span class="metric-label">Open Triage</span>
         <strong id="m-triage" class="metric-value">0</strong>
       </div>
+      <div class="metric">
+        <span class="metric-label">Bounced</span>
+        <strong id="m-bounced" class="metric-value" style="color:#b91c1c;">0</strong>
+      </div>
     </section>
 
     <nav class="tabs" role="tablist" aria-label="Coordination Roles">
@@ -75,6 +79,7 @@
             <option value="Auto-Acknowledged">🤖 Auto-Acknowledged (Receipt)</option>
             <option value="Sent Step 2">Sent Step 2</option>
             <option value="Received Reply">💬 Received Reply (Human)</option>
+            <option value="Bounced">⚠️ Bounced</option>
             <option value="Sent (Form Fill)">Sent (Form Fill)</option>
             <option value="Featured">Featured</option>
           </select>
@@ -178,9 +183,14 @@
           <option value="Auto-Acknowledged">🤖 Auto-Acknowledged (Bot / Receipt)</option>
           <option value="Sent Step 2">Sent Step 2</option>
           <option value="Received Reply">💬 Received Reply (Human)</option>
+          <option value="Bounced">⚠️ Bounced (Invalid Recipient)</option>
           <option value="Sent (Form Fill)">Sent (Form Fill)</option>
           <option value="Featured">Featured</option>
         </select>
+      </label>
+      <label class="field">
+        <span>Primary Email</span>
+        <input id="d-email" class="input" type="email" placeholder="contact@domain.com" />
       </label>
       <label class="field">
         <span>CC Emails</span>
@@ -224,6 +234,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
