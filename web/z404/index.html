@@ -451,7 +451,7 @@
 
       <h1 id="pageTitle">Off the Sunlit Rim at 89.9&deg;S</h1>
       <p class="hero-sub">
-        Every flagged mission is racing for the water-ice hidden in these forever-shadowed craters&mdash;meanwhile your link took a detour along the ridge on square <strong>AxLe-Locked</strong> dice wheels.
+        <strong>BeTween FLagged CounTries</strong> racing for the water-ice hidden in these forever-shadowed craters&mdash;meanwhile your link took a detour along the ridge on square <strong>AxLe-Locked</strong> dice wheels.
       </p>
       <div class="interlock-whisper" id="interlockWhisper">
         z hooks through 4&rsquo;s triangle (OVER &rarr; UNDER &rarr; OVER) &bull; z4 &equiv; 24th Dimension &bull; Click 💡 to invert weave
@@ -462,6 +462,7 @@
     <section class="lunar-viewport" aria-label="Lunar South Pole Dice-Wheeled Moon Buggy Simulation">
       <div class="telemetry-bar">
         <div class="telemetry-left">
+          <span class="tele-gold" id="teleDetour" style="display:none;"></span>
           <span>LOC <strong class="tele-tag" id="teleLandmark">80.1&deg;S &middot; MALAPERT APPROACH</strong></span>
           <span class="tele-ice" id="teleIce">H&#8322;O COLD TRAP: 40 K</span>
         </div>
@@ -497,9 +498,9 @@
       <div class="escape-links">
         <a href="/" class="escape-link primary-home" id="navMainLounge">🏠 Main Parlour Lounge</a>
         <a href="/backgammon/" class="escape-link" id="navBackgammon">🎲 Backgammon 36-Roll</a>
-        <a href="/flippingdice/" class="escape-link" id="navFlippingDice">✨ Flipping Dice</a>
-        <a href="/botchee/" class="escape-link" id="navBotchee">🎯 Botchee 24-Tile</a>
+        <a href="/botchee/" class="escape-link" id="navBotchee">🎯 Botchee (Spatial Yahtzee!)</a>
         <a href="/botchee/humpty/" class="escape-link" id="navHumpty">🥚 Humpty Dumpty Beta</a>
+        <a href="/flippingdice/" class="escape-link" id="navFlippingDice">✨ Flipping Dice</a>
         <a href="/slider/" class="escape-link" id="navSlider">🌀 Twisted 23 Slider</a>
         <a href="/tophat/" class="escape-link" id="navTophat">🎩 Top Hat Sudoku</a>
         <a href="/hangman/" class="escape-link" id="navHangman">🦉 CameLcase Hangman</a>
@@ -510,6 +511,18 @@
   <script>
     (() => {
       'use strict';
+
+      // Echo custom detour slug (e.g. /M00N_BUGGY from SlogBog #p6430!) on HUD & rover plate
+      const rawDetourSlug = decodeURIComponent(window.location.pathname || '').replace(/^\/+|\/+$/g, '');
+      const hasCustomSlug = rawDetourSlug && !/^(z404(\/index\.html)?|404(\.html)?)$/i.test(rawDetourSlug);
+      const roverPlateCode = /m00n/i.test(rawDetourSlug) ? 'M00N' : 'z404';
+      if (hasCustomSlug) {
+        const detEl = document.getElementById('teleDetour');
+        if (detEl) {
+          detEl.textContent = '📡 /' + rawDetourSlug.slice(0, 22);
+          detEl.style.display = 'inline';
+        }
+      }
 
       // =========================================================
       // 1. INTERLOCKING z + 4 TOPOLOGICAL TOGGLE (💡)
@@ -1223,7 +1236,7 @@
         ctx.strokeRect(-halfWB - 16, -20, 22, 16);
         ctx.fillStyle = '#e5a932';
         ctx.font = '700 8px "JetBrains Mono", monospace';
-        ctx.fillText('z404', -halfWB - 15, -9);
+        ctx.fillText(roverPlateCode, -halfWB - 15, -9);
 
         // Front Kapton Gold Thermal Foil Battery Bay
         const kapGrad = ctx.createLinearGradient(halfWB - 14, -18, halfWB + 16, 0);
