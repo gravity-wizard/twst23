@@ -82,30 +82,164 @@
     }
     @keyframes wobble {
       0%, 100% { transform: rotate(0deg); }
-      20% { transform: rotate(-9deg); }
-      40% { transform: rotate(9deg); }
-      60% { transform: rotate(-6deg); }
-      80% { transform: rotate(6deg); }
+      20% { transform: rotate(-10deg); }
+      40% { transform: rotate(10deg); }
+      60% { transform: rotate(-7deg); }
+      80% { transform: rotate(7deg); }
     }
     .wobbling {
-      animation: wobble 0.6s ease-in-out infinite;
+      animation: wobble 0.55s ease-in-out infinite;
     }
-    @keyframes crackDrop {
-      0% { transform: translateY(0) scale(1); opacity: 1; }
-      50% { transform: translateY(10px) rotate(16deg) scale(0.92); }
-      100% { transform: translateY(18px) rotate(32deg) scale(0.8); opacity: 0.45; }
+
+    /* Wall shudder when loser egg hits the cobblestones */
+    @keyframes wallImpactShake {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      20% { transform: translate3d(-4px, 3px, 0); }
+      40% { transform: translate3d(4px, -3px, 0); }
+      60% { transform: translate3d(-3px, 2px, 0); }
+      80% { transform: translate3d(2px, -1px, 0); }
+    }
+    .wall-impact-shake {
+      animation: wallImpactShake 0.42s ease-out;
+    }
+
+    /* DRAMATIC WINNER ASCENSION + CONTINUOUS CELESTIAL HOVER */
+    @keyframes dramaticWinnerAscend {
+      0% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        filter: drop-shadow(0 4px 10px rgba(245, 158, 11, 0.35));
+      }
+      16% {
+        transform: translateY(5px) scale(1.12, 0.88) rotate(-2deg);
+        filter: drop-shadow(0 0 18px rgba(251, 191, 36, 0.9));
+      }
+      58% {
+        transform: translateY(-42px) scale(1.28) rotate(2deg);
+        filter: drop-shadow(0 18px 26px rgba(251, 191, 36, 0.95)) drop-shadow(0 0 36px rgba(254, 240, 138, 0.75));
+      }
+      80% {
+        transform: translateY(-33px) scale(1.22) rotate(-1deg);
+        filter: drop-shadow(0 14px 22px rgba(251, 191, 36, 0.85));
+      }
+      100% {
+        transform: translateY(-38px) scale(1.25) rotate(0deg);
+        filter: drop-shadow(0 18px 28px rgba(251, 191, 36, 0.92)) drop-shadow(0 0 30px rgba(253, 224, 71, 0.65));
+      }
+    }
+    @keyframes winnerHoverLoop {
+      0%, 100% {
+        transform: translateY(-38px) scale(1.25) rotate(-1.5deg);
+        filter: drop-shadow(0 18px 28px rgba(251, 191, 36, 0.92)) drop-shadow(0 0 28px rgba(253, 224, 71, 0.65));
+      }
+      50% {
+        transform: translateY(-46px) scale(1.29) rotate(1.5deg);
+        filter: drop-shadow(0 24px 32px rgba(251, 191, 36, 1)) drop-shadow(0 0 38px rgba(254, 249, 195, 0.85));
+      }
+    }
+    .egg-winner-ascend {
+      z-index: 40;
+      animation:
+        dramaticWinnerAscend 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+        winnerHoverLoop 2.2s ease-in-out 1.15s infinite;
+    }
+
+    @keyframes wingFlutterLeft {
+      0%, 100% { transform: rotate(-6deg) scaleX(1); }
+      50% { transform: rotate(16deg) scaleX(0.92); }
+    }
+    @keyframes wingFlutterRight {
+      0%, 100% { transform: rotate(6deg) scaleX(1); }
+      50% { transform: rotate(-16deg) scaleX(0.92); }
+    }
+    .wing-left-anim {
+      transform-origin: 14px 40px;
+      animation: wingFlutterLeft 0.45s ease-in-out infinite;
+    }
+    .wing-right-anim {
+      transform-origin: 50px 40px;
+      animation: wingFlutterRight 0.45s ease-in-out infinite;
+    }
+
+    @keyframes heavenBeamGlow {
+      0% { opacity: 0; transform: translateX(-50%) scaleY(0.3); }
+      40% { opacity: 0.95; transform: translateX(-50%) scaleY(1.08); }
+      100% { opacity: 0.8; transform: translateX(-50%) scaleY(1); }
+    }
+    .ascend-beam-active {
+      opacity: 0.85 !important;
+      animation: heavenBeamGlow 1s ease-out forwards;
+    }
+
+    /* DRAMATIC LOSER GREAT FALL OFF THE WALL -> SPLAT BELOW */
+    @keyframes dramaticLoserFall {
+      0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+        opacity: 1;
+      }
+      10% {
+        transform: translate(-5px, -2px) rotate(-20deg) scale(1.02);
+        opacity: 1;
+      }
+      22% {
+        transform: translate(7px, -1px) rotate(26deg) scale(1.02);
+        opacity: 1;
+      }
+      34% {
+        transform: translate(12px, 6px) rotate(58deg) scale(0.98);
+        opacity: 1;
+      }
+      68% {
+        transform: translate(16px, 56px) rotate(156deg) scale(0.92);
+        opacity: 1;
+      }
+      78% {
+        transform: translate(16px, 60px) rotate(168deg) scale(1.22, 0.56);
+        opacity: 0.85;
+      }
+      100% {
+        transform: translate(16px, 62px) rotate(172deg) scale(1.28, 0.32);
+        opacity: 0;
+      }
+    }
+    .egg-loser-fall {
+      z-index: 30;
+      animation: dramaticLoserFall 1.08s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+    }
+
+    @keyframes splatReveal {
+      0% { opacity: 0; transform: translate(-50%, 0) scale(0.35); }
+      60% { opacity: 1; transform: translate(-50%, 0) scale(1.14); }
+      100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+    .splat-visible {
+      opacity: 1 !important;
+      animation: splatReveal 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes avatarFall {
+      0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      30% { transform: translateY(-3px) rotate(-18deg); }
+      100% { transform: translateY(20px) rotate(42deg) scale(0.82); opacity: 0.45; }
     }
     .cracking {
-      animation: crackDrop 0.85s forwards;
+      animation: avatarFall 0.95s forwards;
     }
+    @keyframes avatarAscend {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-8px) scale(1.12); box-shadow: 0 0 24px rgba(251, 191, 36, 0.75); }
+    }
+    .avatar-ascending {
+      animation: avatarAscend 0.9s ease-out forwards;
+    }
+
     @keyframes eggAbsorb {
       0% { transform: scale(1) translateY(0); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.45)); }
-      35% { transform: scale(1.22, 0.88) translateY(3px); filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.95)); }
-      68% { transform: scale(0.93, 1.12) translateY(-6px); filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.8)); }
+      35% { transform: scale(1.2, 0.88) translateY(3px); filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.95)); }
+      68% { transform: scale(0.94, 1.1) translateY(-5px); filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.8)); }
       100% { transform: scale(1) translateY(0); filter: drop-shadow(0 4px 10px rgba(0,0,0,0.45)); }
     }
     .egg-absorb-pop {
-      animation: eggAbsorb 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+      animation: eggAbsorb 0.5s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .wall-bricks {
       background-color: #182338;
@@ -117,6 +251,12 @@
       background-size: 58px 58px;
       background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
       border-top: 3px solid #334155;
+      border-bottom: 5px solid #0b1324;
+      transition: padding 0.45s cubic-bezier(0.22, 1, 0.36, 1), margin 0.45s ease;
+    }
+    .wall-finale-stage {
+      padding-top: 2.35rem !important;
+      padding-bottom: 2.65rem !important;
     }
     .egg-stage-active-p1 {
       border-color: rgba(251, 191, 36, 0.85) !important;
@@ -125,6 +265,16 @@
     .egg-stage-active-p2 {
       border-color: rgba(56, 189, 248, 0.85) !important;
       box-shadow: 0 0 22px rgba(56, 189, 248, 0.22), inset 0 0 14px rgba(56, 189, 248, 0.08);
+    }
+    .winner-card-glow {
+      border-color: #fde047 !important;
+      background: linear-gradient(180deg, rgba(120, 53, 15, 0.48) 0%, rgba(15, 23, 42, 0.92) 100%) !important;
+      box-shadow: 0 0 32px rgba(251, 191, 36, 0.42), inset 0 0 18px rgba(253, 224, 71, 0.16) !important;
+    }
+    .loser-card-fallen {
+      border-color: rgba(244, 63, 94, 0.55) !important;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(69, 10, 26, 0.35) 100%) !important;
+      box-shadow: inset 0 0 16px rgba(244, 63, 94, 0.12) !important;
     }
     .flying-point-chip {
       position: fixed;
@@ -139,22 +289,31 @@
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65);
       letter-spacing: 0.02em;
     }
+    .finale-particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      font-size: 14px;
+      font-weight: 900;
+      transform: translate(-50%, -50%);
+      user-select: none;
+    }
     @keyframes eggGainRise {
-      0% { opacity: 0; transform: translate(-50%, 4px) scale(0.8); }
-      20% { opacity: 1; transform: translate(-50%, -6px) scale(1.08); }
-      100% { opacity: 0; transform: translate(-50%, -26px) scale(0.96); }
+      0% { opacity: 0; transform: translate(-50%, 2px) scale(0.8); }
+      22% { opacity: 1; transform: translate(-50%, -10px) scale(1.08); }
+      100% { opacity: 0; transform: translate(-50%, -32px) scale(0.96); }
     }
     .egg-gain-burst {
       position: absolute;
       left: 50%;
-      top: -6px;
+      top: -16px;
       pointer-events: none;
       font-weight: 900;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       white-space: nowrap;
-      animation: eggGainRise 1.05s ease-out forwards;
-      z-index: 20;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+      animation: eggGainRise 1.0s ease-out forwards;
+      z-index: 45;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.95);
     }
     .parlour-badge {
       background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.35));
@@ -176,7 +335,7 @@
             <h1 class="text-xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-200 to-cyan-400">
               BOTCHEE // HUMPTY DUMPTY
             </h1>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700 font-mono">v3.0-EGG-WALL</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700 font-mono">v3.1-GREAT-FALL</span>
             <a href="../../" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold hover:bg-amber-500/30 transition flex items-center gap-1">
               🏠 Twisted23 Parlour &rarr;
             </a>
@@ -297,9 +456,19 @@
               <div class="grid grid-cols-1 sm:grid-cols-11 gap-3 items-center">
 
                 <!-- Player 1 Egg Card -->
-                <div id="eggCardP1" class="sm:col-span-4 bg-slate-950/85 rounded-xl p-2.5 sm:p-3 border-2 border-amber-500/50 transition-all duration-300 flex items-center gap-3 relative egg-stage-active-p1">
-                  <div id="eggTargetP1" class="relative w-14 h-16 flex-shrink-0 flex items-center justify-center select-none">
-                    <svg id="eggSvgP1" viewBox="0 0 64 78" class="w-13 h-16 drop-shadow-[0_5px_10px_rgba(245,158,11,0.35)]">
+                <div id="eggCardP1" class="sm:col-span-4 bg-slate-950/85 rounded-xl p-2.5 sm:p-3 border-2 border-amber-500/50 transition-all duration-300 flex items-center gap-3 relative overflow-visible egg-stage-active-p1">
+                  <div id="eggTargetP1" class="relative w-16 h-18 flex-shrink-0 flex items-center justify-center select-none overflow-visible">
+                    <!-- Heavenly Ascension Light Pillar -->
+                    <div id="ascendBeamP1" class="pointer-events-none opacity-0 absolute left-1/2 -top-12 -bottom-2 w-16 -translate-x-1/2 rounded-full bg-gradient-to-t from-amber-500/5 via-amber-300/35 to-yellow-200/70 blur-md transition-opacity duration-500"></div>
+
+                    <!-- Stationary Wall Pedestal (stays on wall when Egg ascends or falls!) -->
+                    <svg viewBox="0 0 64 20" class="w-14 h-4 absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none z-10">
+                      <ellipse cx="32" cy="11" rx="22" ry="5.5" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5" />
+                      <ellipse id="pedestalGlowP1" cx="32" cy="10" rx="14" ry="2.8" fill="#fbbf24" opacity="0.28" />
+                    </svg>
+
+                    <!-- Animated Egg Actor -->
+                    <svg id="eggSvgP1" viewBox="-18 -18 100 94" class="w-16 h-16 relative z-20 overflow-visible drop-shadow-[0_5px_10px_rgba(245,158,11,0.35)]">
                       <defs>
                         <radialGradient id="gradEggGold" cx="35%" cy="28%" r="68%">
                           <stop offset="0%" stop-color="#fef9c3" />
@@ -308,38 +477,83 @@
                           <stop offset="100%" stop-color="#92400e" />
                         </radialGradient>
                       </defs>
-                      <!-- Pedestal Cushion -->
-                      <ellipse cx="32" cy="72" rx="20" ry="4.5" fill="#1e293b" stroke="#f59e0b" stroke-width="1.2" />
+                      <!-- Angelic Golden Wings (unfurl on Victory Ascension) -->
+                      <g id="eggWingsP1" class="hidden">
+                        <g class="wing-left-anim">
+                          <path d="M12 38 C-8 22, -16 32, -8 44 C-14 48, -6 56, 11 49 Z" fill="#fef9c3" stroke="#f59e0b" stroke-width="1.4" />
+                          <path d="M9 41 C-2 32, -7 37, -1 44" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" />
+                        </g>
+                        <g class="wing-right-anim">
+                          <path d="M52 38 C72 22, 80 32, 72 44 C78 48, 70 56, 53 49 Z" fill="#fef9c3" stroke="#f59e0b" stroke-width="1.4" />
+                          <path d="M55 41 C66 32, 71 37, 65 44" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" />
+                        </g>
+                      </g>
+                      <!-- Jeweled Victory Crown & Halo -->
+                      <g id="eggCrownP1" class="hidden">
+                        <ellipse cx="32" cy="-11" rx="15" ry="3.2" fill="none" stroke="#fde047" stroke-width="2" opacity="0.92" />
+                        <polygon points="20,7 18,-4 26,2 32,-6 38,2 46,-4 44,7" fill="#fde047" stroke="#b45309" stroke-width="1.4" stroke-linejoin="round" />
+                        <circle cx="32" cy="1.5" r="2" fill="#ef4444" />
+                        <circle cx="24" cy="3" r="1.4" fill="#38bdf8" />
+                        <circle cx="40" cy="3" r="1.4" fill="#10b981" />
+                      </g>
                       <!-- Golden Egg Shell -->
                       <path d="M32 5 C17 5, 9 29, 9 47 C9 63, 19 71, 32 71 C45 71, 55 63, 55 47 C55 29, 47 5, 32 5 Z" fill="url(#gradEggGold)" stroke="#fef08a" stroke-width="1.6" />
                       <!-- Royal Sash -->
-                      <path d="M10 49 Q32 56 54 49 L53 55 Q32 62 11 55 Z" fill="#0f172a" opacity="0.72" />
+                      <path d="M10 49 Q32 56 54 49 L53 55 Q32 62 11 55 Z" fill="#0f172a" opacity="0.74" />
                       <circle cx="32" cy="53" r="3" fill="#38bdf8" />
+                      <!-- Crack Line (shown when trailing on botch or falling) -->
+                      <path id="eggP1CrackPath" d="M37 11 L33 20 L39 25 L34 33 L38 39" fill="none" stroke="#451a03" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" class="opacity-0 transition-opacity duration-300" />
                       <!-- Specular Highlight -->
                       <ellipse cx="23" cy="23" rx="5" ry="9" transform="rotate(-18 23 23)" fill="#ffffff" opacity="0.48" />
-                      <!-- Eyes & Smile -->
-                      <circle cx="25" cy="37" r="2.3" fill="#0f172a" />
-                      <circle cx="39" cy="37" r="2.3" fill="#0f172a" />
-                      <path d="M26 43 Q32 47.5 38 43" fill="none" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round" />
+                      <!-- Normal Eyes -->
+                      <g id="eggP1EyesNormal">
+                        <circle cx="25" cy="37" r="2.4" fill="#0f172a" />
+                        <circle cx="39" cy="37" r="2.4" fill="#0f172a" />
+                      </g>
+                      <!-- Triumphant Happy Eyes (^ ^) -->
+                      <g id="eggP1EyesWin" class="hidden">
+                        <path d="M22 38 Q25 33.5 28 38" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round" />
+                        <path d="M36 38 Q39 33.5 42 38" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round" />
+                      </g>
+                      <!-- Dizzy Great-Fall Eyes (X X) -->
+                      <g id="eggP1EyesFall" class="hidden">
+                        <path d="M22.5 34.5 L27.5 39.5 M27.5 34.5 L22.5 39.5" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round" />
+                        <path d="M36.5 34.5 L41.5 39.5 M41.5 34.5 L36.5 39.5" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round" />
+                      </g>
+                      <!-- Dynamic Mouth -->
+                      <path id="eggP1Mouth" d="M26 43 Q32 47.5 38 43" fill="none" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round" />
+                    </svg>
+
+                    <!-- Shattered Eggshell & Sunny-Side Yolk Splat on Ground Below Wall -->
+                    <svg id="eggSplatP1" viewBox="0 0 92 42" class="w-22 h-10 absolute left-1/2 top-[52px] -translate-x-1/2 opacity-0 pointer-events-none z-35 overflow-visible">
+                      <!-- Egg White Puddle -->
+                      <path d="M12 25 Q6 17 22 15 Q34 10 49 13 Q67 9 78 18 Q88 26 73 31 Q54 37 33 34 Q15 35 12 25 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" />
+                      <!-- Sunny Yolk -->
+                      <ellipse cx="46" cy="23" rx="12" ry="6.5" fill="#f59e0b" stroke="#d97706" stroke-width="1.2" />
+                      <ellipse cx="42" cy="21" rx="4" ry="2" fill="#fef08a" opacity="0.75" />
+                      <!-- Broken Golden Shell Halves -->
+                      <path d="M14 22 C12 10, 22 6, 30 12 L26 17 L31 21 L24 25 Z" fill="#fbbf24" stroke="#fef08a" stroke-width="1.2" />
+                      <path d="M76 23 C79 11, 68 7, 60 13 L65 18 L59 22 L67 26 Z" fill="#d97706" stroke="#fef08a" stroke-width="1.2" />
                     </svg>
                   </div>
+
                   <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="text-[10px] uppercase tracking-wider font-extrabold text-amber-400">Player 1 Egg</span>
                       <span id="p1TurnPill" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">TURN</span>
                     </div>
                     <div class="font-black text-slate-100 text-xs truncate" id="eggNameP1">EggMaster_23</div>
-                    <div class="flex items-baseline gap-2 mt-0.5">
+                    <div class="flex items-baseline gap-1.5 mt-1 flex-wrap">
                       <span class="text-2xl font-black font-mono text-amber-300 leading-none" id="eggScoreP1">0</span>
                       <span class="text-[10px] text-slate-400 font-mono">pts</span>
-                      <span class="text-[10px] font-mono text-emerald-400 font-bold" id="eggLastDeltaP1"></span>
+                      <span class="text-[10px] font-mono text-emerald-400 font-bold ml-0.5" id="eggLastDeltaP1"></span>
                     </div>
                   </div>
                 </div>
 
                 <!-- Center Bonus Rules Crest -->
                 <div class="sm:col-span-3 flex flex-col items-center justify-center text-center px-1 space-y-1">
-                  <div class="text-[10px] font-black uppercase tracking-widest text-amber-300/90">🧱 Wall Bonus Rules</div>
+                  <div class="text-[10px] font-black uppercase tracking-widest text-amber-300/90" id="wallCenterHeading">🧱 Wall Bonus Rules</div>
                   <div class="flex flex-wrap justify-center gap-1 text-[10px] font-mono">
                     <span class="px-1.5 py-0.5 rounded bg-slate-900/90 border border-emerald-500/40 text-emerald-300" title="+5 bonus points for completing any Row">Row +5</span>
                     <span class="px-1.5 py-0.5 rounded bg-slate-900/90 border border-emerald-500/40 text-emerald-300" title="+5 bonus points for completing any Column">Col +5</span>
@@ -351,21 +565,32 @@
                 </div>
 
                 <!-- Player 2 / Opponent Egg Card -->
-                <div id="eggCardP2" class="sm:col-span-4 bg-slate-950/85 rounded-xl p-2.5 sm:p-3 border-2 border-slate-700/80 transition-all duration-300 flex items-center justify-between gap-3 relative">
+                <div id="eggCardP2" class="sm:col-span-4 bg-slate-950/85 rounded-xl p-2.5 sm:p-3 border-2 border-slate-700/80 transition-all duration-300 flex items-center justify-between gap-3 relative overflow-visible">
                   <div class="min-w-0 flex-1 text-left sm:text-right">
-                    <div class="flex items-center sm:justify-end gap-1.5">
+                    <div class="flex items-center sm:justify-end gap-1.5 flex-wrap">
                       <span id="p2TurnPill" class="hidden text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold">TURN</span>
                       <span class="text-[10px] uppercase tracking-wider font-extrabold text-cyan-400" id="eggRoleP2">Opponent Egg</span>
                     </div>
                     <div class="font-black text-slate-100 text-xs truncate" id="eggNameP2">Humpty Dumpty</div>
-                    <div class="flex items-baseline sm:justify-end gap-2 mt-0.5">
-                      <span class="text-[10px] font-mono text-cyan-300 font-bold" id="eggLastDeltaP2"></span>
+                    <div class="flex items-baseline sm:justify-end gap-1.5 mt-1 flex-wrap">
                       <span class="text-2xl font-black font-mono text-cyan-300 leading-none" id="eggScoreP2">0</span>
                       <span class="text-[10px] text-slate-400 font-mono">pts</span>
+                      <span class="text-[10px] font-mono text-cyan-300 font-bold ml-0.5" id="eggLastDeltaP2"></span>
                     </div>
                   </div>
-                  <div id="eggTargetP2" class="relative w-14 h-16 flex-shrink-0 flex items-center justify-center select-none">
-                    <svg id="eggSvgP2" viewBox="0 0 64 78" class="w-13 h-16 drop-shadow-[0_5px_10px_rgba(56,189,248,0.35)]">
+
+                  <div id="eggTargetP2" class="relative w-16 h-18 flex-shrink-0 flex items-center justify-center select-none overflow-visible">
+                    <!-- Heavenly Ascension Light Pillar -->
+                    <div id="ascendBeamP2" class="pointer-events-none opacity-0 absolute left-1/2 -top-12 -bottom-2 w-16 -translate-x-1/2 rounded-full bg-gradient-to-t from-cyan-400/5 via-amber-300/35 to-yellow-200/70 blur-md transition-opacity duration-500"></div>
+
+                    <!-- Stationary Wall Pedestal -->
+                    <svg viewBox="0 0 64 20" class="w-14 h-4 absolute bottom-0 left-1/2 -translate-x-1/2 pointer-events-none z-10">
+                      <ellipse cx="32" cy="11" rx="22" ry="5.5" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+                      <ellipse id="pedestalGlowP2" cx="32" cy="10" rx="14" ry="2.8" fill="#38bdf8" opacity="0.28" />
+                    </svg>
+
+                    <!-- Animated Opponent Egg Actor -->
+                    <svg id="eggSvgP2" viewBox="-18 -18 100 94" class="w-16 h-16 relative z-20 overflow-visible drop-shadow-[0_5px_10px_rgba(56,189,248,0.35)]">
                       <defs>
                         <radialGradient id="gradEggCyan" cx="35%" cy="28%" r="68%">
                           <stop offset="0%" stop-color="#f0f9ff" />
@@ -374,8 +599,25 @@
                           <stop offset="100%" stop-color="#0c4a6e" />
                         </radialGradient>
                       </defs>
-                      <!-- Pedestal Cushion -->
-                      <ellipse cx="32" cy="72" rx="20" ry="4.5" fill="#1e293b" stroke="#38bdf8" stroke-width="1.2" />
+                      <!-- Angelic Wings (unfurl if P2/Bot Wins & Ascends) -->
+                      <g id="eggWingsP2" class="hidden">
+                        <g class="wing-left-anim">
+                          <path d="M12 38 C-8 22, -16 32, -8 44 C-14 48, -6 56, 11 49 Z" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.4" />
+                          <path d="M9 41 C-2 32, -7 37, -1 44" fill="none" stroke="#7dd3fc" stroke-width="1.2" stroke-linecap="round" />
+                        </g>
+                        <g class="wing-right-anim">
+                          <path d="M52 38 C72 22, 80 32, 72 44 C78 48, 70 56, 53 49 Z" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.4" />
+                          <path d="M55 41 C66 32, 71 37, 65 44" fill="none" stroke="#7dd3fc" stroke-width="1.2" stroke-linecap="round" />
+                        </g>
+                      </g>
+                      <!-- Jeweled Victory Crown & Halo -->
+                      <g id="eggCrownP2" class="hidden">
+                        <ellipse cx="32" cy="-11" rx="15" ry="3.2" fill="none" stroke="#fde047" stroke-width="2" opacity="0.92" />
+                        <polygon points="20,7 18,-4 26,2 32,-6 38,2 46,-4 44,7" fill="#fde047" stroke="#b45309" stroke-width="1.4" stroke-linejoin="round" />
+                        <circle cx="32" cy="1.5" r="2" fill="#38bdf8" />
+                        <circle cx="24" cy="3" r="1.4" fill="#f43f5e" />
+                        <circle cx="40" cy="3" r="1.4" fill="#10b981" />
+                      </g>
                       <!-- Opponent Egg Shell -->
                       <path d="M32 5 C17 5, 9 29, 9 47 C9 63, 19 71, 32 71 C45 71, 55 63, 55 47 C55 29, 47 5, 32 5 Z" fill="url(#gradEggCyan)" stroke="#bae6fd" stroke-width="1.6" />
                       <!-- Humpty Belt & Bowtie -->
@@ -384,14 +626,41 @@
                       <polygon points="25,45 32,48 25,51" fill="#f43f5e" />
                       <polygon points="39,45 32,48 39,51" fill="#f43f5e" />
                       <circle cx="32" cy="48" r="1.8" fill="#fecdd3" />
-                      <!-- Crack Line (revealed when numbers botch) -->
-                      <path id="eggP2CrackPath" d="M37 11 L33 20 L39 25 L34 33" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-0 transition-opacity duration-300" />
+                      <!-- Crack Line (shown only when P2 is trailing on botch or falling!) -->
+                      <path id="eggP2CrackPath" d="M37 11 L33 20 L39 25 L34 33 L38 39" fill="none" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" class="opacity-0 transition-opacity duration-300" />
                       <!-- Specular Highlight -->
                       <ellipse cx="23" cy="22" rx="5" ry="9" transform="rotate(-18 23 22)" fill="#ffffff" opacity="0.52" />
-                      <!-- Eyes & Grin -->
-                      <circle cx="25" cy="35" r="2.3" fill="#0f172a" />
-                      <circle cx="39" cy="35" r="2.3" fill="#0f172a" />
+                      <!-- Normal Eyes -->
+                      <g id="eggP2EyesNormal">
+                        <circle cx="25" cy="35" r="2.4" fill="#0f172a" />
+                        <circle cx="39" cy="35" r="2.4" fill="#0f172a" />
+                      </g>
+                      <!-- Triumphant Happy Eyes (^ ^) -->
+                      <g id="eggP2EyesWin" class="hidden">
+                        <path d="M22 36 Q25 31.5 28 36" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round" />
+                        <path d="M36 36 Q39 31.5 42 36" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round" />
+                      </g>
+                      <!-- Dizzy Great-Fall Eyes (X X) -->
+                      <g id="eggP2EyesFall" class="hidden">
+                        <path d="M22.5 32.5 L27.5 37.5 M27.5 32.5 L22.5 37.5" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round" />
+                        <path d="M36.5 32.5 L41.5 37.5 M41.5 32.5 L36.5 37.5" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round" />
+                      </g>
+                      <!-- Dynamic Mouth -->
                       <path id="eggP2Mouth" d="M26 40.5 Q32 44 38 40.5" fill="none" stroke="#0f172a" stroke-width="2.1" stroke-linecap="round" />
+                    </svg>
+
+                    <!-- Shattered Eggshell & Sunny-Side Yolk Splat on Ground Below Wall -->
+                    <svg id="eggSplatP2" viewBox="0 0 92 42" class="w-22 h-10 absolute left-1/2 top-[52px] -translate-x-1/2 opacity-0 pointer-events-none z-35 overflow-visible">
+                      <!-- Egg White Puddle -->
+                      <path d="M12 25 Q6 17 22 15 Q34 10 49 13 Q67 9 78 18 Q88 26 73 31 Q54 37 33 34 Q15 35 12 25 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" />
+                      <!-- Sunny Yolk -->
+                      <ellipse cx="46" cy="23" rx="12" ry="6.5" fill="#f59e0b" stroke="#d97706" stroke-width="1.2" />
+                      <ellipse cx="42" cy="21" rx="4" ry="2" fill="#fef08a" opacity="0.75" />
+                      <!-- Broken Cyan Shell Halves & Tiny Red Bowtie -->
+                      <path d="M14 22 C12 10, 22 6, 30 12 L26 17 L31 21 L24 25 Z" fill="#7dd3fc" stroke="#e0f2fe" stroke-width="1.2" />
+                      <path d="M76 23 C79 11, 68 7, 60 13 L65 18 L59 22 L67 26 Z" fill="#0284c7" stroke="#bae6fd" stroke-width="1.2" />
+                      <polygon points="57,28 62,30 57,32" fill="#f43f5e" />
+                      <polygon points="67,28 62,30 67,32" fill="#f43f5e" />
                     </svg>
                   </div>
                 </div>
@@ -923,13 +1192,20 @@
     let board = [];
     let cellOwners = [];
     let selectedNumber = 1; // null when deselected
-    let currentTurn = 'player'; // 'player' | 'bot' | 'player2'
+    let currentTurn = 'player'; // 'player' | 'bot' | 'player2' | 'ending'
     let currentOpponent = 'humpty';
     let organizerDiagonals = false;
     let gameOver = false;
+    let matchEnding = false;
+    let matchSessionId = 0;
+    let botMoveTimeoutId = null;
+    let endGameTimeoutId = null;
+    let finaleImpactTimeoutId = null;
+    let lastFlightDoneAt = 0;
 
-    // Score & Completion State
+    // Authoritative Score vs Animated Display Score (prevents any text/image score conflict!)
     let scores = { p1: 0, p2: 0 };
+    let displayScores = { p1: 0, p2: 0 };
     let completedRegions = {
       rows: new Set(),
       cols: new Set(),
@@ -1060,13 +1336,124 @@
       startNewGame();
     }
 
+    function clearTransientParticlesAndTimers() {
+      if (botMoveTimeoutId) { clearTimeout(botMoveTimeoutId); botMoveTimeoutId = null; }
+      if (endGameTimeoutId) { clearTimeout(endGameTimeoutId); endGameTimeoutId = null; }
+      if (finaleImpactTimeoutId) { clearTimeout(finaleImpactTimeoutId); finaleImpactTimeoutId = null; }
+      document.querySelectorAll('.flying-point-chip, .finale-particle, .egg-gain-burst').forEach(el => el.remove());
+    }
+
+    function setEggExpression(whoKey, mode) {
+      const prefix = whoKey === 'p1' ? 'eggP1' : 'eggP2';
+      const normalEyes = document.getElementById(`${prefix}EyesNormal`);
+      const winEyes = document.getElementById(`${prefix}EyesWin`);
+      const fallEyes = document.getElementById(`${prefix}EyesFall`);
+      const mouth = document.getElementById(`${prefix}Mouth`);
+      const crack = document.getElementById(`${prefix}CrackPath`);
+      const wings = document.getElementById(whoKey === 'p1' ? 'eggWingsP1' : 'eggWingsP2');
+      const crown = document.getElementById(whoKey === 'p1' ? 'eggCrownP1' : 'eggCrownP2');
+      const baseY = whoKey === 'p1' ? 43 : 40.5;
+
+      if (normalEyes) normalEyes.classList.toggle('hidden', mode === 'win' || mode === 'fall');
+      if (winEyes) winEyes.classList.toggle('hidden', mode !== 'win');
+      if (fallEyes) fallEyes.classList.toggle('hidden', mode !== 'fall');
+      if (wings) wings.classList.toggle('hidden', mode !== 'win');
+      if (crown) crown.classList.toggle('hidden', mode !== 'win');
+
+      if (mouth) {
+        if (mode === 'win') {
+          mouth.setAttribute('d', `M24 ${baseY - 0.5} Q32 ${baseY + 7} 40 ${baseY - 0.5}`);
+        } else if (mode === 'fall') {
+          mouth.setAttribute('d', `M28 ${baseY + 2} Q32 ${baseY - 4} 36 ${baseY + 2} Q32 ${baseY + 6} 28 ${baseY + 2}`);
+        } else if (mode === 'nervous') {
+          mouth.setAttribute('d', `M26 ${baseY + 2.5} Q32 ${baseY - 2.5} 38 ${baseY + 2.5}`);
+        } else {
+          mouth.setAttribute('d', `M26 ${baseY} Q32 ${baseY + 4} 38 ${baseY}`);
+        }
+      }
+
+      if (crack) {
+        if (mode === 'fall' || mode === 'nervous') {
+          crack.classList.remove('opacity-0');
+        } else {
+          crack.classList.add('opacity-0');
+        }
+      }
+    }
+
+    function resetEggStageVisuals() {
+      const wallStage = document.getElementById('eggsWallStage');
+      if (wallStage) wallStage.classList.remove('wall-finale-stage', 'wall-impact-shake');
+      const centerHeading = document.getElementById('wallCenterHeading');
+      if (centerHeading) centerHeading.textContent = '🧱 Wall Bonus Rules';
+
+      ['P1', 'P2'].forEach(tag => {
+        const whoKey = tag.toLowerCase();
+        const card = document.getElementById(`eggCard${tag}`);
+        const svg = document.getElementById(`eggSvg${tag}`);
+        const beam = document.getElementById(`ascendBeam${tag}`);
+        const splat = document.getElementById(`eggSplat${tag}`);
+        const pill = document.getElementById(`${whoKey}TurnPill`);
+
+        if (card) card.classList.remove('winner-card-glow', 'loser-card-fallen', 'egg-stage-active-p1', 'egg-stage-active-p2');
+        if (svg) svg.classList.remove('egg-winner-ascend', 'egg-loser-fall', 'cracking', 'wobbling', 'egg-absorb-pop');
+        if (beam) beam.classList.remove('ascend-beam-active');
+        if (splat) splat.classList.remove('splat-visible');
+        if (pill) {
+          pill.textContent = 'TURN';
+          pill.className = whoKey === 'p1'
+            ? 'text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold'
+            : 'hidden text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold';
+        }
+        setEggExpression(whoKey, 'normal');
+      });
+
+      const avatar = document.getElementById('botAvatarIcon');
+      if (avatar) avatar.classList.remove('cracking', 'wobbling', 'avatar-ascending');
+      const banner = document.getElementById('statusBanner');
+      if (banner) {
+        banner.className = 'p-3 rounded-lg bg-slate-900/90 border border-amber-500/30 flex items-center justify-between flex-wrap gap-2 shadow';
+      }
+      const speech = document.getElementById('speechBubble');
+      if (speech) speech.innerHTML = '<span>💬 "I\'m sitting high on my wall!"</span>';
+    }
+
+    // Keep mid-game Egg shell cracks & expressions aligned with who is actually winning vs trailing!
+    function syncLiveEggMoods() {
+      if (gameOver || matchEnding) return;
+      let anyBotched = false;
+      for (let n = 1; n <= gridSize; n++) {
+        if (numberStatus[n] && numberStatus[n].botched) { anyBotched = true; break; }
+      }
+      if (!anyBotched) {
+        setEggExpression('p1', 'normal');
+        setEggExpression('p2', 'normal');
+        return;
+      }
+      if (scores.p1 > scores.p2) {
+        setEggExpression('p1', 'normal');
+        setEggExpression('p2', 'nervous');
+      } else if (scores.p2 > scores.p1) {
+        setEggExpression('p1', 'nervous');
+        setEggExpression('p2', 'normal');
+      } else {
+        setEggExpression('p1', 'nervous');
+        setEggExpression('p2', 'nervous');
+      }
+    }
+
     function startNewGame() {
+      matchSessionId++;
+      clearTransientParticlesAndTimers();
       gameOver = false;
+      matchEnding = false;
+      lastFlightDoneAt = 0;
       currentTurn = 'player';
       board = Array.from({ length: gridSize }, () => Array(gridSize).fill(null));
       cellOwners = Array.from({ length: gridSize }, () => Array(gridSize).fill(null));
 
       scores = { p1: 0, p2: 0 };
+      displayScores = { p1: 0, p2: 0 };
       completedRegions = {
         rows: new Set(),
         cols: new Set(),
@@ -1082,17 +1469,12 @@
       }
       selectedNumber = 1;
 
-      // Reset Egg visuals
+      // Reset Egg scores & visuals cleanly
       document.getElementById('eggScoreP1').textContent = '0';
       document.getElementById('eggScoreP2').textContent = '0';
       document.getElementById('eggLastDeltaP1').textContent = '';
       document.getElementById('eggLastDeltaP2').textContent = '';
-      document.getElementById('eggSvgP2').classList.remove('cracking', 'wobbling');
-      document.getElementById('botAvatarIcon').classList.remove('cracking', 'wobbling');
-      const crackPath = document.getElementById('eggP2CrackPath');
-      if (crackPath) crackPath.classList.add('opacity-0');
-      const mouth = document.getElementById('eggP2Mouth');
-      if (mouth) mouth.setAttribute('d', 'M26 40.5 Q32 44 38 40.5');
+      resetEggStageVisuals();
 
       renderBoard();
       renderPalette();
@@ -1279,7 +1661,7 @@
 
       const hintsToggle = document.getElementById('chkSudokuHints');
       if (hintsToggle && !hintsToggle.checked) return;
-      if (gameOver || !isHumanTurn() || selectedNumber === null) return;
+      if (gameOver || matchEnding || !isHumanTurn() || selectedNumber === null) return;
 
       const legalCells = getLegalCellsForNumber(selectedNumber);
       legalCells.forEach(({ r, c }) => {
@@ -1289,7 +1671,7 @@
     }
 
     function onCellClick(r, c) {
-      if (gameOver || !isHumanTurn()) return;
+      if (gameOver || matchEnding || !isHumanTurn()) return;
 
       if (selectedNumber === null) {
         const pCard = document.getElementById('paletteCard');
@@ -1312,7 +1694,7 @@
       placeNumber(r, c, selectedNumber, whoKey, actorName);
       checkBotchedNumbers();
 
-      if (gameOver) return;
+      if (gameOver || matchEnding) return;
 
       if (currentOpponent !== 'human') {
         currentTurn = 'bot';
@@ -1413,7 +1795,6 @@
         if (newlyMain || newlyAnti) {
           if (completedRegions.diagMain && completedRegions.diagAnti && !completedRegions.xTripleAwarded) {
             completedRegions.xTripleAwarded = true;
-            // If both diagonals somehow completed on the exact same center move (odd 9x9), award first Diag (+7) + X-Triple (+21)
             if (newlyMain && newlyAnti) {
               chips.push({ points: BONUS_DIAG, label: `+${BONUS_DIAG} DIAG!`, bg: '#38bdf8', fg: '#082f49' });
             }
@@ -1429,7 +1810,7 @@
     }
 
     // --- FLYING POINTS ANIMATION FROM BOARD CELL UP TO PLAYER EGG ---
-    function launchFlyingPointsToEgg(r, c, whoKey, chips, totalEarned) {
+    function launchFlyingPointsToEgg(r, c, whoKey, chips, totalEarned, sessionToken) {
       const cellEl = document.getElementById(`cell-${r}-${c}`);
       const eggTarget = document.getElementById(whoKey === 'p1' ? 'eggTargetP1' : 'eggTargetP2');
       const eggSvg = document.getElementById(whoKey === 'p1' ? 'eggSvgP1' : 'eggSvgP2');
@@ -1437,10 +1818,16 @@
       const deltaEl = document.getElementById(whoKey === 'p1' ? 'eggLastDeltaP1' : 'eggLastDeltaP2');
 
       if (!cellEl || !eggTarget || !scoreEl) {
-        scores[whoKey] += totalEarned;
-        scoreEl.textContent = String(scores[whoKey]);
+        displayScores[whoKey] = scores[whoKey];
+        if (scoreEl) scoreEl.textContent = String(scores[whoKey]);
+        if (deltaEl) deltaEl.textContent = `(+${totalEarned})`;
         return;
       }
+
+      const staggerMs = 135;
+      const duration = 590;
+      const eta = performance.now() + (chips.length - 1) * staggerMs + duration;
+      if (eta > lastFlightDoneAt) lastFlightDoneAt = eta;
 
       const startRect = cellEl.getBoundingClientRect();
       const endRect = eggTarget.getBoundingClientRect();
@@ -1451,10 +1838,11 @@
 
       chips.forEach((chip, idx) => {
         setTimeout(() => {
+          if (sessionToken !== matchSessionId) return;
+
           const el = document.createElement('div');
           el.className = 'flying-point-chip text-xs';
           el.textContent = chip.label;
-          // Tint base chip for P2 in Sky Cyan so player moves are visually color-matched too
           const bg = (idx === 0 && whoKey === 'p2') ? '#38bdf8' : chip.bg;
           el.style.background = bg;
           el.style.color = chip.fg;
@@ -1466,12 +1854,14 @@
           const curveOffset = (whoKey === 'p1' ? -36 : 36) + (idx * 10);
           const ctrlX = (startX + endX) / 2 + curveOffset;
           const ctrlY = Math.min(startY, endY) - 68 - idx * 14;
-          const duration = 640;
           const t0 = performance.now();
 
           function step(now) {
+            if (sessionToken !== matchSessionId) {
+              el.remove();
+              return;
+            }
             const rawT = Math.min(1, (now - t0) / duration);
-            // Smooth cubic ease-out
             const t = 1 - Math.pow(1 - rawT, 3);
             const inv = 1 - t;
             const x = inv * inv * startX + 2 * inv * t * ctrlX + t * t * endX;
@@ -1486,28 +1876,31 @@
               requestAnimationFrame(step);
             } else {
               el.remove();
-              scores[whoKey] += chip.points;
-              scoreEl.textContent = String(scores[whoKey]);
+              displayScores[whoKey] = Math.min(scores[whoKey], displayScores[whoKey] + chip.points);
+              if (idx === chips.length - 1 && !gameOver) {
+                scoreEl.textContent = String(displayScores[whoKey]);
+              } else if (!gameOver) {
+                scoreEl.textContent = String(displayScores[whoKey]);
+              }
               if (deltaEl) {
                 deltaEl.textContent = `(+${totalEarned})`;
               }
-              if (eggSvg) {
+              if (eggSvg && !gameOver) {
                 eggSvg.classList.remove('egg-absorb-pop');
                 void eggSvg.offsetWidth;
                 eggSvg.classList.add('egg-absorb-pop');
               }
-              // Rising pop badge directly above the Egg
               const burst = document.createElement('div');
               burst.className = 'egg-gain-burst font-mono';
               burst.style.color = whoKey === 'p1' ? '#fde047' : '#7dd3fc';
               burst.textContent = chip.label;
               eggTarget.appendChild(burst);
-              setTimeout(() => burst.remove(), 1100);
+              setTimeout(() => burst.remove(), 1050);
             }
           }
 
           requestAnimationFrame(step);
-        }, idx * 145);
+        }, idx * staggerMs);
       });
     }
 
@@ -1526,6 +1919,9 @@
 
       const { chips, totalEarned, flashCells } = evaluateMoveAwards(r, c, num);
 
+      // Update authoritative score IMMEDIATELY so endGame(), AI, and logs never read a partial in-flight score!
+      scores[whoKey] += totalEarned;
+
       flashCells.forEach(([fr, fc]) => {
         const fcEl = document.getElementById(`cell-${fr}-${fc}`);
         if (fcEl) {
@@ -1535,12 +1931,13 @@
         }
       });
 
-      launchFlyingPointsToEgg(r, c, whoKey, chips, totalEarned);
+      launchFlyingPointsToEgg(r, c, whoKey, chips, totalEarned, matchSessionId);
+      syncLiveEggMoods();
 
       const bonusSummary = chips.length > 1
         ? ' [' + chips.map(ch => ch.label).join(', ') + ']'
         : ` (+${totalEarned} pts)`;
-      logMove(`${actorName} placed [${num}] at (R${r + 1}, C${c + 1}) -> +${totalEarned} pts${chips.length > 1 ? bonusSummary : ''}`);
+      logMove(`${actorName} placed [${num}] at (R${r + 1}, C${c + 1}) -> +${totalEarned} pts${chips.length > 1 ? bonusSummary : ''} [Total: ${scores[whoKey]}]`);
 
       if (selectedNumber !== null && numberStatus[selectedNumber].placed >= numberStatus[selectedNumber].max) {
         autoSelectNextAvailableNumber();
@@ -1599,32 +1996,223 @@
         }
       }
 
-      if (activeNumbersLeft === 0) {
-        setTimeout(() => endGame(), 750);
+      if (activeNumbersLeft === 0 && !matchEnding && !gameOver) {
+        matchEnding = true;
+        currentTurn = 'ending';
+        updateTurnUI();
+        highlightLegalMoves();
+
+        // Wait until EVERY flying bonus chip has landed on the Egg so score text and Egg score match 100%!
+        const flightRemainingMs = Math.max(0, Math.ceil(lastFlightDoneAt - performance.now()));
+        const waitMs = Math.max(520, flightRemainingMs + 180);
+        const sessionToken = matchSessionId;
+        endGameTimeoutId = setTimeout(() => {
+          if (sessionToken === matchSessionId) endGame();
+        }, waitMs);
       }
     }
 
     function triggerBotchAnimation(n) {
-      const avatar = document.getElementById('botAvatarIcon');
-      const eggP2 = document.getElementById('eggSvgP2');
-      const crackPath = document.getElementById('eggP2CrackPath');
-      if (crackPath) crackPath.classList.remove('opacity-0');
+      syncLiveEggMoods();
 
-      if (currentOpponent === 'humpty') {
-        avatar.classList.add('wobbling');
-        if (eggP2) eggP2.classList.add('wobbling');
-        document.getElementById('botStability').textContent = "Stability: CRACKING!";
-        document.getElementById('speechBubble').innerHTML = `<span>💬 "Oh no! Number ${n} botched! My shell is cracking!"</span>`;
-        setTimeout(() => {
-          avatar.classList.remove('wobbling');
-          if (eggP2) eggP2.classList.remove('wobbling');
-        }, 1200);
+      // Wobble whichever Egg(s) are currently trailing (or both if tied)
+      const trailingP1 = scores.p1 <= scores.p2;
+      const trailingP2 = scores.p2 <= scores.p1;
+      const eggP1 = document.getElementById('eggSvgP1');
+      const eggP2 = document.getElementById('eggSvgP2');
+      const avatar = document.getElementById('botAvatarIcon');
+
+      if (trailingP1 && eggP1) eggP1.classList.add('wobbling');
+      if (trailingP2 && eggP2) eggP2.classList.add('wobbling');
+      if (trailingP2 && avatar) avatar.classList.add('wobbling');
+
+      if (trailingP2 && currentOpponent === 'humpty') {
+        document.getElementById('botStability').textContent = 'Stability: WOBBLING ON THE LEDGE!';
+        document.getElementById('speechBubble').innerHTML = `<span>💬 "Whoa! Number ${n} botched! Don't let me fall!"</span>`;
+      } else {
+        document.getElementById('speechBubble').innerHTML = `<span>💬 "Number ${n} botched! The wall grows narrower!"</span>`;
       }
+
+      const token = matchSessionId;
+      setTimeout(() => {
+        if (token !== matchSessionId || gameOver) return;
+        if (eggP1) eggP1.classList.remove('wobbling');
+        if (eggP2) eggP2.classList.remove('wobbling');
+        if (avatar) avatar.classList.remove('wobbling');
+      }, 1050);
+    }
+
+    // Burst golden ascension stars around the Winner and shattering shell shards around the Loser(s)
+    function spawnFinaleParticles(winnerKey, loserKeys, sessionToken) {
+      if (winnerKey) {
+        const target = document.getElementById(winnerKey === 'p1' ? 'eggTargetP1' : 'eggTargetP2');
+        if (target) {
+          const rect = target.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2 - 18;
+          const icons = ['✨', '⭐', '👑', '✨', '🌟', '✨'];
+          icons.forEach((sym, i) => {
+            setTimeout(() => {
+              if (sessionToken !== matchSessionId) return;
+              const p = document.createElement('div');
+              p.className = 'finale-particle';
+              p.textContent = sym;
+              p.style.left = `${cx + (i - 2.5) * 14}px`;
+              p.style.top = `${cy}px`;
+              document.body.appendChild(p);
+
+              const dx = (Math.random() - 0.5) * 44;
+              const dy = -48 - Math.random() * 38;
+              const t0 = performance.now();
+              const dur = 1050;
+              function anim(now) {
+                if (sessionToken !== matchSessionId) { p.remove(); return; }
+                const t = Math.min(1, (now - t0) / dur);
+                p.style.left = `${cx + (i - 2.5) * 14 + dx * t}px`;
+                p.style.top = `${cy + dy * t}px`;
+                p.style.opacity = String(1 - Math.pow(t, 1.8));
+                if (t < 1) requestAnimationFrame(anim);
+                else p.remove();
+              }
+              requestAnimationFrame(anim);
+            }, i * 110);
+          });
+        }
+      }
+
+      loserKeys.forEach(lKey => {
+        const target = document.getElementById(lKey === 'p1' ? 'eggTargetP1' : 'eggTargetP2');
+        if (!target) return;
+        const rect = target.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2 + 8;
+        const cy = rect.bottom + 8;
+        const shardColors = lKey === 'p1'
+          ? ['#fbbf24', '#fef08a', '#d97706', '#f8fafc', '#f59e0b', '#fde047']
+          : ['#7dd3fc', '#e0f2fe', '#0284c7', '#f8fafc', '#f43f5e', '#fbbf24'];
+
+        shardColors.forEach((col, i) => {
+          const shard = document.createElement('div');
+          shard.className = 'finale-particle';
+          shard.style.width = '9px';
+          shard.style.height = '9px';
+          shard.style.background = col;
+          shard.style.clipPath = 'polygon(50% 0%, 100% 85%, 0% 100%)';
+          shard.style.left = `${cx}px`;
+          shard.style.top = `${cy}px`;
+          document.body.appendChild(shard);
+
+          const angle = (-Math.PI * 0.9) + (i / (shardColors.length - 1)) * (Math.PI * 0.8);
+          const vx = Math.cos(angle) * (34 + Math.random() * 28);
+          const vy = -26 - Math.random() * 24;
+          const rot = (Math.random() - 0.5) * 420;
+          const t0 = performance.now();
+          const dur = 760;
+
+          function stepShard(now) {
+            if (sessionToken !== matchSessionId) { shard.remove(); return; }
+            const t = Math.min(1, (now - t0) / dur);
+            const x = cx + vx * t;
+            const y = cy + vy * t + 72 * t * t;
+            shard.style.left = `${x}px`;
+            shard.style.top = `${y}px`;
+            shard.style.transform = `translate(-50%, -50%) rotate(${(rot * t).toFixed(1)}deg)`;
+            shard.style.opacity = String(1 - t * 0.85);
+            if (t < 1) requestAnimationFrame(stepShard);
+            else shard.remove();
+          }
+          requestAnimationFrame(stepShard);
+        });
+      });
+    }
+
+    function playDramaticFinale(winnerKey, loserKeys) {
+      const sessionToken = matchSessionId;
+      const wallStage = document.getElementById('eggsWallStage');
+      const centerHeading = document.getElementById('wallCenterHeading');
+      if (wallStage) wallStage.classList.add('wall-finale-stage');
+      if (centerHeading) {
+        centerHeading.textContent = winnerKey ? '👑 ASCENSION & GREAT FALL!' : '💥 DOUBLE GREAT FALL!';
+      }
+
+      // 1. Winner Ascends Dramatically!
+      if (winnerKey) {
+        const tag = winnerKey === 'p1' ? 'P1' : 'P2';
+        const card = document.getElementById(`eggCard${tag}`);
+        const svg = document.getElementById(`eggSvg${tag}`);
+        const beam = document.getElementById(`ascendBeam${tag}`);
+        const pill = document.getElementById(`${winnerKey}TurnPill`);
+
+        setEggExpression(winnerKey, 'win');
+        if (card) {
+          card.classList.remove('egg-stage-active-p1', 'egg-stage-active-p2', 'loser-card-fallen');
+          card.classList.add('winner-card-glow');
+        }
+        if (beam) beam.classList.add('ascend-beam-active');
+        if (svg) {
+          svg.classList.remove('egg-absorb-pop', 'wobbling', 'egg-loser-fall');
+          void svg.offsetWidth;
+          svg.classList.add('egg-winner-ascend');
+        }
+        if (pill) {
+          pill.textContent = '👑 ASCENDED!';
+          pill.className = 'text-[9px] px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 border border-yellow-100 font-black shadow';
+        }
+      }
+
+      // 2. Loser(s) Teeter, Plunge Off the Wall & Shatter Below!
+      loserKeys.forEach(lKey => {
+        const tag = lKey === 'p1' ? 'P1' : 'P2';
+        const card = document.getElementById(`eggCard${tag}`);
+        const svg = document.getElementById(`eggSvg${tag}`);
+        const pill = document.getElementById(`${lKey}TurnPill`);
+
+        setEggExpression(lKey, 'fall');
+        if (card) {
+          card.classList.remove('egg-stage-active-p1', 'egg-stage-active-p2', 'winner-card-glow');
+          card.classList.add('loser-card-fallen');
+        }
+        if (svg) {
+          svg.classList.remove('egg-absorb-pop', 'wobbling', 'egg-winner-ascend');
+          void svg.offsetWidth;
+          svg.classList.add('egg-loser-fall');
+        }
+        if (pill) {
+          pill.textContent = '💥 FELL!';
+          pill.className = 'text-[9px] px-2 py-0.5 rounded-full bg-rose-500/25 text-rose-300 border border-rose-500/60 font-black';
+        }
+      });
+
+      // Trigger stars on ascension immediately, and shatter splat + wall shudder right as the falling Egg hits the cobblestones!
+      spawnFinaleParticles(winnerKey, [], sessionToken);
+
+      finaleImpactTimeoutId = setTimeout(() => {
+        if (sessionToken !== matchSessionId) return;
+        if (wallStage && loserKeys.length > 0) {
+          wallStage.classList.remove('wall-impact-shake');
+          void wallStage.offsetWidth;
+          wallStage.classList.add('wall-impact-shake');
+        }
+        loserKeys.forEach(lKey => {
+          const tag = lKey === 'p1' ? 'P1' : 'P2';
+          const splat = document.getElementById(`eggSplat${tag}`);
+          if (splat) splat.classList.add('splat-visible');
+        });
+        spawnFinaleParticles(null, loserKeys, sessionToken);
+      }, 730);
     }
 
     function endGame() {
       if (gameOver) return;
       gameOver = true;
+      matchEnding = false;
+
+      // Guarantee 100% alignment between Egg score numbers and Match Over text!
+      displayScores.p1 = scores.p1;
+      displayScores.p2 = scores.p2;
+      const scoreElP1 = document.getElementById('eggScoreP1');
+      const scoreElP2 = document.getElementById('eggScoreP2');
+      if (scoreElP1) scoreElP1.textContent = String(scores.p1);
+      if (scoreElP2) scoreElP2.textContent = String(scores.p2);
 
       let totalBotched = 0;
       let totalPlaced = 0;
@@ -1635,32 +2223,89 @@
 
       const p1Pts = scores.p1;
       const p2Pts = scores.p2;
+      const p1Name = userProfile.username;
       const p2Name = getBotDisplayName();
+
+      const turnIndicator = document.getElementById('turnIndicatorBadge');
+      const turnText = document.getElementById('turnText');
+      const banner = document.getElementById('statusBanner');
+      const avatar = document.getElementById('botAvatarIcon');
+      const stability = document.getElementById('botStability');
+      const speech = document.getElementById('speechBubble');
+
       let verdict = '';
+      let archiveOutcome = '';
+      let archiveColor = '';
+      let scoreColor = '';
+
       if (p1Pts > p2Pts) {
-        verdict = `🏆 ${userProfile.username} wins ${p1Pts} to ${p2Pts}!`;
+        verdict = `🏆 ${p1Name} wins ${p1Pts} to ${p2Pts}!`;
+        archiveOutcome = `VICTORY (${p2Name} Fell)`;
+        archiveColor = 'text-emerald-400';
+        scoreColor = 'text-amber-300';
+
+        playDramaticFinale('p1', ['p2']);
+        if (avatar) avatar.classList.add('cracking');
+        if (stability) {
+          stability.textContent = `Stability: 0% — ${p2Name.toUpperCase()} FELL OFF THE WALL!`;
+          stability.className = 'text-[11px] text-rose-400 font-bold mt-0.5';
+        }
+        if (speech) {
+          speech.innerHTML = currentOpponent === 'humpty'
+            ? `<span>💬 "HUMPTY DUMPTY HAD A GREAT FALL! (${p1Pts} to ${p2Pts})"</span>`
+            : `<span>💬 "${p2Name} tumbled off the wall! ${p1Name} ascends!"</span>`;
+        }
+        if (banner) {
+          banner.className = 'p-3 rounded-lg bg-gradient-to-r from-amber-950/80 via-slate-900 to-emerald-950/70 border-2 border-amber-400/70 flex items-center justify-between flex-wrap gap-2 shadow-lg';
+        }
+        if (turnIndicator) turnIndicator.className = 'w-3 h-3 rounded-full bg-amber-300';
+        announceSpeech(`${p1Name} ascends victorious, ${p1Pts} to ${p2Pts}! ${p2Name} had a great fall!`);
+        userProfile.botchesForced++;
       } else if (p2Pts > p1Pts) {
-        verdict = `${p2Name} wins ${p2Pts} to ${p1Pts}!`;
+        verdict = `👑 ${p2Name} wins ${p2Pts} to ${p1Pts}!`;
+        archiveOutcome = 'DEFEAT (Fell Off Wall)';
+        archiveColor = 'text-rose-400';
+        scoreColor = 'text-rose-300';
+
+        playDramaticFinale('p2', ['p1']);
+        if (avatar) avatar.classList.add('avatar-ascending');
+        if (stability) {
+          stability.textContent = `👑 ASCENDED ABOVE THE WALL! (${p2Pts} to ${p1Pts})`;
+          stability.className = 'text-[11px] text-amber-300 font-bold mt-0.5';
+        }
+        if (speech) {
+          speech.innerHTML = `<span>💬 "${p2Name} ascends in glory while ${p1Name} takes the Great Fall!"</span>`;
+        }
+        if (banner) {
+          banner.className = 'p-3 rounded-lg bg-gradient-to-r from-rose-950/70 via-slate-900 to-cyan-950/80 border-2 border-cyan-400/70 flex items-center justify-between flex-wrap gap-2 shadow-lg';
+        }
+        if (turnIndicator) turnIndicator.className = 'w-3 h-3 rounded-full bg-cyan-400';
+        announceSpeech(`${p2Name} wins ${p2Pts} to ${p1Pts} and ascends! ${p1Name} fell off the wall!`);
+        userProfile.fellOffWall++;
       } else {
-        verdict = `Tie Egg Battle at ${p1Pts} pts each!`;
+        verdict = `💥 Tie at ${p1Pts} to ${p2Pts} — Both Eggs Fall!`;
+        archiveOutcome = 'TIE (Double Fall)';
+        archiveColor = 'text-amber-300';
+        scoreColor = 'text-amber-200';
+
+        playDramaticFinale(null, ['p1', 'p2']);
+        if (avatar) avatar.classList.add('cracking');
+        if (stability) {
+          stability.textContent = 'Stability: 0% — DOUBLE WALL COLLAPSE!';
+          stability.className = 'text-[11px] text-rose-400 font-bold mt-0.5';
+        }
+        if (speech) {
+          speech.innerHTML = `<span>💬 "Tied ${p1Pts}–${p2Pts}! Neither claimed the crown—BOTH Eggs had a Great Fall!"</span>`;
+        }
+        if (banner) {
+          banner.className = 'p-3 rounded-lg bg-gradient-to-r from-rose-950/70 via-slate-900 to-amber-950/70 border-2 border-rose-400/60 flex items-center justify-between flex-wrap gap-2 shadow-lg';
+        }
+        if (turnIndicator) turnIndicator.className = 'w-3 h-3 rounded-full bg-rose-400';
+        announceSpeech(`Tie match at ${p1Pts} points! Both eggs tumbled off the wall!`);
       }
 
-      const turnText = document.getElementById('turnText');
-      turnText.textContent = `Match Over! ${verdict} (${totalPlaced} placed, ${totalBotched} botched)`;
-
-      if (currentOpponent === 'humpty' && p1Pts >= p2Pts) {
-        const avatar = document.getElementById('botAvatarIcon');
-        const eggP2 = document.getElementById('eggSvgP2');
-        const mouth = document.getElementById('eggP2Mouth');
-        avatar.classList.add('cracking');
-        if (eggP2) eggP2.classList.add('cracking');
-        if (mouth) mouth.setAttribute('d', 'M26 44 Q32 39 38 44');
-        document.getElementById('botStability').textContent = "Stability: 0% — FELL OFF THE WALL!";
-        document.getElementById('speechBubble').innerHTML = `<span>💬 "HUMPTY DUMPTY HAD A GREAT FALL!"</span>`;
-        announceSpeech(`Humpty Dumpty fell off the wall! ${verdict}`);
-        userProfile.botchesForced++;
-      } else {
-        announceSpeech(`Match over! ${verdict}`);
+      if (turnText) {
+        turnText.textContent = `Match Over! ${verdict} (${totalPlaced} placed, ${totalBotched} botched)`;
       }
 
       // Prepend live match record into Match Archive
@@ -1669,13 +2314,12 @@
         const tr = document.createElement('tr');
         const matchId = '#BTC-' + Math.floor(1100 + Math.random() * 8900);
         const modeTag = organizerDiagonals ? `${gridSize}×${gridSize} (X×3)` : `${gridSize}×${gridSize}`;
-        const won = p1Pts >= p2Pts;
         tr.innerHTML = `
           <td class="p-3 font-mono text-cyan-400">${matchId}</td>
           <td class="p-3">${modeTag}</td>
           <td class="p-3">${p2Name}</td>
-          <td class="p-3 font-mono ${won ? 'text-amber-300' : 'text-rose-300'} font-bold">${p1Pts} - ${p2Pts}</td>
-          <td class="p-3 ${won ? 'text-emerald-400' : 'text-rose-400'} font-bold">${won ? 'VICTORY' : 'DEFEAT'}</td>
+          <td class="p-3 font-mono ${scoreColor} font-bold">${p1Pts} - ${p2Pts}</td>
+          <td class="p-3 ${archiveColor} font-bold">${archiveOutcome}</td>
           <td class="p-3">${paceConfig[currentPace].label}</td>
         `;
         tbody.prepend(tr);
@@ -1729,8 +2373,9 @@
     }
 
     function triggerBotMove() {
-      setTimeout(() => {
-        if (gameOver) return;
+      const sessionToken = matchSessionId;
+      botMoveTimeoutId = setTimeout(() => {
+        if (sessionToken !== matchSessionId || gameOver || matchEnding) return;
 
         let move = null;
         if (currentOpponent === 'humpty') {
@@ -1747,12 +2392,11 @@
           checkBotchedNumbers();
         } else {
           logMove(`${getBotDisplayName()} cannot find any legal moves!`);
-          announceSpeech(`${getBotDisplayName()} has no legal moves.`);
           endGame();
           return;
         }
 
-        if (!gameOver) {
+        if (!gameOver && !matchEnding) {
           currentTurn = 'player';
           updateTurnUI();
           highlightLegalMoves();
@@ -1839,7 +2483,14 @@
       const p1Pill = document.getElementById('p1TurnPill');
       const p2Pill = document.getElementById('p2TurnPill');
 
-      if (currentTurn === 'player') {
+      if (currentTurn === 'ending') {
+        turnIndicator.className = "w-3 h-3 rounded-full bg-amber-300 animate-pulse";
+        turnText.textContent = `Tallying final flying bonus points on the Wall...`;
+        cardP1.classList.remove('egg-stage-active-p1');
+        cardP2.classList.remove('egg-stage-active-p2');
+        p1Pill.classList.add('hidden');
+        p2Pill.classList.add('hidden');
+      } else if (currentTurn === 'player') {
         turnIndicator.className = "w-3 h-3 rounded-full bg-emerald-400 animate-ping";
         turnText.textContent = `Your Turn (${userProfile.username}). Select a number and place it!`;
         cardP1.classList.add('egg-stage-active-p1');
