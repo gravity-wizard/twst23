@@ -30,8 +30,6 @@ if (is_file($envFile)) {
 $DATA_FILE = __DIR__ . '/data/crm.json';
 $FROM_ADDRESS = getenv('FROM_ADDRESS') ?: 'Gary Stout <media@twisted23.com>';
 $REPLY_TO = getenv('REPLY_TO') ?: 'media@twisted23.com';
-$envBcc = getenv('DEFAULT_BCC');
-$DEFAULT_BCC = ($envBcc !== false) ? trim((string)$envBcc) : '';
 $HOSTINGER_MAIL_TOKEN = getenv('HOSTINGER_MAIL_TOKEN') ?: 'a023e730fa37a0813595549dffc89c29b1ce09a294328544f0f377bd6291851a';
 $HOSTINGER_MAILBOX_ID = getenv('HOSTINGER_MAILBOX_ID') ?: 'AC4474ceb28197b9db960e1111ee79';
 $SIGNATURE = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
@@ -69,7 +67,7 @@ function count_recent_sent_stats(string $logPath, int $windowSeconds = 86400): a
         $ts = strtotime((string)$row['sent_at']);
         if ($ts !== false && $ts >= $cutoff) {
             $pitches++;
-            // Legacy entries prior to Quota-Saver did not log recipient_credits and used ~5 credits/pitch
+            // Legacy entries prior to Zero-BCC policy did not log recipient_credits and used ~5 credits/pitch
             $credits += isset($row['recipient_credits']) ? max(1, (int)$row['recipient_credits']) : 5;
         }
     }
@@ -133,7 +131,6 @@ function read_data(string $path): array {
                 'angle' => $sc['angle'] ?? '',
                 'subject_line' => $sc['subject_line'] ?? '',
                 'custom_blurb' => $sc['custom_blurb'] ?? '',
-                'bcc_email' => $sc['bcc_email'] ?? '',
                 'copy_rev' => $seedCopyRev,
             ];
             $seedRequeueFields = [
@@ -157,11 +154,13 @@ function read_data(string $path): array {
                 }
             }
         }
+        $sc['bcc_email'] = '';
         $mergedContacts[] = $sc;
     }
     foreach (($runtime['contacts'] ?? []) as $rc) {
         $cid = $rc['id'] ?? '';
         if ($cid !== '' && empty($seenIds[$cid])) {
+            $rc['bcc_email'] = '';
             $mergedContacts[] = $rc;
         }
     }
@@ -372,8 +371,7 @@ if ($action === 'status' && $method === 'GET') {
         'mailAvailable' => function_exists('mail'),
         'fromAddress' => $FROM_ADDRESS,
         'replyTo' => $REPLY_TO,
-        'defaultBcc' => $DEFAULT_BCC,
-        'quotaSaverActive' => ($DEFAULT_BCC === ''),
+        'zeroBccActive' => true,
         'pitchesLast24h' => $quotaStats['pitches_24h'],
         'creditsLast24hEst' => $quotaStats['credits_24h_est'],
         'dailyCreditLimit' => 100,
@@ -393,10 +391,11 @@ if ($action === 'contact' && $method === 'PATCH') {
     $data = read_data($DATA_FILE);
     foreach ($data['contacts'] as &$c) {
         if (($c['id'] ?? '') === $id) {
-            foreach (['primary_email', 'outlet', 'stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'bcc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at', 'requeued_at', 'requeue_rev'] as $f) {
+            foreach (['primary_email', 'outlet', 'stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at', 'requeued_at', 'requeue_rev'] as $f) {
                 if (array_key_exists($f, $body)) $c[$f] = $body[$f];
             }
-            if (array_key_exists('angle', $body) || array_key_exists('subject_line', $body) || array_key_exists('custom_blurb', $body) || array_key_exists('bcc_email', $body)) {
+            $c['bcc_email'] = '';
+            if (array_key_exists('angle', $body) || array_key_exists('subject_line', $body) || array_key_exists('custom_blurb', $body)) {
                 $c['copy_rev'] = ((int)($c['copy_rev'] ?? 0)) + 1;
             }
             // When staff resets a contact to Queued or Bounced, clear sent_at and stamp requeued_at so retry isn't blocked by sent_log.jsonl
@@ -460,7 +459,7 @@ if ($action === 'contacts' && $method === 'POST') {
         'outlet' => $body['outlet'] ?? 'New Contact',
         'primary_email' => strtolower(trim((string)($body['primary_email'] ?? ''))),
         'cc_email' => strtolower(trim((string)($body['cc_email'] ?? ''))),
-        'bcc_email' => strtolower(trim((string)($body['bcc_email'] ?? $DEFAULT_BCC))),
+        'bcc_email' => '',
         'angle' => $body['angle'] ?? '',
         'subject_line' => $body['subject_line'] ?? '',
         'custom_blurb' => $body['custom_blurb'] ?? '',
@@ -488,9 +487,6 @@ if ($action === 'send' && $method === 'POST') {
     $data = read_data($DATA_FILE);
     $sentLedger = read_sent_ledger(sent_log_file_for($DATA_FILE));
     $forceResend = !empty($body['forceResend']);
-    $hasExplicitBccFlag = array_key_exists('includeBcc', $body);
-    $includeBcc = !empty($body['includeBcc']);
-    $bccOverride = isset($body['bccTargets']) ? trim((string)$body['bccTargets']) : '';
     $results = [];
     $limit = isset($body['limit']) ? (int)$body['limit'] : (is_array($contactIds) ? count($contactIds) : 2);
     $matchedCount = 0;
@@ -534,15 +530,9 @@ if ($action === 'send' && $method === 'POST') {
             continue;
         }
 
+        // Zero-BCC Policy: GwCrm emails never include BCC recipients; copies are archived in media@twisted23.com Sent & sent_log.jsonl
         $ccList = array_values(array_filter(array_map('trim', explode(',', (string)($c['cc_email'] ?? '')))));
-        // Quota-Saver BCC resolution: 0 BCCs by default unless explicitly requested or configured on contact
-        if ($hasExplicitBccFlag) {
-            $bccRaw = $includeBcc ? ($bccOverride !== '' ? $bccOverride : (!empty($c['bcc_email']) ? (string)$c['bcc_email'] : 'botchee@icloud.com')) : '';
-        } else {
-            $bccRaw = !empty($c['bcc_email']) ? (string)$c['bcc_email'] : $DEFAULT_BCC;
-        }
-        $bccList = array_values(array_filter(array_map('trim', explode(',', $bccRaw))));
-        $recipientCredits = 1 + count($ccList) + count($bccList);
+        $recipientCredits = 1 + count($ccList);
 
         $subject = $step === 1 ? $c['subject_line'] : 'Re: ' . $c['subject_line'];
         $text = $step === 1
@@ -555,7 +545,6 @@ if ($action === 'send' && $method === 'POST') {
                 'outlet' => $c['outlet'],
                 'to' => $c['primary_email'],
                 'cc' => $ccList,
-                'bcc' => $bccList,
                 'credits_used' => $recipientCredits,
                 'subject' => $subject,
                 'preview' => $text,
@@ -564,7 +553,7 @@ if ($action === 'send' && $method === 'POST') {
             continue;
         }
 
-        // 1. Primary Cloud Dispatch: Hostinger Agentic Mail REST API (100% DKIM Signed, Quota-Saver Single Envelope)
+        // 1. Primary Cloud Dispatch: Hostinger Agentic Mail REST API (100% DKIM Signed, Zero-BCC Single Envelope)
         if ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '') {
             $payload = [
                 'to' => [$c['primary_email']],
@@ -573,7 +562,6 @@ if ($action === 'send' && $method === 'POST') {
                 'text' => $text,
             ];
             if (count($ccList) > 0) $payload['cc'] = $ccList;
-            if (count($bccList) > 0) $payload['bcc'] = $bccList;
 
             $ch = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
             curl_setopt_array($ch, [
@@ -616,7 +604,6 @@ if ($action === 'send' && $method === 'POST') {
                     'outlet' => $c['outlet'],
                     'to' => $c['primary_email'],
                     'cc' => $ccList,
-                    'bcc' => $bccList,
                     'credits_used' => $recipientCredits,
                     'status' => 'sent',
                     'channel' => 'hostinger_mail_api',
@@ -658,7 +645,6 @@ if ($action === 'send' && $method === 'POST') {
                        "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
                        "Content-Type: text/plain; charset=UTF-8\r\n";
             if (count($ccList) > 0) $headers .= "Cc: " . implode(', ', $ccList) . "\r\n";
-            if (count($bccList) > 0) $headers .= "Bcc: " . implode(', ', $bccList) . "\r\n";
 
             $sent = @mail($c['primary_email'], $subject, $text, $headers);
 
@@ -685,7 +671,6 @@ if ($action === 'send' && $method === 'POST') {
                 'outlet' => $c['outlet'],
                 'to' => $c['primary_email'],
                 'cc' => $ccList,
-                'bcc' => $bccList,
                 'credits_used' => $recipientCredits,
                 'status' => 'sent',
                 'channel' => 'hostinger_mail',
@@ -702,7 +687,6 @@ if ($action === 'send' && $method === 'POST') {
             'text' => $text,
         ];
         if (count($ccList) > 0) $payload['cc'] = $ccList;
-        if (count($bccList) > 0) $payload['bcc'] = $bccList;
 
         $ch = curl_init('https://api.resend.com/emails');
         curl_setopt_array($ch, [
@@ -1001,95 +985,6 @@ if ($action === 'triage' && $method === 'POST') {
     http_response_code(201);
     echo json_encode($item);
     exit;
-}
-
-if ($action === 'echo_bcc' && $method === 'POST') {
-    $body = json_body();
-    $id = $body['id'] ?? '';
-    $targets = $body['targets'] ?? ['botchee@icloud.com', 'gary@gravitywizards.com'];
-    if (is_string($targets)) {
-        $targets = array_values(array_filter(array_map('trim', explode(',', $targets))));
-    }
-    $data = read_data($DATA_FILE);
-    foreach ($data['contacts'] as $c) {
-        if ($c['id'] === $id) {
-            $subject = $c['subject_line'] ?? 'Twisted23 Pitch';
-            $text = ($c['custom_blurb'] ?? '') . $SIGNATURE;
-            $cleanOutlet = preg_replace('/[^\w\s\-]/', '', (string)($c['outlet'] ?? ''));
-            $echoSubject = "Outreach Copy [" . trim((string)$cleanOutlet) . "]: " . $subject;
-            $echoText = "--- Twisted23 CRM Outreach Dispatch Record ---\n" .
-                        "Recipient: " . ($c['primary_email'] ?? '') . "\n" .
-                        "Outlet: " . ($c['outlet'] ?? '') . "\n" .
-                        "Original Sent At: " . ($c['sent_at'] ?? 'Earlier') . "\n" .
-                        "Echo Dispatched: " . gmdate('Y-m-d H:i:s') . " UTC\n" .
-                        "----------------------------------------------\n\n" .
-                        $text;
-
-            if ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '') {
-                $echoDispatches = [];
-                foreach ($targets as $targetAddr) {
-                    $payload = [
-                        'to' => [$targetAddr],
-                        'displayName' => 'Gary Stout (Twisted23 Outreach)',
-                        'subject' => $echoSubject,
-                        'text' => $echoText,
-                    ];
-                    $ch = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
-                    curl_setopt_array($ch, [
-                        CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_POST => true,
-                        CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-                        CURLOPT_HTTPHEADER => [
-                            'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
-                            'Content-Type: application/json',
-                        ],
-                        CURLOPT_POSTFIELDS => json_encode($payload),
-                        CURLOPT_TIMEOUT => 15,
-                    ]);
-                    $respRaw = curl_exec($ch);
-                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                    $curlErr = curl_error($ch);
-                    curl_close($ch);
-                    $echoDispatches[] = [
-                        'target' => $targetAddr,
-                        'http_code' => $httpCode,
-                        'ok' => ($httpCode >= 200 && $httpCode < 300),
-                        'error' => $curlErr,
-                    ];
-                    usleep(150000);
-                }
-
-                echo json_encode([
-                    'success' => true,
-                    'contactId' => $c['id'],
-                    'outlet' => $c['outlet'],
-                    'channel' => 'hostinger_mail_api',
-                    'dispatches' => $echoDispatches,
-                ]);
-                exit;
-            }
-
-            $results = [];
-            foreach ($targets as $addr) {
-                $headers = "From: " . $FROM_ADDRESS . "\r\n" .
-                           "Reply-To: " . $REPLY_TO . "\r\n" .
-                           "X-Mailer: Twisted23-CRM/1.0 (PHP " . phpversion() . ")\r\n" .
-                           "X-Bcc-Echo-To: " . ($c['primary_email'] ?? '') . "\r\n" .
-                           "Content-Type: text/plain; charset=UTF-8\r\n";
-                $ok = @mail($addr, "[BCC Sent] " . $subject, $echoText, $headers);
-                $results[] = ['address' => $addr, 'sent' => $ok];
-            }
-            echo json_encode([
-                'success' => true,
-                'contactId' => $c['id'],
-                'outlet' => $c['outlet'],
-                'channel' => 'php_mail_fallback',
-                'echoes' => $results,
-            ]);
-            exit;
-        }
-    }
-    fail(404, 'Contact not found');
 }
 
 fail(404, 'Unknown endpoint');

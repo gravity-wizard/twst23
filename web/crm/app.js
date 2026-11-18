@@ -109,7 +109,6 @@ function renderContacts() {
       <td class="email-cell">
         ${c.primary_email ? escapeHtml(c.primary_email) : '<span class="status-pill status-muted">Web Form</span>'}
         ${c.cc_email ? `<div class="cc-line">CC: ${escapeHtml(c.cc_email)}</div>` : ''}
-        ${c.bcc_email ? `<div class="bcc-line" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">BCC: ${escapeHtml(c.bcc_email)}</div>` : ''}
       </td>
       <td><span class="status-pill ${stagePill(c.stage)}">${c.stage === 'Auto-Acknowledged' ? '🤖 ' : (c.stage === 'Received Reply' ? '💬 ' : '')}${escapeHtml(c.stage)}</span></td>
       <td><span class="status-pill ${deliveryPill(c.delivery_status)}">${escapeHtml(c.delivery_status)}</span></td>
@@ -173,7 +172,6 @@ function openDrawer(id) {
   const emailInput = $('#d-email');
   if (emailInput) emailInput.value = c.primary_email || '';
   $('#d-cc').value = c.cc_email || '';
-  $('#d-bcc').value = c.bcc_email || '';
   $('#d-subject').value = c.subject_line || '';
   $('#d-blurb').value = c.custom_blurb || '';
   $('#d-notes').value = c.notes || '';
@@ -251,11 +249,11 @@ function showModal(title, html) {
   $('#modal-backdrop').hidden = false;
 }
 
-async function runSendBatch(ids, dryRun, step = 1, extraOpts = {}) {
+async function runSendBatch(ids, dryRun, step = 1) {
   try {
     const res = await api('api.php?action=send', {
       method: 'POST',
-      body: JSON.stringify({ contactIds: ids, step, dryRun, ...extraOpts }),
+      body: JSON.stringify({ contactIds: ids, step, dryRun }),
     });
     const html = res.results
       .map(
@@ -270,7 +268,7 @@ async function runSendBatch(ids, dryRun, step = 1, extraOpts = {}) {
             </span>
           </div>
         </div>
-        ${r.to ? `<div><code>To: ${escapeHtml(r.to)}</code> ${r.cc?.length ? `<code>CC: ${escapeHtml(r.cc.join(', '))}</code>` : ''} ${r.bcc?.length ? `<code>BCC: ${escapeHtml(r.bcc.join(', '))}</code>` : `<span style="font-size:0.75rem;color:var(--ok-text);font-weight:600;">⚡ 0 BCCs (Quota-Saver · Saved in Sent folder)</span>`}</div>` : ''}
+        ${r.to ? `<div><code>To: ${escapeHtml(r.to)}</code> ${r.cc?.length ? `<code>CC: ${escapeHtml(r.cc.join(', '))}</code>` : ''} <span style="font-size:0.75rem;color:var(--ok-text);font-weight:600;">⚡ Zero BCC (Saved in Sent folder)</span></div>` : ''}
         ${r.subject ? `<div><strong>Subject:</strong> ${escapeHtml(r.subject)}</div>` : ''}
         ${r.preview ? `<pre>${escapeHtml(r.preview)}</pre>` : ''}
         ${r.error ? `<div class="status-pill status-danger" style="margin-top:6px;">${escapeHtml(r.error)}</div>` : ''}
@@ -336,7 +334,7 @@ async function refresh() {
     const badge = $('#resend-badge');
     if (status.hostingerMailConfigured) {
       const recentTag = status.pitchesLast24h > 0 ? ` · ${status.pitchesLast24h} sent/24h` : '';
-      badge.textContent = `Hostinger Mail API · Quota-Saver (0 BCC${recentTag})`;
+      badge.textContent = `Hostinger Mail API · Zero BCC${recentTag}`;
       badge.className = 'status-pill status-ok';
     } else if (status.resendConfigured) {
       badge.textContent = 'Resend API Ready';
@@ -461,7 +459,6 @@ async function handleSaveContact() {
     const payload = {
       stage: $('#d-stage').value,
       cc_email: $('#d-cc').value,
-      bcc_email: $('#d-bcc').value,
       subject_line: $('#d-subject').value,
       custom_blurb: $('#d-blurb').value,
       notes: $('#d-notes').value,
@@ -531,7 +528,6 @@ function openSendStep1Dispatcher(contactId) {
 
   const to = c.primary_email || '';
   const cc = c.cc_email || '';
-  const bcc = (c.bcc_email || '').trim();
   const ccCount = cc ? cc.split(',').map((s) => s.trim()).filter(Boolean).length : 0;
   const baseCredits = 1 + ccCount;
   const subject = c.subject_line || 'Twisted23 & Flipping Dice';
@@ -541,7 +537,6 @@ function openSendStep1Dispatcher(contactId) {
 
   const mailtoParams = new URLSearchParams();
   if (cc) mailtoParams.set('cc', cc);
-  if (bcc) mailtoParams.set('bcc', bcc);
   mailtoParams.set('subject', subject);
   mailtoParams.set('body', fullBody);
   const mailtoUrl = `mailto:${encodeURIComponent(to)}?${mailtoParams.toString()}`;
@@ -559,28 +554,20 @@ function openSendStep1Dispatcher(contactId) {
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.83rem;display:flex;flex-direction:column;gap:5px;">
         <div><strong>To:</strong> <code>${escapeHtml(to || '(No email set)')}</code></div>
         ${cc ? `<div><strong>CC:</strong> <code>${escapeHtml(cc)}</code></div>` : ''}
-        <div><strong>BCC:</strong> ${bcc ? `<code>${escapeHtml(bcc)}</code>` : `<span style="color:var(--ok-text);font-weight:600;">⚡ None — Quota-Saver (${baseCredits} daily credit${baseCredits === 1 ? '' : 's'})</span>`}</div>
+        <div><strong>Quota Cost:</strong> <span style="color:var(--ok-text);font-weight:600;">⚡ ${baseCredits} daily credit${baseCredits === 1 ? '' : 's'} (Zero BCC)</span></div>
         <div><strong>Subject:</strong> ${escapeHtml(subject)}</div>
       </div>
-
-      <label style="display:flex;align-items:center;gap:8px;font-size:0.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;user-select:none;">
-        <input type="checkbox" id="chk-include-bcc-step1" ${bcc ? 'checked' : ''} />
-        <span>Optional: include 1 BCC copy to <code>${escapeHtml(bcc || 'botchee@icloud.com')}</code> (+1 daily email credit)</span>
-      </label>
 
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <button id="btn-dispatch-server" class="btn btn-primary" type="button">
-              ${hasHostingerMail ? '🚀 Dispatch via Hostinger Mail API (DKIM · Quota-Saver)' : (hasResend ? '🚀 Dispatch via Resend Cloud API' : '🚀 Dispatch via Server Mail')}
-            </button>
-            <button id="btn-echo-bcc-now" class="btn btn-secondary btn-sm" type="button" title="Uses 1 email credit">
-              ✉ Manual Echo to iCloud
+              ${hasHostingerMail ? '🚀 Dispatch via Hostinger Mail API (DKIM · Zero BCC)' : (hasResend ? '🚀 Dispatch via Resend Cloud API' : '🚀 Dispatch via Server Mail')}
             </button>
           </div>
           ${hasHostingerMail ? `
             <div style="font-size:0.76rem;color:var(--ok-text);display:flex;align-items:center;gap:6px;">
-              <span>✓ Sent copy is automatically saved in <code>media@twisted23.com</code> Sent folder &amp; GwCrm ledger without burning extra BCC credits.</span>
+              <span>✓ Sent copy is automatically archived in <code>media@twisted23.com</code> Sent folder &amp; GwCrm ledger with zero BCCs.</span>
             </div>
           ` : ''}
         </div>
@@ -608,7 +595,7 @@ function openSendStep1Dispatcher(contactId) {
   const launchBtn = $('#btn-launch-mailto');
   if (launchBtn) {
     launchBtn.addEventListener('click', async () => {
-      await markContactSentStep1(contactId, 'Sent (Mail App / iCloud)');
+      await markContactSentStep1(contactId, 'Sent (Mail App)');
       setTimeout(() => { $('#modal-backdrop').hidden = true; }, 800);
     });
   }
@@ -616,7 +603,7 @@ function openSendStep1Dispatcher(contactId) {
   const copyBtn = $('#btn-copy-outreach');
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
-      const copyText = `To: ${to}\n${cc ? `CC: ${cc}\n` : ''}${bcc ? `BCC: ${bcc}\n` : ''}Subject: ${subject}\n\n${fullBody}`;
+      const copyText = `To: ${to}\n${cc ? `CC: ${cc}\n` : ''}Subject: ${subject}\n\n${fullBody}`;
       try {
         await navigator.clipboard.writeText(copyText);
         copyBtn.textContent = '✓ Copied to Clipboard!';
@@ -638,31 +625,8 @@ function openSendStep1Dispatcher(contactId) {
   const serverDispatchBtn = $('#btn-dispatch-server');
   if (serverDispatchBtn) {
     serverDispatchBtn.addEventListener('click', async () => {
-      const wantBcc = !!$('#chk-include-bcc-step1')?.checked;
       $('#modal-backdrop').hidden = true;
-      runSendBatch([contactId], false, 1, {
-        includeBcc: wantBcc,
-        bccTargets: wantBcc ? (bcc || 'botchee@icloud.com') : '',
-      });
-    });
-  }
-
-  const echoBccBtn = $('#btn-echo-bcc-now');
-  if (echoBccBtn) {
-    echoBccBtn.addEventListener('click', async () => {
-      echoBccBtn.disabled = true;
-      echoBccBtn.textContent = 'Dispatching Echo...';
-      try {
-        await api('api.php?action=echo_bcc', {
-          method: 'POST',
-          body: JSON.stringify({ id: contactId, targets: ['botchee@icloud.com'] }),
-        });
-        echoBccBtn.textContent = '✓ Echo Dispatched!';
-        showDrawerNotice('✓ Copy sent to botchee@icloud.com (1 credit)', 'ok');
-      } catch (err) {
-        echoBccBtn.disabled = false;
-        echoBccBtn.textContent = 'Echo failed: ' + err.message;
-      }
+      runSendBatch([contactId], false, 1);
     });
   }
 }
@@ -673,7 +637,6 @@ function openSendStep2Dispatcher(contactId) {
 
   const to = c.primary_email || '';
   const cc = c.cc_email || '';
-  const bcc = (c.bcc_email || '').trim();
   const origSubject = c.subject_line || 'Twisted23 & Flipping Dice';
   const subject = origSubject.toLowerCase().startsWith('re:') ? origSubject : `Re: ${origSubject}`;
   const signature = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
@@ -681,7 +644,6 @@ function openSendStep2Dispatcher(contactId) {
 
   const mailtoParams = new URLSearchParams();
   if (cc) mailtoParams.set('cc', cc);
-  if (bcc) mailtoParams.set('bcc', bcc);
   mailtoParams.set('subject', subject);
   mailtoParams.set('body', followUpText);
   const mailtoUrl = `mailto:${encodeURIComponent(to)}?${mailtoParams.toString()}`;
@@ -698,20 +660,14 @@ function openSendStep2Dispatcher(contactId) {
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.83rem;display:flex;flex-direction:column;gap:5px;">
         <div><strong>To:</strong> <code>${escapeHtml(to || '(No email set)')}</code></div>
         ${cc ? `<div><strong>CC:</strong> <code>${escapeHtml(cc)}</code></div>` : ''}
-        <div><strong>BCC:</strong> ${bcc ? `<code>${escapeHtml(bcc)}</code>` : '<span style="color:var(--ok-text);font-weight:600;">⚡ None — Quota-Saver Active</span>'}</div>
         <div><strong>Subject:</strong> ${escapeHtml(subject)}</div>
         ${c.auto_acknowledged ? `<div style="color:#7e22ce;font-weight:600;font-size:0.75rem;margin-top:2px;">🤖 Note: Automated receipt previously confirmed. Sending polite editorial follow-up.</div>` : ''}
       </div>
 
-      <label style="display:flex;align-items:center;gap:8px;font-size:0.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;user-select:none;">
-        <input type="checkbox" id="chk-include-bcc-step2" ${bcc ? 'checked' : ''} />
-        <span>Optional: include 1 BCC copy to <code>${escapeHtml(bcc || 'botchee@icloud.com')}</code> (+1 daily email credit)</span>
-      </label>
-
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button id="btn-dispatch-server-step2" class="btn btn-primary" type="button" style="background:#0284c7;">
-            ${hasHostingerMail ? '🚀 Dispatch Step 2 via Hostinger Mail API (Quota-Saver)' : '🚀 Dispatch Step 2 via Server'}
+            ${hasHostingerMail ? '🚀 Dispatch Step 2 via Hostinger Mail API (Zero BCC)' : '🚀 Dispatch Step 2 via Server'}
           </button>
         </div>
 
@@ -750,7 +706,7 @@ function openSendStep2Dispatcher(contactId) {
   const copyBtn = $('#btn-copy-step2');
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
-      const copyText = `To: ${to}\n${cc ? `CC: ${cc}\n` : ''}${bcc ? `BCC: ${bcc}\n` : ''}Subject: ${subject}\n\n${followUpText}`;
+      const copyText = `To: ${to}\n${cc ? `CC: ${cc}\n` : ''}Subject: ${subject}\n\n${followUpText}`;
       try {
         await navigator.clipboard.writeText(copyText);
         copyBtn.textContent = '✓ Copied to Clipboard!';
@@ -776,12 +732,8 @@ function openSendStep2Dispatcher(contactId) {
   const serverDispatchBtn = $('#btn-dispatch-server-step2');
   if (serverDispatchBtn) {
     serverDispatchBtn.addEventListener('click', async () => {
-      const wantBcc = !!$('#chk-include-bcc-step2')?.checked;
       $('#modal-backdrop').hidden = true;
-      runSendBatch([contactId], false, 2, {
-        includeBcc: wantBcc,
-        bccTargets: wantBcc ? (bcc || 'botchee@icloud.com') : '',
-      });
+      runSendBatch([contactId], false, 2);
     });
   }
 }
@@ -824,31 +776,6 @@ if (requeueBtnEl) {
     } finally {
       requeueBtnEl.disabled = false;
       requeueBtnEl.textContent = '↺ Re-Queue for Retry';
-    }
-  });
-}
-
-const echoDrawerBtnEl = $('#d-echo-bcc');
-if (echoDrawerBtnEl) {
-  echoDrawerBtnEl.addEventListener('click', async () => {
-    if (!activeContactId) return;
-    echoDrawerBtnEl.disabled = true;
-    echoDrawerBtnEl.textContent = 'Echoing...';
-    try {
-      await api('api.php?action=echo_bcc', {
-        method: 'POST',
-        body: JSON.stringify({ id: activeContactId, targets: ['botchee@icloud.com'] }),
-      });
-      echoDrawerBtnEl.textContent = '✓ Echo Sent!';
-      showDrawerNotice('✓ Copy dispatched to botchee@icloud.com (1 credit)', 'ok');
-      setTimeout(() => {
-        echoDrawerBtnEl.disabled = false;
-        echoDrawerBtnEl.textContent = 'Manual Echo to iCloud';
-      }, 2500);
-    } catch (err) {
-      echoDrawerBtnEl.disabled = false;
-      echoDrawerBtnEl.textContent = 'Echo failed';
-      showDrawerNotice(`Echo failed: ${err.message}`, 'warn');
     }
   });
 }
@@ -951,23 +878,18 @@ function openSendBatchDispatcher(contacts) {
   const modalHtml = `
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div>
-        <div style="font-size:0.78rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;">Batch Outreach Dispatcher · Quota-Saver Mode</div>
+        <div style="font-size:0.78rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;">Batch Outreach Dispatcher · Zero BCC</div>
         <h3 style="margin:4px 0 0;font-size:1.15rem;">Send Next ${count} Outlets in Queue (${totalBaseCredits} Daily Credits Total)</h3>
       </div>
 
       ${contactsHtml}
-
-      <label style="display:flex;align-items:center;gap:8px;font-size:0.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;user-select:none;">
-        <input type="checkbox" id="chk-include-bcc-batch" />
-        <span>Optional: include 1 BCC copy to <code>botchee@icloud.com</code> (+${count} extra daily credits)</span>
-      </label>
 
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
         <button id="btn-dispatch-batch-server" class="btn btn-primary" type="button" style="padding:12px 18px;font-size:0.95rem;font-weight:600;">
           ${hasHostingerMail ? `🚀 Dispatch Both (${count} Outlets · ${totalBaseCredits} Credits) via Hostinger Mail API` : `🚀 Dispatch Both (${count} Outlets) via Server`}
         </button>
         <span style="font-size:0.76rem;color:var(--ok-text);text-align:center;">
-          ⚡ Quota-Saver Active: 0 BCCs by default (down from 5–6 credits/pitch to ~1 credit/pitch). Full copies are saved in <code>media@twisted23.com</code> Sent folder.
+          ✓ Zero BCCs generated — authenticated from <code>media@twisted23.com</code> with copies saved automatically in its Sent folder.
         </span>
 
         <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
@@ -984,13 +906,9 @@ function openSendBatchDispatcher(contacts) {
   const dispatchBatchBtn = $('#btn-dispatch-batch-server');
   if (dispatchBatchBtn) {
     dispatchBatchBtn.addEventListener('click', async () => {
-      const wantBcc = !!$('#chk-include-bcc-batch')?.checked;
       dispatchBatchBtn.disabled = true;
       dispatchBatchBtn.textContent = `⏳ Dispatching ${count} Outlets via Hostinger Mail API...`;
-      await runSendBatch(contacts.map((c) => c.id), false, 1, {
-        includeBcc: wantBcc,
-        bccTargets: wantBcc ? 'botchee@icloud.com' : '',
-      });
+      await runSendBatch(contacts.map((c) => c.id), false, 1);
     });
   }
 
@@ -1038,7 +956,6 @@ $('#btn-add-contact').addEventListener('click', () => {
       <label class="field"><span>Outlet / Name</span><input id="nc-outlet" class="input" required /></label>
       <label class="field"><span>Primary Email</span><input id="nc-email" class="input" type="email" required /></label>
       <label class="field"><span>CC Email (optional)</span><input id="nc-cc" class="input" /></label>
-      <label class="field"><span>BCC Email (optional — leave blank to save quota)</span><input id="nc-bcc" class="input" value="" placeholder="Blank = 0 BCCs (Quota-Saver)" /></label>
       <label class="field"><span>Subject Line</span><input id="nc-subject" class="input" /></label>
       <label class="field"><span>Custom Blurb</span><textarea id="nc-blurb" class="textarea" rows="4"></textarea></label>
       <button class="btn btn-primary" type="submit">Save Contact</button>
@@ -1052,7 +969,6 @@ $('#btn-add-contact').addEventListener('click', () => {
         outlet: $('#nc-outlet').value,
         primary_email: $('#nc-email').value,
         cc_email: $('#nc-cc').value,
-        bcc_email: $('#nc-bcc').value,
         subject_line: $('#nc-subject').value,
         custom_blurb: $('#nc-blurb').value,
       }),
