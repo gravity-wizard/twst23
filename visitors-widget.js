@@ -7,10 +7,18 @@
 (function () {
   'use strict';
 
+  var host = (window.location && window.location.hostname) || '';
   var path = (window.location && window.location.pathname) || '';
-  var TELEMETRY_URL = '/visitors/telemetry.php';
-  var VISITORS_URL = '/visitors/';
+  var isTwistedHost = !host || /(^|\.)twisted23\.com$/i.test(host) || host === 'localhost' || host === '127.0.0.1';
+  var BASE_ORIGIN = isTwistedHost ? '' : 'https://www.twisted23.com';
+  var TELEMETRY_URL = BASE_ORIGIN + '/visitors/telemetry.php';
+  var VISITORS_URL = BASE_ORIGIN + '/visitors/';
   var STORAGE_KEY = 'twst23_visitors_widget_hidden';
+  function hexToRgbTuple(hex) {
+    var h = String(hex || '#f59e0b').replace('#', '');
+    if (h.length !== 6) return '245, 158, 11';
+    return parseInt(h.slice(0, 2), 16) + ', ' + parseInt(h.slice(2, 4), 16) + ', ' + parseInt(h.slice(4, 6), 16);
+  }
   function getEarthAxialTiltDeg(nowMs) {
     var jd = (nowMs || Date.now()) / 86400000 + 2440587.5;
     var T = (jd - 2451545.0) / 36525.0;
@@ -21,14 +29,14 @@
     return (eps0 + dEps) / 3600;
   }
 
-  if (!window.__TW23_UNIVERSE_BAR_LOADED__ && !document.querySelector('script[src*="/tw23-universe-bar.js"]')) {
+  if (isTwistedHost && !window.__TW23_UNIVERSE_BAR_LOADED__ && !document.querySelector('script[src*="/tw23-universe-bar.js"]')) {
     var ubScript = document.createElement('script');
     ubScript.src = '/tw23-universe-bar.js';
     ubScript.defer = true;
     (document.head || document.documentElement).appendChild(ubScript);
   }
 
-  if (/^\/visitors(\/index\.html|\/)?$/i.test(path)) {
+  if (isTwistedHost && /^\/visitors(\/index\.html|\/)?$/i.test(path)) {
     return;
   }
 
@@ -285,7 +293,7 @@
         return;
       }
       var item = recentArrivals[arrivalIdx % recentArrivals.length];
-      tickerEl.textContent = (item.flag || '\uD83C\uDF10') + ' ' + item.city + ' \u2192 ' + item.table;
+      tickerEl.textContent = (item.siteBadge || '\uD83C\uDFA9') + ' ' + (item.flag || '\uD83C\uDF10') + ' ' + item.city + ' \u2192 ' + item.table;
     }
 
     function fetchRealTelemetry(recordHit) {
@@ -293,7 +301,11 @@
         window.fetch(TELEMETRY_URL, {
           method: recordHit ? 'POST' : 'GET',
           headers: recordHit ? { 'Content-Type': 'application/json' } : {},
-          body: recordHit ? JSON.stringify({ path: path }) : undefined,
+          body: recordHit ? JSON.stringify({
+            host: host || 'twisted23.com',
+            path: path || '/',
+            referrer: document.referrer || ''
+          }) : undefined,
           cache: 'no-store'
         })
           .then(function (res) { return res.ok ? res.json() : null; })
@@ -302,13 +314,13 @@
             liveLocations = Array.isArray(data.activeLocations) ? data.activeLocations : [];
             recentArrivals = Array.isArray(data.recentArrivals) ? data.recentArrivals : [];
             if (liveLabel) {
-              liveLabel.textContent = (data.activeSessions || 0) + ' Live \u2197';
+              liveLabel.textContent = (data.combinedUniverseActive || data.activeSessions || 0) + ' Live \u2197';
             }
             if (recentArrivals.length > 0 && recentArrivals[0].ts > lastSeenTs) {
               lastSeenTs = recentArrivals[0].ts;
               var newest = recentArrivals[0];
               if (typeof newest.lat === 'number' && typeof newest.lon === 'number') {
-                pings.push({ lat: newest.lat, lon: newest.lon, rad: 0, max: 18 });
+                pings.push({ lat: newest.lat, lon: newest.lon, rad: 0, max: 18, color: newest.siteColor || '#f59e0b' });
               }
             }
             arrivalIdx = 0;
@@ -366,17 +378,17 @@
       gCtx.fillStyle = sp;
       gCtx.fill();
       gCtx.lineWidth = 2;
-      gCtx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+      gCtx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
       gCtx.stroke();
       gCtx.clip();
 
       for (var i = 0; i < land.length; i++) {
         var pt = proj(land[i].lat, land[i].lon);
         if (pt.visible && pt.z > 0) {
-          var alpha = Math.max(0.22, (pt.z / r) * 0.9);
+          var alpha = Math.max(0.18, (pt.z / r) * 0.65);
           gCtx.beginPath();
           gCtx.arc(pt.x, pt.y, 1.4, 0, Math.PI * 2);
-          gCtx.fillStyle = 'rgba(56, 189, 248, ' + alpha + ')';
+          gCtx.fillStyle = 'rgba(148, 163, 184, ' + alpha + ')';
           gCtx.fill();
         }
       }
@@ -386,10 +398,18 @@
         if (typeof loc.lat !== 'number' || typeof loc.lon !== 'number') continue;
         var cp = proj(loc.lat, loc.lon);
         if (cp.visible && cp.z > 0) {
+          var pinColor = loc.siteColor || '#f59e0b';
           gCtx.beginPath();
-          gCtx.arc(cp.x, cp.y, loc.isActive ? 3.4 : 2.6, 0, Math.PI * 2);
-          gCtx.fillStyle = loc.isActive ? '#10b981' : '#f59e0b';
+          gCtx.arc(cp.x, cp.y, loc.isActive ? 3.5 : 2.7, 0, Math.PI * 2);
+          gCtx.fillStyle = pinColor;
           gCtx.fill();
+          if (loc.isActive) {
+            gCtx.beginPath();
+            gCtx.arc(cp.x, cp.y, 4.8, 0, Math.PI * 2);
+            gCtx.strokeStyle = 'rgba(' + hexToRgbTuple(pinColor) + ', 0.55)';
+            gCtx.lineWidth = 1.1;
+            gCtx.stroke();
+          }
         }
       }
 
@@ -401,7 +421,7 @@
         if (pp.visible && pp.z > 0 && pAlpha > 0) {
           gCtx.beginPath();
           gCtx.arc(pp.x, pp.y, ping.rad, 0, Math.PI * 2);
-          gCtx.strokeStyle = 'rgba(16, 185, 129, ' + pAlpha + ')';
+          gCtx.strokeStyle = 'rgba(' + hexToRgbTuple(ping.color) + ', ' + pAlpha + ')';
           gCtx.lineWidth = 2;
           gCtx.stroke();
         }

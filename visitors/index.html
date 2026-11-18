@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>World Visitors Live Globe — Twisted23 Parlour Telemetry</title>
+  <title>World Visitors Live Globe — Twisted23 • sLogbog • gravity-wizards</title>
   <link rel="icon" type="image/png" href="../icon.png" />
   <style>
     :root {
       --bg: #070d18;
       --card-bg: #0f1c32;
-      --accent: #f59e0b;
-      --accent-glow: rgba(245, 158, 11, 0.4);
-      --cyan: #38bdf8;
+      --tw23: #f59e0b;       /* Parlour Amber Gold */
+      --slogbog: #10b981;    /* sLogbog Frog Emerald */
+      --gw: #38bdf8;         /* gravity-wizards Sky Cyan */
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --border: #1e293b;
@@ -26,10 +26,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-bottom: 3rem;
-      background-image: 
-        radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.1) 0%, transparent 60%),
-        radial-gradient(circle at 85% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
+      padding-bottom: 3.5rem;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 85% 80%, rgba(56, 189, 248, 0.07) 0%, transparent 50%);
     }
     header {
       width: 100%;
@@ -39,55 +39,135 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.5rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.35rem;
     }
-    header a.brand { color: var(--accent); text-decoration: none; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.05em; }
-    .nav-links { display: flex; gap: 1rem; align-items: center; }
-    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.92rem; font-weight: 600; }
+    header a.brand { color: var(--tw23); text-decoration: none; font-weight: 900; font-size: 1.15rem; letter-spacing: 0.05em; }
+    .nav-links { display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.88rem; font-weight: 600; }
     .nav-links a:hover { color: #fff; }
     .btn-home {
       background: #1e293b;
-      color: var(--cyan) !important;
-      padding: 0.4rem 0.95rem;
+      color: var(--gw) !important;
+      padding: 0.38rem 0.9rem;
       border-radius: 6px;
       border: 1px solid #334155;
     }
-    .btn-home:hover { background: #334155; border-color: var(--cyan); }
+    .btn-home:hover { background: #334155; border-color: var(--gw); }
 
-    main { max-width: 960px; width: 100%; padding: 0 1rem; text-align: center; }
-    h1 { font-size: 2.2rem; color: #fff; margin-bottom: 0.35rem; font-weight: 900; }
-    .sub { color: var(--accent); font-size: 1.05rem; margin-bottom: 1.5rem; font-weight: 600; }
+    main { max-width: 1040px; width: 100%; padding: 0 1rem; text-align: center; }
+    h1 { font-size: 2.05rem; color: #fff; margin-bottom: 0.3rem; font-weight: 900; letter-spacing: -0.02em; }
+    .sub { color: var(--text-muted); font-size: 0.96rem; margin-bottom: 1.2rem; font-weight: 600; }
+    .sub strong.c-tw { color: var(--tw23); }
+    .sub strong.c-sb { color: var(--slogbog); }
+    .sub strong.c-gw { color: var(--gw); }
 
     /* KPI STATS ROW */
     .kpi-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 0.9rem;
+      margin-bottom: 1rem;
       width: 100%;
     }
     .kpi-card {
       background: var(--card-bg);
-      border: 1px solid var(--border-gold);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1rem;
+      padding: 0.9rem 1rem;
       text-align: left;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.45);
     }
-    .kpi-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-family: ui-monospace, monospace; }
-    .kpi-val { font-size: 1.6rem; font-weight: 900; color: #fff; margin-top: 0.2rem; }
-    .kpi-val.accent { color: var(--accent); }
-    .kpi-val.cyan { color: var(--cyan); }
-    .kpi-val.emerald { color: #10b981; }
+    .kpi-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-family: ui-monospace, monospace; letter-spacing: 0.04em; }
+    .kpi-val { font-size: 1.5rem; font-weight: 900; color: #fff; margin-top: 0.2rem; }
+    .kpi-val.amber { color: var(--tw23); }
+    .kpi-val.cyan { color: var(--gw); }
+    .kpi-val.emerald { color: var(--slogbog); }
+
+    /* REALM COLOR LEGEND & INTERACTIVE FILTER STRIP */
+    .realm-strip {
+      display: grid;
+      grid-template-columns: 0.8fr 1.1fr 1.2fr 1.15fr;
+      gap: 0.75rem;
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+    @media (max-width: 860px) {
+      .realm-strip { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 520px) {
+      .realm-strip { grid-template-columns: 1fr; }
+    }
+    .realm-card {
+      background: rgba(15, 28, 50, 0.9);
+      border: 1.5px solid #243552;
+      border-radius: 12px;
+      padding: 0.72rem 0.9rem;
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 4px;
+      user-select: none;
+    }
+    .realm-card:hover { transform: translateY(-1px); background: #13233f; }
+    .realm-card.active[data-realm="all"] { border-color: #e2e8f0; box-shadow: 0 0 0 1px rgba(226, 232, 240, 0.35); }
+    .realm-card.active[data-realm="twisted23"] { border-color: var(--tw23); box-shadow: 0 0 18px rgba(245, 158, 11, 0.22); }
+    .realm-card.active[data-realm="slogbog"] { border-color: var(--slogbog); box-shadow: 0 0 18px rgba(16, 185, 129, 0.22); }
+    .realm-card.active[data-realm="gravity-wizards"] { border-color: var(--gw); box-shadow: 0 0 18px rgba(56, 189, 248, 0.22); }
+
+    .realm-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .realm-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #fff;
+    }
+    .color-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .dot-tw23 { background: var(--tw23); box-shadow: 0 0 8px var(--tw23); }
+    .dot-slogbog { background: var(--slogbog); box-shadow: 0 0 8px var(--slogbog); }
+    .dot-gw { background: var(--gw); box-shadow: 0 0 8px var(--gw); }
+    .dot-multi {
+      background: conic-gradient(var(--tw23) 0deg 120deg, var(--slogbog) 120deg 240deg, var(--gw) 240deg 360deg);
+    }
+    .realm-ext {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #334155;
+    }
+    .realm-ext:hover { color: #fff; border-color: #64748b; }
+    .realm-meta {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
 
     /* MAIN STAGE */
     .globe-stage {
       display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1.25rem;
-      margin-bottom: 1.5rem;
+      grid-template-columns: 1.95fr 1.05fr;
+      gap: 1.2rem;
+      margin-bottom: 1.3rem;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 800px) {
       .globe-stage { grid-template-columns: 1fr; }
     }
 
@@ -102,9 +182,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 420px;
+      min-height: 440px;
       cursor: grab;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(245, 158, 11, 0.08);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(245, 158, 11, 0.07);
     }
     .canvas-box:active { cursor: grabbing; }
 
@@ -112,7 +192,7 @@
       position: absolute;
       top: 12px;
       left: 16px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-family: ui-monospace, monospace;
       color: var(--text-muted);
       pointer-events: none;
@@ -124,29 +204,47 @@
       position: absolute;
       top: 12px;
       right: 16px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-family: ui-monospace, monospace;
-      color: #10b981;
+      color: var(--slogbog);
       pointer-events: none;
     }
 
+    .canvas-legend-chip {
+      position: absolute;
+      bottom: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      background: rgba(7, 13, 24, 0.84);
+      border: 1px solid #263650;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+
     .canvas-controls {
       position: absolute;
-      bottom: 14px;
+      bottom: 12px;
       display: flex;
       align-items: center;
       gap: 10px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       border: 1px solid #334155;
       padding: 0.35rem 0.95rem;
       border-radius: 9999px;
       font-family: ui-monospace, monospace;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
     .btn-globe-ctrl {
       background: none;
       border: none;
-      color: var(--accent);
+      color: var(--tw23);
       font-weight: 800;
       cursor: pointer;
     }
@@ -157,7 +255,7 @@
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 1.25rem;
+      padding: 1.15rem;
       display: flex;
       flex-direction: column;
       text-align: left;
@@ -168,70 +266,132 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 0.75rem;
-      margin-bottom: 0.85rem;
+      padding-bottom: 0.7rem;
+      margin-bottom: 0.8rem;
       font-weight: 800;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
     .feed-list {
       display: flex;
       flex-direction: column;
-      gap: 0.55rem;
-      overflow: hidden;
+      gap: 0.5rem;
+      overflow-y: auto;
+      max-height: 365px;
       flex: 1;
     }
     .feed-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(15, 23, 42, 0.75);
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.78);
       border: 1px solid #1e293b;
+      border-left: 3.5px solid var(--tw23);
       border-radius: 8px;
-      padding: 0.55rem 0.75rem;
-      font-size: 0.82rem;
-      animation: feedIn 0.3s ease-out;
+      padding: 0.52rem 0.7rem;
+      font-size: 0.8rem;
+      animation: feedIn 0.25s ease-out;
     }
     @keyframes feedIn {
-      from { opacity: 0; transform: translateY(-8px); }
+      from { opacity: 0; transform: translateY(-6px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .feed-info { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-    .feed-city { font-weight: 700; color: #fff; white-space: nowrap; }
-    .feed-game { font-size: 0.72rem; color: var(--accent); white-space: nowrap; }
-    .feed-time { font-family: ui-monospace, monospace; font-size: 0.75rem; color: #10b981; }
+    .feed-city { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .feed-game { font-size: 0.72rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 1px; }
+    .realm-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: ui-monospace, monospace;
+    }
+    .feed-time { font-family: ui-monospace, monospace; font-size: 0.72rem; color: #cbd5e1; white-space: nowrap; }
+
+    /* CROSS-DOMAIN BEACON DETAILS */
+    details.beacon-box {
+      background: rgba(15, 28, 50, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1.1rem;
+      text-align: left;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    details.beacon-box summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+    .snippet-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+      margin-top: 0.8rem;
+    }
+    @media (max-width: 720px) {
+      .snippet-grid { grid-template-columns: 1fr; }
+    }
+    .snippet-card {
+      background: #070d18;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 0.7rem 0.85rem;
+    }
+    .snippet-card code {
+      display: block;
+      margin-top: 5px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.73rem;
+      color: #e2e8f0;
+      word-break: break-all;
+      background: #0d1628;
+      padding: 6px 8px;
+      border-radius: 5px;
+      border: 1px solid #243552;
+    }
   </style>
 </head>
 <body>
   <header>
-    <a href="/" class="brand">TWISTED23</a>
+    <a href="/" class="brand">TWISTED23 • UNIVERSaL GLOBE</a>
     <div class="nav-links">
       <a href="/" class="btn-home">🏠 Home</a>
+      <a href="https://slogbog.com/" target="_blank" rel="noopener" style="color:var(--slogbog);">🐸 sLogbog ↗</a>
+      <a href="https://gravitywizards.com/" target="_blank" rel="noopener" style="color:var(--gw);">🦉 gravity-wizards ↗</a>
       <a href="/backgammon/">🎲 Backgammon</a>
-      <a href="/slider/">🌀 Slider Table</a>
-      <a href="/hangman/">🦉 Hangman</a>
-      <a href="/flippingdice/">🎲 Flipping Dice</a>
+      <a href="/flippingdice/">🐬 Flipping Dice</a>
+      <a href="/ucp/">🪪 UCP</a>
     </div>
   </header>
 
   <main>
     <h1>World Visitors Live Globe</h1>
-    <div class="sub">Real-Time Telemetry &bull; Live Earth Axial Tilt (22.1°–24.5° / 41,000-yr Cycle)</div>
+    <div class="sub">
+      Color-Differentiated Realms:
+      <strong class="c-tw">🎩 Twisted23 (Amber)</strong> &bull;
+      <strong class="c-sb">🐸 sLogbog (Emerald)</strong> &bull;
+      <strong class="c-gw">🦉 gravity-wizards (Sky Cyan)</strong>
+    </div>
 
     <!-- KPI ROW -->
     <div class="kpi-row">
       <div class="kpi-card">
-        <div class="kpi-label">Active Sessions (5m)</div>
+        <div class="kpi-label">Universe Active (5m)</div>
         <div class="kpi-val emerald" id="kpiActive">—</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">24h Unique Visitors</div>
-        <div class="kpi-val cyan" id="kpi24h">—</div>
+        <div class="kpi-label">24h Geolocated Visitors</div>
+        <div class="kpi-val amber" id="kpi24h">—</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Connected Nations</div>
-        <div class="kpi-val accent" id="kpiRegions">—</div>
+        <div class="kpi-val cyan" id="kpiRegions">—</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Telemetry Latency</div>
@@ -239,15 +399,55 @@
       </div>
     </div>
 
+    <!-- REALM COLOR FILTER & LIVE STATUS CARDS -->
+    <section class="realm-strip" aria-label="Filter Visitors by Realm">
+      <div class="realm-card active" data-realm="all">
+        <div class="realm-top">
+          <span class="realm-title"><span class="color-dot dot-multi"></span> All 3 Realms</span>
+        </div>
+        <div class="realm-meta" id="rmAllMeta">Combined Universe View</div>
+      </div>
+
+      <div class="realm-card" data-realm="twisted23">
+        <div class="realm-top">
+          <span class="realm-title"><span class="color-dot dot-tw23"></span> <span style="color:var(--tw23);">🎩 Twisted23</span></span>
+          <a href="https://www.twisted23.com/" class="realm-ext" onclick="event.stopPropagation()">Parlour ↗</a>
+        </div>
+        <div class="realm-meta" id="rmTw23Meta">Loading Parlour&hellip;</div>
+      </div>
+
+      <div class="realm-card" data-realm="slogbog">
+        <div class="realm-top">
+          <span class="realm-title"><span class="color-dot dot-slogbog"></span> <span style="color:var(--slogbog);">🐸 sLogbog</span></span>
+          <a href="https://slogbog.com/" target="_blank" rel="noopener" class="realm-ext" onclick="event.stopPropagation()">Forum ↗</a>
+        </div>
+        <div class="realm-meta" id="rmSlogMeta">Polling phpBB Who Is Online&hellip;</div>
+      </div>
+
+      <div class="realm-card" data-realm="gravity-wizards">
+        <div class="realm-top">
+          <span class="realm-title"><span class="color-dot dot-gw"></span> <span style="color:var(--gw);">🦉 gravity-wizards</span></span>
+          <a href="https://gravitywizards.com/" target="_blank" rel="noopener" class="realm-ext" onclick="event.stopPropagation()">FOBB Hub ↗</a>
+        </div>
+        <div class="realm-meta" id="rmGwMeta">Polling Storefront&hellip;</div>
+      </div>
+    </section>
+
     <!-- MAIN STAGE -->
     <div class="globe-stage">
       <div class="canvas-box" id="canvasBox">
         <div class="canvas-overlay-top">
-          <span style="color:#10b981;">●</span> Live Real Data &bull; Drag to Rotate &bull; Real-Time Ephemeris Tilt
+          <span style="color:#10b981;">●</span> Drag to Rotate &bull; Click Any Realm Card Above to Filter
         </div>
         <div class="canvas-overlay-coords" id="coordsReadout">TILT: ... • YAW: 0°</div>
 
-        <canvas id="globeCanvas" width="600" height="420"></canvas>
+        <canvas id="globeCanvas" width="620" height="430"></canvas>
+
+        <div class="canvas-legend-chip">
+          <span class="legend-item" style="color:var(--tw23);"><span class="color-dot dot-tw23" style="width:8px;height:8px;"></span> Twisted23</span>
+          <span class="legend-item" style="color:var(--slogbog);"><span class="color-dot dot-slogbog" style="width:8px;height:8px;"></span> sLogbog</span>
+          <span class="legend-item" style="color:var(--gw);"><span class="color-dot dot-gw" style="width:8px;height:8px;"></span> gravity-wizards</span>
+        </div>
 
         <div class="canvas-controls">
           <button class="btn-globe-ctrl" id="btnSpin">⏸ Pause Orbit</button>
@@ -259,25 +459,47 @@
       <!-- FEED SIDEBAR -->
       <div class="feed-box">
         <div class="feed-header">
-          <span>Real Arrivals (24h)</span>
-          <span id="feedStatusBadge" style="color:#10b981; font-family:ui-monospace, monospace; font-size:0.75rem;">CONNECTING</span>
+          <span id="feedTitle">Real Arrivals (All Realms)</span>
+          <span id="feedStatusBadge" style="color:#10b981; font-family:ui-monospace, monospace; font-size:0.73rem;">CONNECTING</span>
         </div>
         <div class="feed-list" id="feedList">
           <div class="feed-item">
             <div class="feed-info">
               <span>🌐</span>
               <div>
-                <div class="feed-city">Loading real visitor telemetry...</div>
-                <div class="feed-game">Querying /visitors/telemetry.php</div>
+                <div class="feed-city">Loading multi-realm telemetry...</div>
+                <div class="feed-game">Twisted23 • sLogbog • gravity-wizards</div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <details class="beacon-box">
+      <summary>🔗 Cross-Domain Beacon &amp; Widget Snippets (Optional Page-Level City Pins for <code>slogbog.com</code> &amp; <code>gravitywizards.com</code>)</summary>
+      <div class="snippet-grid">
+        <div class="snippet-card">
+          <strong style="color:var(--slogbog);">🐸 sLogbog Forum (phpBB Footer or BBCode Pixel)</strong>
+          <code>&lt;img src="https://www.twisted23.com/visitors/telemetry.php?action=beacon&amp;site=slogbog" width="1" height="1" alt="" style="position:absolute;opacity:0;pointer-events:none;" /&gt;</code>
+          <div style="margin-top:5px;font-size:0.74rem;">Note: Live phpBB <em>Who Is Online</em> counts &amp; embedded <code>twisted23.com/assets/*.gif</code> thread readers are already captured automatically!</div>
+        </div>
+        <div class="snippet-card">
+          <strong style="color:var(--gw);">🦉 gravity-wizards (Next.js Layout or Mini Globe Widget)</strong>
+          <code>&lt;script src="https://www.twisted23.com/visitors-widget.js" defer&gt;&lt;/script&gt;</code>
+          <div style="margin-top:5px;font-size:0.74rem;">Or zero-UI 1×1 beacon: <code>https://www.twisted23.com/visitors/telemetry.php?action=beacon&amp;site=gravity-wizards</code></div>
+        </div>
+      </div>
+    </details>
   </main>
 
   <script>
+    const REALM_META = {
+      'twisted23': { label: 'Twisted23', badge: '🎩', color: '#f59e0b', rgba: '245, 158, 11' },
+      'slogbog': { label: 'sLogbog', badge: '🐸', color: '#10b981', rgba: '16, 185, 129' },
+      'gravity-wizards': { label: 'gravity-wizards', badge: '🦉', color: '#38bdf8', rgba: '56, 189, 248' }
+    };
+
     const canvas = document.getElementById('globeCanvas');
     const ctx = canvas.getContext('2d');
     const box = document.getElementById('canvasBox');
@@ -310,12 +532,16 @@
     let yaw = 0.85;
     let pitch = 0.14;
     let isSpinning = true;
-    let spinSpeed = 0.005;
+    let spinSpeed = 0.0045;
     let isDragging = false;
     let lastX = 0, lastY = 0;
 
+    let activeRealmFilter = 'all';
     let LIVE_LOCATIONS = [];
+    let RECENT_ARRIVALS = [];
+    let REALMS_SUMMARY = {};
     let LAST_SEEN_TS = 0;
+    let pulsePhase = 0;
 
     // Mathematical Dot Matrix Continents
     const LAND_POINTS = [];
@@ -349,7 +575,6 @@
     let activePings = [];
     let activeArcs = [];
 
-    // Rotate point around Earth's polar axis (yaw), apply real-time obliquity tilt, then camera pitch
     function applyEarthTransform(x0, y0, z0) {
       const x1 = x0 * Math.cos(currentTiltRad) - y0 * Math.sin(currentTiltRad);
       const y1 = x0 * Math.sin(currentTiltRad) + y0 * Math.cos(currentTiltRad);
@@ -359,7 +584,7 @@
       const z2 = y1 * Math.sin(pitch) + z1 * Math.cos(pitch);
       return {
         x: canvas.width / 2 + x1,
-        y: canvas.height / 2 + y2,
+        y: canvas.height / 2 - 8 + y2,
         z: z2,
         visible: z2 > -5
       };
@@ -374,18 +599,36 @@
       return applyEarthTransform(x0, y0, z0);
     }
 
+    function locationMatchesRealm(loc, realm) {
+      if (realm === 'all') return true;
+      if (loc.sites && loc.sites[realm] > 0) return true;
+      return loc.site === realm;
+    }
+
+    function colorForSite(siteKey) {
+      return (REALM_META[siteKey] && REALM_META[siteKey].color) || '#f59e0b';
+    }
+
+    function rgbaForSite(siteKey, alpha) {
+      const rgb = (REALM_META[siteKey] && REALM_META[siteKey].rgba) || '245, 158, 11';
+      return `rgba(${rgb}, ${alpha})`;
+    }
+
     function triggerLocationPing(loc) {
       if (!loc || typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
+      const siteKey = loc.site || 'twisted23';
       activePings.push({
         loc,
+        site: siteKey,
         radius: 0,
-        maxRadius: 30,
+        maxRadius: 32,
         alpha: 1.0
       });
-      if (LIVE_LOCATIONS.length > 1) {
-        const other = LIVE_LOCATIONS.find(l => l.lat !== loc.lat || l.lon !== loc.lon);
+      const visiblePool = LIVE_LOCATIONS.filter(l => locationMatchesRealm(l, activeRealmFilter));
+      if (visiblePool.length > 1) {
+        const other = visiblePool.find(l => l.lat !== loc.lat || l.lon !== loc.lon);
         if (other) {
-          activeArcs.push({ from: loc, to: other, progress: 0, speed: 0.018 });
+          activeArcs.push({ from: loc, to: other, site: siteKey, progress: 0, speed: 0.016 });
         }
       }
     }
@@ -394,15 +637,16 @@
       const ob = getEarthAxialObliquity();
       currentTiltDeg = ob.trueDeg;
       currentTiltRad = ob.trueRad;
+      pulsePhase += 0.06;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+      const cy = canvas.height / 2 - 8;
 
-      // Subtle vertical reference line for real-time axial comparison
+      // Reference line
       ctx.save();
       ctx.setLineDash([3, 4]);
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.14)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(cx, cy - radius * 1.24);
@@ -414,8 +658,8 @@
       const northPole = applyEarthTransform(0, -radius * 1.22, 0);
       const southPole = applyEarthTransform(0, radius * 1.22, 0);
       ctx.save();
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.55)';
-      ctx.lineWidth = 1.6;
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(northPole.x, northPole.y);
       ctx.lineTo(southPole.x, southPole.y);
@@ -427,8 +671,8 @@
 
       // Outer Glow
       const glow = ctx.createRadialGradient(cx, cy, radius * 0.85, cx, cy, radius * 1.35);
-      glow.addColorStop(0, 'rgba(56, 189, 248, 0.14)');
-      glow.addColorStop(0.5, 'rgba(245, 158, 11, 0.06)');
+      glow.addColorStop(0, 'rgba(56, 189, 248, 0.12)');
+      glow.addColorStop(0.5, 'rgba(16, 185, 129, 0.06)');
       glow.addColorStop(1, 'transparent');
       ctx.fillStyle = glow;
       ctx.beginPath();
@@ -447,12 +691,12 @@
       ctx.fillStyle = sp;
       ctx.fill();
       ctx.lineWidth = 1.5;
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.42)';
       ctx.stroke();
       ctx.clip();
 
-      // Graticule grid tilted with Earth's 23.44° axis
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+      // Graticule grid
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
       ctx.lineWidth = 1;
       for (let lat = -60; lat <= 60; lat += 30) {
         ctx.beginPath();
@@ -467,20 +711,20 @@
         ctx.stroke();
       }
 
-      // Land dots
+      // Cool slate-silver continent dots so Amber, Emerald & Sky Cyan pins pop cleanly
       LAND_POINTS.forEach(pt => {
         const p = project(pt.lat, pt.lon);
         if (p.visible && p.z > 0) {
           const depth = (p.z / radius);
-          const alpha = Math.max(0.18, depth * 0.88);
+          const alpha = Math.max(0.14, depth * 0.56);
           ctx.beginPath();
-          ctx.arc(p.x, p.y, 1.4, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(56, 189, 248, ${alpha})`;
+          ctx.arc(p.x, p.y, 1.35, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(148, 163, 184, ${alpha})`;
           ctx.fill();
         }
       });
 
-      // Arcs between real active visitor locations
+      // Great-circle flight arcs colored by realm
       for (let i = activeArcs.length - 1; i >= 0; i--) {
         const arc = activeArcs[i];
         arc.progress += arc.speed;
@@ -502,7 +746,7 @@
               else { ctx.lineTo(pt.x, pt.y); }
             }
           }
-          ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+          ctx.strokeStyle = rgbaForSite(arc.site, 0.5);
           ctx.lineWidth = 1.6;
           ctx.stroke();
 
@@ -513,43 +757,81 @@
           const cometPt = project(latP, lonP, altP);
           if (cometPt.visible) {
             ctx.beginPath();
-            ctx.arc(cometPt.x, cometPt.y, 2.5, 0, Math.PI * 2);
-            ctx.fillStyle = '#f59e0b';
+            ctx.arc(cometPt.x, cometPt.y, 2.6, 0, Math.PI * 2);
+            ctx.fillStyle = colorForSite(arc.site);
             ctx.fill();
           }
         }
         if (arc.progress >= 1.0) activeArcs.splice(i, 1);
       }
 
-      // Real Visitor Location Pins
-      LIVE_LOCATIONS.forEach(loc => {
+      // Color-differentiated Visitor & Hub Location Pins
+      const filteredLocations = LIVE_LOCATIONS.filter(l => locationMatchesRealm(l, activeRealmFilter));
+      filteredLocations.forEach(loc => {
         if (typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
         const pt = project(loc.lat, loc.lon);
-        if (pt.visible && pt.z > 0) {
+        if (!pt.visible || pt.z <= 0) return;
+
+        const effectiveSite = activeRealmFilter !== 'all' ? activeRealmFilter : (loc.site || 'twisted23');
+        const primaryColor = colorForSite(effectiveSite);
+        const siteEntries = activeRealmFilter === 'all' && loc.sites
+          ? Object.entries(loc.sites).filter(([, c]) => c > 0)
+          : [[effectiveSite, 1]];
+
+        // Breathing outer pulse for active 5m sessions or live hubs
+        if (loc.isActive) {
+          const haloR = 6.8 + Math.sin(pulsePhase) * 1.8;
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, loc.isActive ? 4.2 : 3.0, 0, Math.PI * 2);
-          ctx.fillStyle = loc.isActive ? '#10b981' : '#f59e0b';
-          ctx.fill();
-          ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffffff';
-          ctx.fill();
-          ctx.font = '10px ui-monospace, SFMono-Regular, monospace';
-          ctx.fillStyle = 'rgba(248, 250, 252, 0.85)';
-          ctx.fillText(`${loc.flag} ${loc.city}`, pt.x + 7, pt.y + 3);
+          ctx.arc(pt.x, pt.y, haloR, 0, Math.PI * 2);
+          ctx.strokeStyle = rgbaForSite(effectiveSite, 0.55);
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
         }
+
+        // Draw segmented multi-color ring if city visited multiple realms, else solid realm pin
+        const pinR = loc.isActive ? 4.8 : 3.6;
+        if (siteEntries.length > 1) {
+          const total = siteEntries.reduce((acc, [, v]) => acc + v, 0) || 1;
+          let startAng = -Math.PI / 2;
+          siteEntries.forEach(([sKey, count]) => {
+            const sweep = (count / total) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y);
+            ctx.arc(pt.x, pt.y, pinR + 1.2, startAng, startAng + sweep);
+            ctx.closePath();
+            ctx.fillStyle = colorForSite(sKey);
+            ctx.fill();
+            startAng += sweep;
+          });
+        } else {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pinR, 0, Math.PI * 2);
+          ctx.fillStyle = primaryColor;
+          ctx.fill();
+        }
+
+        // Bright white center core
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+
+        // Crisp color-accented city label
+        ctx.font = 'bold 10px ui-monospace, SFMono-Regular, monospace';
+        ctx.fillStyle = primaryColor;
+        ctx.fillText(`${loc.flag || '🌐'} ${loc.city}`, pt.x + 8, pt.y + 3);
       });
 
-      // Ripple Pings on real new arrivals
+      // Ripple Pings in each realm's signature color
       for (let idx = activePings.length - 1; idx >= 0; idx--) {
         const ping = activePings[idx];
-        ping.radius += 0.7;
+        ping.radius += 0.68;
         ping.alpha = 1 - (ping.radius / ping.maxRadius);
         const pt = project(ping.loc.lat, ping.loc.lon);
         if (pt.visible && pt.z > 0 && ping.alpha > 0) {
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, ping.radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(16, 185, 129, ${ping.alpha})`;
+          ctx.strokeStyle = rgbaForSite(ping.site || 'twisted23', ping.alpha);
           ctx.lineWidth = 2;
           ctx.stroke();
         }
@@ -561,49 +843,49 @@
       if (isSpinning) yaw += spinSpeed;
       const yawDeg = Math.round(((yaw * 180 / Math.PI) % 360 + 360) % 360);
       const pitchDeg = Math.round(pitch * 180 / Math.PI);
-      document.getElementById('coordsReadout').textContent = `TILT: ${currentTiltDeg.toFixed(6)}° • YAW: ${yawDeg}° • PITCH: ${pitchDeg}°`;
+      document.getElementById('coordsReadout').textContent = `TILT: ${currentTiltDeg.toFixed(5)}° • YAW: ${yawDeg}° • PITCH: ${pitchDeg}°`;
 
       requestAnimationFrame(render);
     }
     render();
 
-    // Mouse drag
-    box.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      lastX = e.clientX;
-      lastY = e.clientY;
-    });
+    // Mouse & Touch drag
+    box.addEventListener('mousedown', (e) => { isDragging = true; lastX = e.clientX; lastY = e.clientY; });
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
       yaw += (e.clientX - lastX) * 0.008;
       pitch = Math.max(-0.8, Math.min(0.8, pitch - (e.clientY - lastY) * 0.008));
-      lastX = e.clientX;
-      lastY = e.clientY;
+      lastX = e.clientX; lastY = e.clientY;
     });
     window.addEventListener('mouseup', () => { isDragging = false; });
 
-    // Touch
     box.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
-        isDragging = true;
-        lastX = e.touches[0].clientX;
-        lastY = e.touches[0].clientY;
+        isDragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
       }
     });
     window.addEventListener('touchmove', (e) => {
       if (!isDragging || e.touches.length !== 1) return;
       yaw += (e.touches[0].clientX - lastX) * 0.008;
       pitch = Math.max(-0.8, Math.min(0.8, pitch - (e.touches[0].clientY - lastY) * 0.008));
-      lastX = e.touches[0].clientX;
-      lastY = e.touches[0].clientY;
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
     });
     window.addEventListener('touchend', () => { isDragging = false; });
 
-    // Controls
     document.getElementById('btnSpin').onclick = () => {
       isSpinning = !isSpinning;
       document.getElementById('btnSpin').textContent = isSpinning ? '⏸ Pause Orbit' : '▶️ Resume Orbit';
     };
+
+    // Realm Filter Card clicks
+    document.querySelectorAll('.realm-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.realm-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        activeRealmFilter = card.getAttribute('data-realm') || 'all';
+        renderFeedList();
+      });
+    });
 
     function formatAge(sec) {
       if (sec < 20) return 'just now';
@@ -617,55 +899,135 @@
       return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    function renderTelemetryData(data, rttMs) {
-      document.getElementById('kpiActive').textContent = String(data.activeSessions ?? 0);
-      document.getElementById('kpi24h').textContent = `${data.unique24h ?? 0} (${data.hits24h ?? 0} hits)`;
-      document.getElementById('kpiRegions').textContent = `${data.regionsCount ?? 0} ${data.regionsCount === 1 ? 'Nation' : 'Nations'}`;
-      document.getElementById('kpiPing').textContent = `${Math.round(rttMs)} ms`;
-      document.getElementById('feedStatusBadge').textContent = 'LIVE REAL DATA';
-
-      LIVE_LOCATIONS = Array.isArray(data.activeLocations) ? data.activeLocations : [];
-      const arrivals = Array.isArray(data.recentArrivals) ? data.recentArrivals : [];
-
-      if (arrivals.length > 0 && arrivals[0].ts > LAST_SEEN_TS) {
-        LAST_SEEN_TS = arrivals[0].ts;
-        triggerLocationPing(arrivals[0]);
-      } else if (LIVE_LOCATIONS.length > 0 && activePings.length === 0) {
-        triggerLocationPing(LIVE_LOCATIONS[0]);
-      }
-
+    function renderFeedList() {
       const feed = document.getElementById('feedList');
+      const titleEl = document.getElementById('feedTitle');
+      titleEl.textContent = activeRealmFilter === 'all'
+        ? 'Real Arrivals (All Realms)'
+        : `Real Arrivals (${REALM_META[activeRealmFilter]?.label || activeRealmFilter})`;
+
+      const filtered = RECENT_ARRIVALS.filter(ev => activeRealmFilter === 'all' || (ev.site || 'twisted23') === activeRealmFilter);
       feed.innerHTML = '';
-      if (arrivals.length === 0) {
-        feed.innerHTML = `
-          <div class="feed-item">
+
+      // If filtering specifically to sLogbog or gravity-wizards, surface the live federated hub status banner at top
+      if ((activeRealmFilter === 'slogbog' || activeRealmFilter === 'all') && REALMS_SUMMARY.slogbog && REALMS_SUMMARY.slogbog.reachable) {
+        const sb = REALMS_SUMMARY.slogbog;
+        if (activeRealmFilter === 'slogbog' || filtered.filter(x => x.site === 'slogbog').length === 0) {
+          const hubCard = document.createElement('div');
+          hubCard.className = 'feed-item';
+          hubCard.style.borderLeftColor = '#10b981';
+          hubCard.innerHTML = `
             <div class="feed-info">
-              <span>🌐</span>
+              <span style="font-size:1.15rem;">🐸</span>
               <div>
-                <div class="feed-city">Telemetry ready</div>
-                <div class="feed-game">No recorded visits in the last 24h yet</div>
+                <div class="feed-city">sLogbog phpBB Live (${sb.active5m} online)</div>
+                <div class="feed-game">
+                  <span class="realm-tag" style="background:rgba(16,185,129,0.16);color:#10b981;border:1px solid rgba(16,185,129,0.4);">sLogbog</span>
+                  <span>${sb.forumRegistered} reg &bull; ${sb.forumGuests} guests &bull; ${sb.totalPosts} posts</span>
+                </div>
               </div>
             </div>
-          </div>`;
-        return;
+            <div class="feed-time" style="color:#10b981;">LIVE</div>
+          `;
+          feed.appendChild(hubCard);
+        }
       }
 
-      arrivals.slice(0, 8).forEach(ev => {
+      if ((activeRealmFilter === 'gravity-wizards' || activeRealmFilter === 'all') && REALMS_SUMMARY['gravity-wizards'] && REALMS_SUMMARY['gravity-wizards'].reachable) {
+        if (activeRealmFilter === 'gravity-wizards' || filtered.filter(x => x.site === 'gravity-wizards').length === 0) {
+          const gwCard = document.createElement('div');
+          gwCard.className = 'feed-item';
+          gwCard.style.borderLeftColor = '#38bdf8';
+          gwCard.innerHTML = `
+            <div class="feed-info">
+              <span style="font-size:1.15rem;">🦉</span>
+              <div>
+                <div class="feed-city">Anchorage &amp; Palmer, US</div>
+                <div class="feed-game">
+                  <span class="realm-tag" style="background:rgba(56,189,248,0.16);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);">gravity-wizards</span>
+                  <span>FOBB &amp; FD_too0 Hub Online</span>
+                </div>
+              </div>
+            </div>
+            <div class="feed-time" style="color:#38bdf8;">LIVE</div>
+          `;
+          feed.appendChild(gwCard);
+        }
+      }
+
+      filtered.slice(0, 10).forEach(ev => {
+        const siteKey = ev.site || 'twisted23';
+        const meta = REALM_META[siteKey] || REALM_META.twisted23;
         const it = document.createElement('div');
         it.className = 'feed-item';
-        const youTag = ev.isYou ? ' <span style="color:#38bdf8;font-size:0.7rem;">(You)</span>' : '';
+        it.style.borderLeftColor = meta.color;
+        const youTag = ev.isYou ? ' <span style="color:#38bdf8;font-size:0.68rem;">(You)</span>' : '';
         it.innerHTML = `
           <div class="feed-info">
-            <span style="font-size:1.15rem;">${escapeHtml(ev.flag || '🌐')}</span>
+            <span style="font-size:1.12rem;">${escapeHtml(ev.flag || '🌐')}</span>
             <div>
               <div class="feed-city">${escapeHtml(ev.city)}, ${escapeHtml(ev.country)}${youTag}</div>
-              <div class="feed-game">visited ${escapeHtml(ev.table)}</div>
+              <div class="feed-game">
+                <span class="realm-tag" style="background:rgba(${meta.rgba},0.16);color:${meta.color};border:1px solid rgba(${meta.rgba},0.42);">
+                  ${meta.badge} ${escapeHtml(meta.label)}
+                </span>
+                <span>${escapeHtml(ev.table)}</span>
+              </div>
             </div>
           </div>
           <div class="feed-time">${formatAge(ev.secondsAgo || 0)}</div>
         `;
         feed.appendChild(it);
       });
+
+      if (feed.children.length === 0) {
+        feed.innerHTML = `
+          <div class="feed-item">
+            <div class="feed-info">
+              <span>🌐</span>
+              <div>
+                <div class="feed-city">Awaiting arrivals in this filter</div>
+                <div class="feed-game">Switch back to All 3 Realms to view combined traffic</div>
+              </div>
+            </div>
+          </div>`;
+      }
+    }
+
+    function renderTelemetryData(data, rttMs) {
+      const combinedActive = data.combinedUniverseActive ?? data.activeSessions ?? 0;
+      document.getElementById('kpiActive').textContent = String(combinedActive);
+      document.getElementById('kpi24h').textContent = `${data.unique24h ?? 0} (${data.hits24h ?? 0} hits)`;
+      document.getElementById('kpiRegions').textContent = `${data.regionsCount ?? 0} ${data.regionsCount === 1 ? 'Nation' : 'Nations'}`;
+      document.getElementById('kpiPing').textContent = `${Math.round(rttMs)} ms`;
+      document.getElementById('feedStatusBadge').textContent = 'LIVE 3-REALM FEED';
+
+      REALMS_SUMMARY = data.realms || {};
+      if (REALMS_SUMMARY.twisted23) {
+        const t = REALMS_SUMMARY.twisted23;
+        document.getElementById('rmTw23Meta').textContent = `${t.active5m} active • ${t.unique24h} unique (24h)`;
+      }
+      if (REALMS_SUMMARY.slogbog) {
+        const s = REALMS_SUMMARY.slogbog;
+        document.getElementById('rmSlogMeta').textContent = s.statusNote + (s.hits24h > 0 ? ` • ${s.hits24h} geo hits` : '');
+      }
+      if (REALMS_SUMMARY['gravity-wizards']) {
+        const g = REALMS_SUMMARY['gravity-wizards'];
+        document.getElementById('rmGwMeta').textContent = g.statusNote + (g.hits24h > 0 ? ` • ${g.hits24h} geo hits` : '');
+      }
+      document.getElementById('rmAllMeta').textContent = `${combinedActive} active across 3 realms`;
+
+      LIVE_LOCATIONS = Array.isArray(data.activeLocations) ? data.activeLocations : [];
+      RECENT_ARRIVALS = Array.isArray(data.recentArrivals) ? data.recentArrivals : [];
+
+      if (RECENT_ARRIVALS.length > 0 && RECENT_ARRIVALS[0].ts > LAST_SEEN_TS) {
+        LAST_SEEN_TS = RECENT_ARRIVALS[0].ts;
+        triggerLocationPing(RECENT_ARRIVALS[0]);
+      } else if (LIVE_LOCATIONS.length > 0 && activePings.length === 0) {
+        LIVE_LOCATIONS.slice(0, 3).forEach(loc => triggerLocationPing(loc));
+      }
+
+      renderFeedList();
     }
 
     async function fetchTelemetry(recordHit = false) {
@@ -674,7 +1036,12 @@
         const res = await fetch('/visitors/telemetry.php', {
           method: recordHit ? 'POST' : 'GET',
           headers: recordHit ? { 'Content-Type': 'application/json' } : {},
-          body: recordHit ? JSON.stringify({ path: window.location.pathname }) : undefined,
+          body: recordHit ? JSON.stringify({
+            site: 'twisted23',
+            host: window.location.hostname,
+            path: window.location.pathname,
+            referrer: document.referrer || ''
+          }) : undefined,
           cache: 'no-store'
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -691,7 +1058,6 @@
 
     document.getElementById('btnRefresh').onclick = () => fetchTelemetry(false);
 
-    // Record this real visit on load, then poll real telemetry every 10s
     fetchTelemetry(true);
     setInterval(() => fetchTelemetry(false), 10000);
   </script>

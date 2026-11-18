@@ -17,6 +17,10 @@ RewriteCond %{QUERY_STRING} format=md [NC,OR]
 RewriteCond %{HTTP_USER_AGENT} (ClaudeBot|GPTBot|ChatGPT|Anthropic|PerplexityBot|Perplexity|Cohere|DeepSeek|Google-Extended) [NC]
 RewriteRule ^$ /llms.txt [L]
 
+# 2b. Capture real visitor telemetry when sLogbog or gravity-wizards pages embed /assets/* images
+RewriteCond %{HTTP_REFERER} ^https?://([a-z0-9\-]+\.)*(slogbog\.com|slogfrog\.com|gravitywizards\.com|gpada\.org)(/|$) [NC]
+RewriteRule ^assets/([A-Za-z0-9_\-\.]+\.(?:gif|png|svg|webp))$ /visitors/telemetry.php?action=asset&file=$1 [L,QSA]
+
 # 3. Redirect missing legacy /is23pbHL/ to home & friendly aliases for UCP/GwCrm
 Redirect 301 /is23pbHL/ /
 Redirect 301 /is23pbHL /

@@ -1754,14 +1754,23 @@
           return;
         }
         const c = recentArrivals[arrivalIdx % recentArrivals.length];
-        el.textContent = `${c.flag || '🌐'} ${c.city} → ${c.table} • ${activeCount} active • Tilt: ${liveTiltStr}°`;
+        el.textContent = `${c.siteBadge || '🎩'} ${c.flag || '🌐'} ${c.city} → ${c.table} • ${activeCount} active • Tilt: ${liveTiltStr}°`;
+      }
+      function hexRgb(hex) {
+        const h = String(hex || '#f59e0b').replace('#', '');
+        if (h.length !== 6) return '245, 158, 11';
+        return `${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)}`;
       }
       async function fetchHomeTelemetry(recordHit = false) {
         try {
           const res = await fetch('/visitors/telemetry.php', {
             method: recordHit ? 'POST' : 'GET',
             headers: recordHit ? { 'Content-Type': 'application/json' } : {},
-            body: recordHit ? JSON.stringify({ path: '/' }) : undefined,
+            body: recordHit ? JSON.stringify({
+              host: window.location.hostname || 'twisted23.com',
+              path: '/',
+              referrer: document.referrer || ''
+            }) : undefined,
             cache: 'no-store'
           });
           if (!res.ok) return;
@@ -1769,13 +1778,13 @@
           if (!data || !data.ok) return;
           liveLocations = Array.isArray(data.activeLocations) ? data.activeLocations : [];
           recentArrivals = Array.isArray(data.recentArrivals) ? data.recentArrivals : [];
-          activeCount = data.activeSessions || 0;
+          activeCount = data.combinedUniverseActive || data.activeSessions || 0;
           unique24h = data.unique24h || 0;
           if (recentArrivals.length > 0 && recentArrivals[0].ts > lastSeenTs) {
             lastSeenTs = recentArrivals[0].ts;
             const n = recentArrivals[0];
             if (typeof n.lat === 'number' && typeof n.lon === 'number') {
-              pings.push({ lat: n.lat, lon: n.lon, rad: 0, max: 20 });
+              pings.push({ lat: n.lat, lon: n.lon, rad: 0, max: 20, color: n.siteColor || '#f59e0b' });
             }
           }
           arrivalIdx = 0;
@@ -1824,17 +1833,17 @@
         gCtx.fillStyle = sp;
         gCtx.fill();
         gCtx.lineWidth = 1.5;
-        gCtx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+        gCtx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
         gCtx.stroke();
         gCtx.clip();
 
         land.forEach(pt => {
           const p = proj(pt.lat, pt.lon);
           if (p.visible && p.z > 0) {
-            const alpha = Math.max(0.2, (p.z / r) * 0.9);
+            const alpha = Math.max(0.18, (p.z / r) * 0.65);
             gCtx.beginPath();
             gCtx.arc(p.x, p.y, 1.3, 0, Math.PI * 2);
-            gCtx.fillStyle = `rgba(56, 189, 248, ${alpha})`;
+            gCtx.fillStyle = `rgba(148, 163, 184, ${alpha})`;
             gCtx.fill();
           }
         });
@@ -1842,10 +1851,18 @@
           if (typeof loc.lat !== 'number' || typeof loc.lon !== 'number') return;
           const pt = proj(loc.lat, loc.lon);
           if (pt.visible && pt.z > 0) {
+            const pinColor = loc.siteColor || '#f59e0b';
             gCtx.beginPath();
-            gCtx.arc(pt.x, pt.y, loc.isActive ? 3.2 : 2.5, 0, Math.PI * 2);
-            gCtx.fillStyle = loc.isActive ? '#10b981' : '#f59e0b';
+            gCtx.arc(pt.x, pt.y, loc.isActive ? 3.3 : 2.6, 0, Math.PI * 2);
+            gCtx.fillStyle = pinColor;
             gCtx.fill();
+            if (loc.isActive) {
+              gCtx.beginPath();
+              gCtx.arc(pt.x, pt.y, 4.6, 0, Math.PI * 2);
+              gCtx.strokeStyle = `rgba(${hexRgb(pinColor)}, 0.55)`;
+              gCtx.lineWidth = 1.1;
+              gCtx.stroke();
+            }
           }
         });
         for (let i = pings.length - 1; i >= 0; i--) {
@@ -1856,7 +1873,7 @@
           if (pt.visible && pt.z > 0 && alpha > 0) {
             gCtx.beginPath();
             gCtx.arc(pt.x, pt.y, ping.rad, 0, Math.PI * 2);
-            gCtx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
+            gCtx.strokeStyle = `rgba(${hexRgb(ping.color)}, ${alpha})`;
             gCtx.lineWidth = 1.8;
             gCtx.stroke();
           }
