@@ -343,6 +343,14 @@ async function refresh() {
       badge.textContent = 'Dry-Run / PHP Mail Mode';
       badge.className = 'status-pill status-warn';
     }
+    const dsBtn = $('#btn-daily-summary');
+    if (dsBtn && status.dailySummary) {
+      const ds = status.dailySummary;
+      dsBtn.textContent = ds.sentToday ? '📅 4:11 PM Summary ✓' : '📅 4:11 PM Summary';
+      dsBtn.title = ds.sentToday
+        ? `Sent today (${ds.lastSentAk || ds.todayDateAk}) to ${ds.recipient}`
+        : `Scheduled daily at 4:11 PM AK (${ds.timezone}) → ${ds.recipient} (1 credit/day)`;
+    }
     renderMetrics();
     renderContacts();
     renderDerbies();
@@ -927,6 +935,59 @@ function openSendBatchDispatcher(contacts) {
       $('#modal-backdrop').hidden = true;
     });
   }
+}
+
+const dailySummaryBtnEl = $('#btn-daily-summary');
+if (dailySummaryBtnEl) {
+  dailySummaryBtnEl.addEventListener('click', async () => {
+    try {
+      const preview = await api('api.php?action=daily_summary_preview');
+      const sched = preview.schedule || {};
+      const sentToday = !!sched.sentToday;
+      const html = `
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.83rem;display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+              <strong>📅 Daily 4:11 PM Alaska Time Digest</strong>
+              <span class="status-pill ${sentToday ? 'status-ok' : 'status-info'}">
+                ${sentToday ? `✓ Sent Today (${escapeHtml(sched.lastSentAk || sched.todayDateAk)})` : `⏰ Next Auto-Send: ${escapeHtml(sched.nextScheduledLabel || '4:11 PM AK')}`}
+              </span>
+            </div>
+            <div><strong>Recipient:</strong> <code>${escapeHtml(preview.to || 'botchee@icloud.com')}</code> <span style="color:var(--ok-text);font-weight:600;">(Strictly 1 email credit/day · Zero BCC)</span></div>
+            <div><strong>Current AK Clock:</strong> <code>${escapeHtml(sched.nowAk || '')}</code> (${escapeHtml(sched.timezone || 'America/Anchorage')})</div>
+            <div><strong>Subject:</strong> ${escapeHtml(preview.subject || '')}</div>
+          </div>
+          <div class="preview-block" style="margin:0;">
+            <pre style="max-height:340px;overflow:auto;">${escapeHtml(preview.text || '')}</pre>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-top:4px;">
+            <span style="font-size:0.76rem;color:var(--muted);">Locked to max 1 summary email per Anchorage calendar day.</span>
+            <button id="btn-send-daily-summary-now" class="btn ${sentToday ? 'btn-secondary' : 'btn-primary'} btn-sm" type="button" ${sentToday ? 'disabled' : ''}>
+              ${sentToday ? '✓ Already Dispatched Today' : '✉ Send Today\'s Summary Early (1 credit)'}
+            </button>
+          </div>
+        </div>
+      `;
+      showModal('Daily 4:11 PM GwCrm Summary (Dry-Run Preview)', html);
+      const sendNowBtn = $('#btn-send-daily-summary-now');
+      if (sendNowBtn && !sentToday) {
+        sendNowBtn.addEventListener('click', async () => {
+          sendNowBtn.disabled = true;
+          sendNowBtn.textContent = 'Dispatching 1-credit summary...';
+          try {
+            const res = await api('api.php?action=daily_summary_send_now', { method: 'POST', body: '{}' });
+            sendNowBtn.textContent = res.status === 'already_sent_today' ? '✓ Already Sent Today' : '✓ Summary Sent to iCloud!';
+            await refresh();
+          } catch (err) {
+            sendNowBtn.disabled = false;
+            sendNowBtn.textContent = 'Failed: ' + err.message;
+          }
+        });
+      }
+    } catch (err) {
+      showModal('Daily Summary Error', `<p class="status-pill status-warn">${escapeHtml(err.message)}</p>`);
+    }
+  });
 }
 
 $('#btn-dry-run-2').addEventListener('click', async () => {

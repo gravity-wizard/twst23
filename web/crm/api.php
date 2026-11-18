@@ -66,7 +66,10 @@ function count_recent_sent_stats(string $logPath, int $windowSeconds = 86400): a
         if (!is_array($row) || empty($row['sent_at'])) continue;
         $ts = strtotime((string)$row['sent_at']);
         if ($ts !== false && $ts >= $cutoff) {
-            $pitches++;
+            $isSummary = (($row['kind'] ?? '') === 'daily_summary' || (int)($row['step'] ?? 1) === 0);
+            if (!$isSummary) {
+                $pitches++;
+            }
             // Legacy entries prior to Zero-BCC policy did not log recipient_credits and used ~5 credits/pitch
             $credits += isset($row['recipient_credits']) ? max(1, (int)$row['recipient_credits']) : 5;
         }
@@ -349,18 +352,50 @@ function classify_inbound_message(string $fromEmail, string $fromName, string $s
 }
 
 require_once dirname(__DIR__) . '/auth/guard.php';
+require_once __DIR__ . '/daily_summary.php';
 
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
-// Inbound server-to-server mail webhooks authenticate via webhook payload/signature;
+// Inbound server-to-server mail webhooks & scheduled 4:11 PM summary cron authenticate via dedicated tokens;
 // all interactive GwCrm endpoints require Founder / Administrator session.
 $authCtx = null;
-if (!in_array($action, ['webhooks_resend', 'webhooks_hostinger'], true)) {
+if (!in_array($action, ['webhooks_resend', 'webhooks_hostinger', 'cron_daily_summary'], true)) {
     $authCtx = tw23_require_admin_json();
 }
 
+if ($action === 'cron_daily_summary' && in_array($method, ['GET', 'POST'], true)) {
+    $dsCfg = gwcrm_ds_config(__DIR__);
+    $providedToken = trim((string)($_SERVER['HTTP_X_GWCRM_CRON_TOKEN'] ?? ($_GET['token'] ?? '')));
+    if ($providedToken === '' || !hash_equals($dsCfg['cron_token'], $providedToken)) {
+        http_response_code(403);
+        echo json_encode(['ok' => false, 'error' => 'Invalid cron token']);
+        exit;
+    }
+    $res = gwcrm_ds_maybe_send(__DIR__, false, false);
+    if (empty($res['ok'])) {
+        http_response_code(502);
+    }
+    echo json_encode($res);
+    exit;
+}
+
+if ($action === 'daily_summary_preview' && $method === 'GET') {
+    echo json_encode(gwcrm_ds_maybe_send(__DIR__, true, false));
+    exit;
+}
+
+if ($action === 'daily_summary_send_now' && $method === 'POST') {
+    $res = gwcrm_ds_maybe_send(__DIR__, false, true);
+    if (empty($res['ok'])) {
+        http_response_code(502);
+    }
+    echo json_encode($res);
+    exit;
+}
+
 if ($action === 'status' && $method === 'GET') {
+    gwcrm_ds_fast_tick(__DIR__);
     $key = trim((string)(getenv('RESEND_API_KEY') ?: ''));
     $resendConfigured = ($key !== '' && !str_contains($key, 'your_actual_key'));
     $hostingerConfigured = ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '');
@@ -375,6 +410,7 @@ if ($action === 'status' && $method === 'GET') {
         'pitchesLast24h' => $quotaStats['pitches_24h'],
         'creditsLast24hEst' => $quotaStats['credits_24h_est'],
         'dailyCreditLimit' => 100,
+        'dailySummary' => gwcrm_ds_status(__DIR__),
         'authUser' => $authCtx ? tw23_sanitize_user($authCtx['user'], true) : null,
     ]);
     exit;

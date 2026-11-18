@@ -28,6 +28,34 @@ if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) === 'OPTIONS') {
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
+register_shutdown_function(static function (): void {
+    try {
+        $tz = new DateTimeZone('America/Anchorage');
+        $nowAk = new DateTimeImmutable('now', $tz);
+        $h = (int)$nowAk->format('G');
+        $m = (int)$nowAk->format('i');
+        if ($h < 16 || ($h === 16 && $m < 11)) {
+            return;
+        }
+        $crmDir = dirname(__DIR__) . '/crm';
+        $dsFile = $crmDir . '/daily_summary.php';
+        if (!is_file($dsFile)) return;
+        $stateFile = $crmDir . '/data/daily_summary_state.json';
+        if (is_file($stateFile)) {
+            $state = json_decode((string)@file_get_contents($stateFile), true);
+            if (is_array($state) && (($state['last_sent_date'] ?? '') === $nowAk->format('Y-m-d'))) {
+                return;
+            }
+        }
+        if (function_exists('fastcgi_finish_request')) {
+            @fastcgi_finish_request();
+        }
+        require_once $dsFile;
+        gwcrm_ds_fast_tick($crmDir);
+    } catch (Throwable $e) {
+    }
+});
+
 function site_catalog(): array {
     return [
         'twisted23' => [

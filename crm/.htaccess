@@ -1,5 +1,5 @@
 # Protect data, environment config, and dotfiles from direct web access
-<FilesMatch "^(\.env|\.env\.example|config\.php)$">
+<FilesMatch "^(\.env|\.env\.example|config\.php|daily_summary\.php)$">
   Require all denied
 </FilesMatch>
 
