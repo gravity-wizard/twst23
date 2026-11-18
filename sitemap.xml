@@ -108,4 +108,16 @@
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
+  <url>
+    <loc>https://twisted23.com/fobb-emoji/</loc>
+    <lastmod>2026-11-18T23:25:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://twisted23.com/swift-graphics/</loc>
+    <lastmod>2026-11-18T23:25:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

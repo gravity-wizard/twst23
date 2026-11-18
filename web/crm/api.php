@@ -206,6 +206,8 @@ function read_data(string $path): array {
         'contacts' => $mergedContacts,
         'derbies' => !empty($runtime['derbies']) ? $runtime['derbies'] : ($seed['derbies'] ?? []),
         'triage' => !empty($runtime['triage']) ? $runtime['triage'] : ($seed['triage'] ?? []),
+        'bom' => !empty($runtime['bom']) ? $runtime['bom'] : ($seed['bom'] ?? []),
+        'bom_ideas' => !empty($runtime['bom_ideas']) ? $runtime['bom_ideas'] : ($seed['bom_ideas'] ?? []),
     ];
 }
 
@@ -1020,6 +1022,60 @@ if ($action === 'triage' && $method === 'POST') {
     write_data($DATA_FILE, $data);
     http_response_code(201);
     echo json_encode($item);
+    exit;
+}
+
+if ($action === 'bom' && $method === 'POST') {
+    $body = json_body();
+    $data = read_data($DATA_FILE);
+    if (!isset($data['bom']) || !is_array($data['bom'])) {
+        $data['bom'] = [];
+    }
+    $item = [
+        'id' => 'BOM-U' . str_pad((string)(count($data['bom']) + 1), 2, '0', STR_PAD_LEFT),
+        'assembly' => trim((string)($body['assembly'] ?? 'Launcher Wireless RF Trigger')),
+        'part_no' => trim((string)($body['part_no'] ?? 'CUSTOM')),
+        'name' => trim((string)($body['name'] ?? 'Untitled Part')),
+        'qty_per_launcher' => max(0, (float)($body['qty_per_launcher'] ?? 0)),
+        'qty_per_fobb_kit' => max(0, (float)($body['qty_per_fobb_kit'] ?? 0)),
+        'unit_cost_usd' => max(0, round((float)($body['unit_cost_usd'] ?? 0), 2)),
+        'retail_sku_usd' => ($body['retail_sku_usd'] ?? '') !== '' && $body['retail_sku_usd'] !== null ? round((float)$body['retail_sku_usd'], 2) : null,
+        'supplier_url' => trim((string)($body['supplier_url'] ?? '')),
+        'status' => trim((string)($body['status'] ?? 'Planned')),
+        'spec_notes' => trim((string)($body['spec_notes'] ?? '')),
+    ];
+    $data['bom'][] = $item;
+    write_data($DATA_FILE, $data);
+    http_response_code(201);
+    echo json_encode($item);
+    exit;
+}
+
+if ($action === 'bom_item' && $method === 'PATCH') {
+    $id = trim((string)($_GET['id'] ?? ''));
+    if ($id === '') fail(400, 'Missing BOM id');
+    $body = json_body();
+    $data = read_data($DATA_FILE);
+    $found = null;
+    foreach ($data['bom'] as &$b) {
+        if (($b['id'] ?? '') === $id) {
+            foreach (['assembly', 'part_no', 'name', 'supplier_url', 'status', 'spec_notes'] as $strField) {
+                if (array_key_exists($strField, $body)) $b[$strField] = trim((string)$body[$strField]);
+            }
+            foreach (['qty_per_launcher', 'qty_per_fobb_kit', 'unit_cost_usd'] as $numField) {
+                if (array_key_exists($numField, $body)) $b[$numField] = max(0, round((float)$body[$numField], 2));
+            }
+            if (array_key_exists('retail_sku_usd', $body)) {
+                $b['retail_sku_usd'] = ($body['retail_sku_usd'] === '' || $body['retail_sku_usd'] === null) ? null : round((float)$body['retail_sku_usd'], 2);
+            }
+            $found = $b;
+            break;
+        }
+    }
+    unset($b);
+    if (!$found) fail(404, 'BOM item not found');
+    write_data($DATA_FILE, $data);
+    echo json_encode($found);
     exit;
 }
 

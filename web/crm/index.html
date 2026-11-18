@@ -136,6 +136,7 @@
 
     <nav class="tabs" role="tablist" aria-label="Coordination Roles">
       <button class="tab active" role="tab" aria-selected="true" data-tab="outreach" id="tab-outreach">Press &amp; Outreach</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="bom" id="tab-bom"><img src="/fobb-emoji/fobb-emoji-24.png" alt="" style="width:16px;height:16px;vertical-align:-3px;margin-right:4px;" />BOM &amp; Launcher Lab</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="derby" id="tab-derby">Derby &amp; GPADA Ops</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="triage" id="tab-triage">Puzzle &amp; Bug Triage</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="setup" id="tab-setup">DNS &amp; Mail Setup</button>
@@ -177,6 +178,92 @@
           <tbody id="contacts-tbody"></tbody>
         </table>
       </div>
+    </section>
+
+    <!-- BOM & LAUNCHER LAB TAB -->
+    <section id="panel-bom" class="panel" role="tabpanel" aria-labelledby="tab-bom" hidden>
+      <div class="info-card" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+          <div>
+            <span class="mono-tag">GRAVITY POWERED LAUNCHER 2.0 + FOBB HARDWARE BOM</span>
+            <h2 style="margin:6px 0 4px;font-family:var(--font-display);font-size:1.2rem;">
+              <img src="/fobb-emoji/keyfob-rp11-32.png" alt="" style="width:22px;height:22px;vertical-align:-4px;" />
+              315MHz Wireless Key-Fob Trigger &rarr;
+              <img src="/fobb-emoji/fobb-emoji-32.png" alt="" style="width:22px;height:22px;vertical-align:-4px;" />
+              Flying Object Built to Bounce
+            </h2>
+            <p style="margin:0;font-size:0.84rem;color:var(--muted);">
+              Interactive Bill of Materials &amp; batch cost calculator for cordless gymnasium Gravity Launchers (<a href="https://www.ebay.com/itm/350965353954" target="_blank" rel="noopener">MSD RP11 eBay #350965353954</a>) and verified Gravity Wizards FOBB SKUs.
+            </p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="/fobb-emoji/" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none;">✨ FOBB Emoji &amp; Sticker Pack ↗</a>
+            <button id="btn-export-bom-csv" class="btn btn-secondary btn-sm" type="button">⬇ Download BOM CSV</button>
+            <button id="btn-add-bom" class="btn btn-primary btn-sm" type="button">+ Add BOM Part</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+          <label class="field" style="margin:0;">
+            <span>Launcher Units to Build</span>
+            <input id="bom-qty-launchers" class="input" type="number" min="0" max="500" value="2" />
+          </label>
+          <label class="field" style="margin:0;">
+            <span>FOBB Basic Combo Kits</span>
+            <input id="bom-qty-kits" class="input" type="number" min="0" max="5000" value="80" />
+          </label>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;">
+            <span class="metric-label">1&times; Cordless Launcher</span>
+            <strong id="bom-unit-launcher" style="font-family:var(--font-display);font-size:1.3rem;">$0.00</strong>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;">
+            <span class="metric-label">1&times; Combo Kit COGS / Margin</span>
+            <strong id="bom-unit-kit" style="font-family:var(--font-display);font-size:1.3rem;">$0.00</strong>
+            <div id="bom-kit-margin" style="font-size:0.74rem;color:var(--ok-text);font-weight:600;"></div>
+          </div>
+          <div style="background:var(--ok-bg);border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;">
+            <span class="metric-label" style="color:var(--ok-text);">Total Batch Build Cost</span>
+            <strong id="bom-batch-total" style="font-family:var(--font-display);font-size:1.35rem;color:var(--ok-text);">$0.00</strong>
+            <div id="bom-batch-retail" style="font-size:0.74rem;color:var(--muted);"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <span style="font-size:0.76rem;color:var(--muted);font-weight:600;">Presets:</span>
+            <button type="button" class="btn btn-secondary btn-sm" data-bom-preset="1,1">1&times; Prototype</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-bom-preset="1,23">1&times; Launcher + 23 Stock</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-bom-preset="2,80">APHEA (2 Launchers + 80 Kits)</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-bom-preset="4,100">Quad-Derby (4 + 100 Kits)</button>
+          </div>
+          <select id="filter-bom-assembly" class="select" style="min-width:230px;">
+            <option value="all">All 4 Sub-Assemblies</option>
+            <option value="Launcher Wireless RF Trigger">A. Launcher Wireless RF Trigger (RP11)</option>
+            <option value="Launcher Counterweight & Guide-Board">B. Counterweight &amp; Hinged Guide-Board</option>
+            <option value="FOBB Airframe (Flying Object Built to Bounce)">C. FOBB Airframe (#761022 / #761082)</option>
+            <option value="Wizard's Basic Combo Kit (#761032c/b/p/g)">D. Wizard&rsquo;s Basic Combo Kit ($19.99)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:18px;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID / Part #</th>
+              <th>Sub-Assembly &amp; Component</th>
+              <th>Qty (L / Kit)</th>
+              <th>Est. Unit</th>
+              <th>Batch Ext.</th>
+              <th>Status / Action</th>
+            </tr>
+          </thead>
+          <tbody id="bom-tbody"></tbody>
+        </table>
+      </div>
+
+      <h3 style="font-family:var(--font-display);margin:8px 0 10px;">💡 Recommended Engineering &amp; Gymnasium Derby Upgrades</h3>
+      <div id="bom-ideas-list" class="setup-grid"></div>
     </section>
 
     <!-- DERBY OPS TAB -->
@@ -307,6 +394,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>

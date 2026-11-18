@@ -1147,5 +1147,281 @@
             "reporter": "Internal",
             "notes": "Add brief 1-line hint for TF = Top * 10 + Front notation."
         }
+    ],
+    "bom": [
+        {
+            "id": "BOM-L01",
+            "assembly": "Launcher Wireless RF Trigger",
+            "part_no": "MSD-RP11 (eBay #350965353954)",
+            "name": "12V 15A 315MHz Dry-Contact Momentary Wireless Relay + 2 Key Fobs",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 14.95,
+            "retail_sku_usd": null,
+            "supplier_url": "https://www.ebay.com/itm/350965353954",
+            "status": "Verified Spec",
+            "spec_notes": "MSD INC Model RP11: 0V dry-contact momentary relay (15A @ 12-30VDC), 4.5mA standby, min 500mA 12V input, 2x A27-battery key fobs, 50ft+ range."
+        },
+        {
+            "id": "BOM-L02",
+            "assembly": "Launcher Wireless RF Trigger",
+            "part_no": "SOL-12V-DROP25",
+            "name": "12V DC Electromagnetic Drop-Latch / Push-Pull Release Solenoid",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 11.5,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Recommended",
+            "spec_notes": "12V DC 1.2A-2.0A momentary pull, spring-return steel latch pin, >=25 lb shear hold for counterweight trigger loop (4x for Quad-Rail Launcher 2.0)."
+        },
+        {
+            "id": "BOM-L03",
+            "assembly": "Launcher Wireless RF Trigger",
+            "part_no": "1N5408-SNUB",
+            "name": "1N5408 Flyback Snubber Diode + 0.1uF Ceramic Arc Suppressor",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 0.45,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Critical Upgrade",
+            "spec_notes": "Wired reverse-biased across 12V solenoid terminals to clamp inductive voltage kickback so RP11 dry-contact relay contacts never pit or weld shut."
+        },
+        {
+            "id": "BOM-L04",
+            "assembly": "Launcher Wireless RF Trigger",
+            "part_no": "BAT-LFP-12V3A",
+            "name": "12V 3.2Ah LiFePO4 Rechargeable Field Battery + 5A Inline Blade Fuse",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 22.0,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Recommended",
+            "spec_notes": "Lightweight LiFePO4 with built-in BMS; delivers 2,000+ cordless momentary launches per charge—zero extension-cord trip hazards in school gyms."
+        },
+        {
+            "id": "BOM-L05",
+            "assembly": "Launcher Wireless RF Trigger",
+            "part_no": "RSO-ARM-SW2",
+            "name": "Illuminated Key-Arm Safety Interlock + Manual Push-to-Fire Button + 2x Spare A27 Cells",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 9.95,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Recommended",
+            "spec_notes": "2-step kid-safe Range Safety Officer (RSO) arming switch + local manual fire button + Velcro spare A27 12V fob batteries inside lid."
+        },
+        {
+            "id": "BOM-L06",
+            "assembly": "Launcher Wireless RF Trigger",
+            "part_no": "ENC-IP65-CLR",
+            "name": "Clear-Lid Polycarbonate Trigger Enclosure + Anderson Powerpole / XT60 Leads",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 9.25,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Recommended",
+            "spec_notes": "See-through STEAM lid lets students watch the RP11 relay, status LED, and flyback circuit operate in real time."
+        },
+        {
+            "id": "BOM-M01",
+            "assembly": "Launcher Counterweight & Guide-Board",
+            "part_no": "GW-RAIL-2040F",
+            "name": "Folding 6ft (2x3ft Hinged) 2040 V-Slot Aluminum Guide-Board + Delrin Launch Shuttle",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 34.0,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Recommended",
+            "spec_notes": "Portable hinged guide-board packs into car trunk/duffel; sets up in gymnasiums, high-ceiling hallways, or outdoor fields in under 3 minutes."
+        },
+        {
+            "id": "BOM-M02",
+            "assembly": "Launcher Counterweight & Guide-Board",
+            "part_no": "PUL-50MM-2X",
+            "name": "Sealed Ball-Bearing Overhead Pulleys (2:1 Velocity-Multiplying Compound Rig)",
+            "qty_per_launcher": 2,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 8.4,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Verified Spec",
+            "spec_notes": "Reverse 2:1 compound pulley multiplies counterweight drop into 2x shuttle velocity—launching up to 4 FOBBs twice as far (Launcher 2.0)."
+        },
+        {
+            "id": "BOM-M03",
+            "assembly": "Launcher Counterweight & Guide-Board",
+            "part_no": "CORD-UHMWPE-35",
+            "name": "2.2mm Braided UHMWPE (Dyneema/Spectra) Zero-Stretch Launch Cord (35 ft)",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 7.9,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Recommended",
+            "spec_notes": "600+ lb breaking strength with near-zero stretch and ultra-low line mass so maximum potential energy transfers into the FOBB."
+        },
+        {
+            "id": "BOM-M04",
+            "assembly": "Launcher Counterweight & Guide-Board",
+            "part_no": "CW-BAG-MOD5",
+            "name": "Ship-Empty Modular Counterweight Carrier Bag (Fill On-Site w/ Water Jugs or Sand)",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 11.0,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Shipping Saver",
+            "spec_notes": "Eliminates 20+ lbs of freight shipping cost; schools fill locally with 1-gal water jugs (8.34 lb each) or sandbags for tunable launch energy."
+        },
+        {
+            "id": "BOM-M05",
+            "assembly": "Launcher Counterweight & Guide-Board",
+            "part_no": "PAD-GYM-EPDM",
+            "name": "Gym-Safe High-Density EPDM / Sorbothane Counterweight Arrestor Pad + Rigging Carabiners",
+            "qty_per_launcher": 1,
+            "qty_per_fobb_kit": 0,
+            "unit_cost_usd": 18.5,
+            "retail_sku_usd": null,
+            "supplier_url": "",
+            "status": "Gym Floor Safe",
+            "spec_notes": "Protects polished school basketball courts + 2x auto-locking carabiners & sling for gym rafters, basketball hoops, or 12ft tripod."
+        },
+        {
+            "id": "BOM-F01",
+            "assembly": "FOBB Airframe (Flying Object Built to Bounce)",
+            "part_no": "#761022 (Bare Bone)",
+            "name": "Transparent Slotted Polycarbonate/PETG Fuselage + Official GPADA Registration Tag",
+            "qty_per_launcher": 0,
+            "qty_per_fobb_kit": 1,
+            "unit_cost_usd": 1.85,
+            "retail_sku_usd": 7.99,
+            "supplier_url": "https://gravitywizards.com",
+            "status": "23 In Stock",
+            "spec_notes": "Crystal-clear slotted body tube showcasing internal CG ballast; retail #761022 Bare Bone ($7.99) includes mounted rubber nosecone."
+        },
+        {
+            "id": "BOM-F02",
+            "assembly": "FOBB Airframe (Flying Object Built to Bounce)",
+            "part_no": "GW-NOSE-SOFT",
+            "name": "Indoor-Safe Soft Black Elastomer Bounce Nosecone + Threaded Collar & Screw",
+            "qty_per_launcher": 0,
+            "qty_per_fobb_kit": 1,
+            "unit_cost_usd": 1.15,
+            "retail_sku_usd": null,
+            "supplier_url": "https://gravitywizards.com",
+            "status": "23 In Stock",
+            "spec_notes": "High-rebound non-marring safety tip engineered for gymnasiums, high-ceiling hallways, and Bounce Wizard scoring."
+        },
+        {
+            "id": "BOM-F03",
+            "assembly": "FOBB Airframe (Flying Object Built to Bounce)",
+            "part_no": "#761035 (Weight-Set)",
+            "name": "1/2-inch Chrome Steel Ball Bearing + Hex Coupling Nut + 2x Machine Screws",
+            "qty_per_launcher": 0,
+            "qty_per_fobb_kit": 1,
+            "unit_cost_usd": 0.85,
+            "retail_sku_usd": 2.99,
+            "supplier_url": "https://gravitywizards.com",
+            "status": "23 In Stock",
+            "spec_notes": "Tunable forward/aft Center-of-Gravity (CG) ballast; pre-installed in #761082 Heavy Bone ($10.99) or standalone #761035 ($2.99)."
+        },
+        {
+            "id": "BOM-F04",
+            "assembly": "FOBB Airframe (Flying Object Built to Bounce)",
+            "part_no": "GW-FIN-PETG",
+            "name": "Custom Copolyester Fin Sheet Stock (Cyan / Emerald / Clear) + 10cm Slo-Mo Speed Strip",
+            "qty_per_launcher": 0,
+            "qty_per_fobb_kit": 1,
+            "unit_cost_usd": 0.65,
+            "retail_sku_usd": null,
+            "supplier_url": "https://gravitywizards.com",
+            "status": "23 In Stock",
+            "spec_notes": "Student-shaped aerodynamic fins for Flight/Bounce/Art Wizard tuning."
+        },
+        {
+            "id": "BOM-K01",
+            "assembly": "Wizard's Basic Combo Kit (#761032c/b/p/g)",
+            "part_no": "#36-761032c/b/p/g",
+            "name": "Latching Storage Pit Bin (Clear, Blue, Pink, or Green)",
+            "qty_per_launcher": 0,
+            "qty_per_fobb_kit": 1,
+            "unit_cost_usd": 1.45,
+            "retail_sku_usd": 2.99,
+            "supplier_url": "https://gravitywizards.com",
+            "status": "23/Color In Stock",
+            "spec_notes": "Packs complete 680g Wizard's Basic Combo Kit ($19.99 retail across Clear #761032c, Blue #761033b, Pink #761034p, Green #761034g)."
+        },
+        {
+            "id": "BOM-K02",
+            "assembly": "Wizard's Basic Combo Kit (#761032c/b/p/g)",
+            "part_no": "#767133 (Wizard's Wrench)",
+            "name": "Wizard's Wrench — Bent Allen Key w/ Custom Hex Socket Adapter Tip",
+            "qty_per_launcher": 0,
+            "qty_per_fobb_kit": 1,
+            "unit_cost_usd": 0.95,
+            "retail_sku_usd": 2.99,
+            "supplier_url": "https://gravitywizards.com",
+            "status": "23 In Stock",
+            "spec_notes": "Sized for rapid pit installation/removal of rubber bounce nosecones and internal CG coupler fasteners."
+        },
+        {
+            "id": "BOM-K03",
+            "assembly": "Wizard's Basic Combo Kit (#761032c/b/p/g)",
+            "part_no": "#711036 (Diamond File)",
+            "name": "Red-Grip Fine Diamond Grit Fin Shaping & Slotting File",
+            "qty_per_launcher": 0,
+            "qty_per_fobb_kit": 1,
+            "unit_cost_usd": 0.9,
+            "retail_sku_usd": 2.99,
+            "supplier_url": "https://gravitywizards.com",
+            "status": "23 In Stock",
+            "spec_notes": "Smooths custom plastic fin profiles and fuselage slot tolerances."
+        },
+        {
+            "id": "BOM-K04",
+            "assembly": "Wizard's Basic Combo Kit (#761032c/b/p/g)",
+            "part_no": "#761036 (180° Protractor)",
+            "name": "Clear 0-180° Dual-Scale STEM Fin & Launch Angle Protractor + Fin Jig Card",
+            "qty_per_launcher": 0,
+            "qty_per_fobb_kit": 1,
+            "unit_cost_usd": 0.55,
+            "retail_sku_usd": 0.99,
+            "supplier_url": "https://gravitywizards.com",
+            "status": "23 In Stock",
+            "spec_notes": "Fits inside latching storage bin; logs fin cant degrees and launch rail angle for STEAM physics worksheets."
+        }
+    ],
+    "bom_ideas": [
+        {
+            "title": "1. Dual-Band 315MHz (Lane A) + 433MHz (Lane B) Head-to-Head Racing",
+            "tag": "RF Isolation",
+            "body": "MSD RP11 (eBay #350965353954) runs on 315MHz. Pair a 433MHz dry-contact twin on adjacent Lane B (color-coded Blue vs Green key fobs) so two kids can trigger side-by-side launches with zero RF cross-fire."
+        },
+        {
+            "title": "2. 1N5408 Flyback Diode Across 12V Release Solenoid",
+            "tag": "Relay Longevity",
+            "body": "A 12V release solenoid coils back 80-150V when released. Soldering a $0.45 1N5408 diode across the coil protects the RP11 dry-contact relay so it lasts 50,000+ cycles instead of welding shut."
+        },
+        {
+            "title": "3. Ship-Empty Water/Sand Counterweight Bag (Flat-Rate Mailer)",
+            "tag": "Freight Saver",
+            "body": "Shipping 20 lbs of iron across Alaska or the Lower 48 kills margins. Ship a 4-oz Cordura ballast dry-bag; schools drop in 1-to-3 gallon water jugs (8.34 lb/gal) on-site for exact, repeatable potential energy (E = mgh)!"
+        },
+        {
+            "title": "4. Smartphone 240fps Zebra-Tape Exit Velocity Strip",
+            "tag": "STEAM Physics",
+            "body": "Apply a 20cm black/white 2cm-checker calibration decal at the top of the folding guide-board. Any student's phone shooting slow-motion video calculates exact FOBB exit velocity (m/s) and pulley efficiency!"
+        },
+        {
+            "title": "5. Gym-Principal Approval Pack (Sorbothane Pad + RSO Key Switch)",
+            "tag": "Venue Safety",
+            "body": "Combining a non-marking EPDM/Sorbothane counterweight floor pad with a 2-step Range Safety Officer (RSO) key-arm switch + cordless 12V LiFePO4 battery makes school gymnasium & APHEA venue sign-off effortless."
+        }
     ]
 }

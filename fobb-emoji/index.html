@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOBB &amp; Wireless Key-Fob Emoji Vault — Gravity Wizards &amp; Twisted23</title>
+  <meta name="description" content="Official Spy high-res 3D FOBB (Flying Object Built to Bounce) &amp; 315MHz Key-Fob custom emojis, Apple iCloud Sticker PNGs, rich clipboard copy, and phpBB3 SLogBog smilie pack." />
+  <link rel="icon" type="image/png" href="/fobb-emoji/fobb-emoji-64.png" />
+  <style>
+    :root {
+      --bg: #0b1120;
+      --surface: #111827;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --emerald: #34d399;
+      --amber: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #172554 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 18px 64px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+      background: rgba(30, 41, 59, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+    @media (min-width: 760px) {
+      .hero { grid-template-columns: 1.25fr 0.95fr; align-items: center; }
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.32);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+    h1 {
+      margin: 10px 0 8px;
+      font-size: clamp(1.55rem, 3.2vw, 2.2rem);
+      line-height: 1.2;
+    }
+    .sub { color: var(--muted); margin: 0 0 16px; font-size: 0.96rem; }
+    .preview-stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .emoji-showcase {
+      background: repeating-conic-gradient(#1e293b 0% 25%, #0f172a 0% 50%) 50% / 20px 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .emoji-showcase.light-check {
+      background: repeating-conic-gradient(#f1f5f9 0% 25%, #e2e8f0 0% 50%) 50% / 20px 20px;
+      color: #0f172a;
+    }
+    .emoji-showcase img {
+      width: 136px;
+      height: 136px;
+      object-fit: contain;
+      -webkit-touch-callout: default;
+      user-select: auto;
+    }
+    .caption {
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: #1e293b;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.86rem;
+      padding: 9px 14px;
+      border-radius: 9px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+    }
+    .btn:hover { border-color: var(--cyan); background: #26354d; }
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+    .btn-emerald {
+      background: linear-gradient(135deg, #059669, #10b981);
+      border-color: #34d399;
+      color: #fff;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+    @media (min-width: 760px) {
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+    }
+    .card {
+      background: rgba(17, 24, 39, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 1.12rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .steps {
+      margin: 0;
+      padding-left: 20px;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+    .steps li { margin-bottom: 8px; }
+    .size-strip {
+      display: flex;
+      align-items: flex-end;
+      gap: 18px;
+      flex-wrap: wrap;
+      padding: 14px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+    .size-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .size-item:hover { color: var(--cyan); }
+    code.snip {
+      display: block;
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 9px 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.78rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+      margin: 6px 0 10px;
+    }
+    .toast {
+      margin-top: 10px;
+      font-size: 0.84rem;
+      color: var(--emerald);
+      min-height: 1.3em;
+      font-weight: 600;
+    }
+    .inline-demo {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.96rem;
+      margin-top: 12px;
+    }
+    .inline-demo img {
+      height: 1.35em;
+      width: 1.35em;
+      vertical-align: -0.25em;
+    }
+  </style>
+</head>
+<body>
+  <script src="/tw23-universe-bar.js" defer></script>
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <span class="badge">✨ Spy Custom Artwork · Ready for Apple Emoji &amp; SLogBog</span>
+        <h1>FOBB &amp; 315MHz Key-Fob Emoji Collection</h1>
+        <p class="sub">
+          Accurate transparent fuselage, 1/2&Prime; chrome ball-bearing + hex coupler CG weight, cyan/emerald fins &amp; soft black bounce nosecone—paired with the <strong>MSD RP11 315MHz Wireless Key Fob</strong> (<a href="https://www.ebay.com/itm/350965353954" target="_blank" rel="noopener" style="color:var(--cyan);">eBay #350965353954</a>) that fires Gravity Powered FOBB Launchers!
+        </p>
+
+        <div class="inline-demo">
+          Live inline sentence test: Press the wireless key fob
+          <img src="/fobb-emoji/keyfob-rp11-32.png" alt=":fob:" />
+          to launch four bouncing FOBBs
+          <img src="/fobb-emoji/fobb-emoji-32.png" alt=":fobb:" />
+          across the gymnasium!
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="btn-copy-png">📋 Copy FOBB PNG to Clipboard</button>
+          <button type="button" class="btn btn-emerald" id="btn-share-ios">📲 Send to iPhone / Mac Stickers</button>
+          <a class="btn" href="/fobb-emoji/fobb-diecut-sticker-618.png" download="FOBB-Apple-Sticker-618.png">⬇ Die-Cut Sticker (618px)</a>
+          <a class="btn" href="/fobb-emoji/slogbog-phpbb-fobb-smilies.zip" download>📦 SLogBog phpBB3 .pak Zip</a>
+        </div>
+        <div id="copy-toast" class="toast" aria-live="polite"></div>
+      </div>
+
+      <div class="preview-stage">
+        <div class="emoji-showcase light-check">
+          <img id="img-diecut" src="/fobb-emoji/fobb-diecut-sticker-618.png" alt="FOBB Die-Cut Apple Sticker (618x618)" />
+          <div class="caption">Kiss-Cut Apple Sticker<br/><span style="font-weight:400;font-size:0.72rem;">Best for iOS Long-Press!</span></div>
+        </div>
+        <div class="emoji-showcase">
+          <img id="img-fob" src="/fobb-emoji/keyfob-rp11-512.png" alt="315MHz Wireless Key Fob Emoji" />
+          <div class="caption">MSD RP11 Key Fob<br/><span style="font-weight:400;font-size:0.72rem;">315MHz Launcher Trigger</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <article class="card">
+        <h2>🍎 Fix: Add to Apple Emoji Keyboard (iPhone, iPad &amp; Mac)</h2>
+        <p style="font-size:0.85rem;color:var(--muted);margin-top:0;">
+          <strong>Why it was tricky before:</strong> Because a real FOBB has a <em>see-through polycarbonate tube</em>, Apple Photos&rsquo; automatic &ldquo;Lift Subject&rdquo; tries to erase the clear middle! Also, pasting Apple Inline Stickers into plain-text boxes turns them into <code>&#xFFFC;</code> (<code>U+FFFC</code>).
+        </p>
+        <ol class="steps">
+          <li><strong>Easiest iPhone/iPad 1-Tap:</strong> Long-press the <strong>Kiss-Cut Apple Sticker</strong> card above (white vinyl backing protects the clear tube!) &rarr; tap <strong>Add Sticker</strong> (or Save to Files).</li>
+          <li><strong>Guaranteed Zero-Crop Method (Messages):</strong> Tap <strong>⬇ Die-Cut Sticker (618px)</strong> &rarr; open Apple <strong>Messages</strong> &rarr; tap <strong>+</strong> &rarr; <strong>Stickers</strong> &rarr; tap <strong>+</strong> &rarr; pick the saved PNG.</li>
+          <li><strong>Type as an Emoji Anywhere:</strong> Open your normal Apple Emoji keyboard and swipe right to the <strong>left-most Recent / Stickers drawer</strong>—syncs via iCloud to your MacBook Air automatically!</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>🐸 Forum BBCode, HTML &amp; All Vector/PNG Sizes</h2>
+        <div class="size-strip">
+          <a class="size-item" href="/fobb-emoji/fobb-emoji-24.png" download>
+            <img src="/fobb-emoji/fobb-emoji-24.png" width="24" height="24" alt="24px" />
+            <span>24px</span>
+          </a>
+          <a class="size-item" href="/fobb-emoji/fobb-emoji-32.png" download>
+            <img src="/fobb-emoji/fobb-emoji-32.png" width="32" height="32" alt="32px" />
+            <span>32px</span>
+          </a>
+          <a class="size-item" href="/fobb-emoji/fobb-emoji-64.png" download>
+            <img src="/fobb-emoji/fobb-emoji-64.png" width="48" height="48" alt="64px" />
+            <span>64px</span>
+          </a>
+          <a class="size-item" href="/fobb-emoji/fobb-emoji-128.png" download>
+            <img src="/fobb-emoji/fobb-emoji-128.png" width="60" height="60" alt="128px" />
+            <span>128px</span>
+          </a>
+          <a class="size-item" href="/fobb-emoji/fobb-emoji-512.png" download>
+            <img src="/fobb-emoji/fobb-emoji-512.png" width="72" height="72" alt="512px" />
+            <span>512px Pure</span>
+          </a>
+          <a class="size-item" href="/fobb-emoji/fobb-emoji.svg" download>
+            <img src="/fobb-emoji/fobb-emoji.svg" width="54" height="54" alt="SVG" />
+            <span>Vector SVG</span>
+          </a>
+        </div>
+
+        <div style="margin-top:14px;font-size:0.82rem;color:var(--muted);font-weight:600;">phpBB / SLogBog Inline BBCode:</div>
+        <code class="snip" id="snip-bbcode">[img]https://www.twisted23.com/fobb-emoji/fobb-emoji-32.png[/img]</code>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn" data-copy="[img]https://www.twisted23.com/fobb-emoji/fobb-emoji-32.png[/img]">Copy :fobb: BBCode</button>
+          <button type="button" class="btn" data-copy="[img]https://www.twisted23.com/fobb-emoji/keyfob-rp11-32.png[/img]">Copy :fob: BBCode</button>
+          <button type="button" class="btn" data-copy='<img src="https://www.twisted23.com/fobb-emoji/fobb-emoji-32.png" alt="FOBB" style="height:1.3em;vertical-align:-0.25em;" />'>Copy Inline HTML</button>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <script>
+    const toast = document.getElementById('copy-toast');
+    function notify(msg) {
+      toast.textContent = msg;
+      clearTimeout(window.__fobbToast);
+      window.__fobbToast = setTimeout(() => { toast.textContent = ''; }, 4200);
+    }
+
+    document.getElementById('btn-copy-png').addEventListener('click', async () => {
+      try {
+        const res = await fetch('/fobb-emoji/fobb-diecut-sticker-618.png');
+        const blob = await res.blob();
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        notify('✓ Transparent FOBB Sticker copied! Press Cmd+V / Paste in Mail, Messages, or Notes.');
+      } catch (err) {
+        notify('Tip: Right-click or long-press the FOBB image above -> Copy Image / Add Sticker.');
+      }
+    });
+
+    document.getElementById('btn-share-ios').addEventListener('click', async () => {
+      try {
+        const res = await fetch('/fobb-emoji/fobb-diecut-sticker-618.png');
+        const blob = await res.blob();
+        const file = new File([blob], 'FOBB-Sticker.png', { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'FOBB Custom Emoji Sticker',
+            text: 'Flying Object Built to Bounce — Save to Files or Stickers!',
+            files: [file]
+          });
+          notify('✓ Opened Apple Share Sheet!');
+          return;
+        }
+      } catch (_) {}
+      const a = document.createElement('a');
+      a.href = '/fobb-emoji/fobb-diecut-sticker-618.png';
+      a.download = 'FOBB-Sticker-618.png';
+      a.click();
+      notify('✓ Downloaded FOBB-Sticker-618.png — drop into Apple Messages -> Stickers!');
+    });
+
+    document.querySelectorAll('[data-copy]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copy);
+          notify('✓ Copied snippet to clipboard!');
+        } catch (_) {}
+      });
+    });
+  </script>
+</body>
+</html>

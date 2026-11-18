@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="MSD RP11 315MHz Wireless Launcher Key Fob Emoji">
+  <defs>
+    <linearGradient id="fobBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="48%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="chromeFrame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="45%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="fireBtn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EF4444"/>
+      <stop offset="100%" stop-color="#B91C1C"/>
+    </linearGradient>
+  </defs>
+  <!-- 315MHz RF Signal Waves -->
+  <path d="M84 18 C96 18, 108 28, 108 40" fill="none" stroke="#38BDF8" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M80 26 C88 26, 98 33, 98 42" fill="none" stroke="#34D399" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- Telescoping Stub Antenna -->
+  <g transform="rotate(-18 64 64)">
+    <rect x="74" y="12" width="6" height="22" rx="3" fill="url(#chromeFrame)" stroke="#0F172A" stroke-width="2"/>
+    <circle cx="77" cy="12" r="4.2" fill="#E2E8F0" stroke="#0F172A" stroke-width="1.8"/>
+    <!-- Keyring Split Loop & Carabiner Clasp -->
+    <circle cx="64" cy="112" r="11" fill="none" stroke="url(#chromeFrame)" stroke-width="5"/>
+    <rect x="57" y="96" width="14" height="10" rx="3" fill="url(#chromeFrame)" stroke="#0F172A" stroke-width="2"/>
+    <!-- Chrome Bezel Casing (MSD RP11 Key Fob Style) -->
+    <rect x="36" y="26" width="56" height="74" rx="18" fill="url(#chromeFrame)" stroke="#0F172A" stroke-width="2.6"/>
+    <!-- Matte Black Inner Grip -->
+    <rect x="41" y="31" width="46" height="64" rx="14" fill="url(#fobBody)" stroke="#0F172A" stroke-width="1.8"/>
+    <!-- Red LED Transmit Indicator -->
+    <circle cx="64" cy="40" r="3.6" fill="#Facc15" stroke="#FEF08A" stroke-width="1.5"/>
+    <!-- Primary Momentary FIRE Button -->
+    <circle cx="64" cy="58" r="14" fill="url(#fireBtn)" stroke="#FCA5A5" stroke-width="2"/>
+    <path d="M64 49 L68 59 L60 59 Z" fill="#FFFFFF"/>
+    <rect x="62" y="59" width="4" height="6" rx="1" fill="#FFFFFF"/>
+    <!-- Sliding Cover Ridges -->
+    <line x1="49" y1="80" x2="79" y2="80" stroke="#64748B" stroke-width="2.4" stroke-linecap="round"/>
+    <line x1="52" y1="86" x2="76" y2="86" stroke="#475569" stroke-width="2.4" stroke-linecap="round"/>
+  </g>
+</svg>

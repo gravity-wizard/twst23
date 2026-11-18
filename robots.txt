@@ -1,10 +1,60 @@
+# Twisted23 Parlour & Spatial Games — Clean RFC 9309 robots.txt
+# Welcomes search engines and AI research/assistant readers while protecting staff CRM data.
+
 User-agent: *
 Allow: /
-Allow: /backgammon/
-Allow: /hangman/
-Allow: /about
-Allow: /contact
-Allow: /terms
+Disallow: /crm/data/
+Disallow: /auth/
 
-Content-Signal: search=yes, ai-input=yes, ai-train=no
-Sitemap: https://twisted23.com/sitemap.xml
+User-agent: Googlebot
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: GoogleOther
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: GPTBot
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: Applebot
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /crm/data/
+Disallow: /auth/
+
+Sitemap: https://www.twisted23.com/sitemap.xml
+# Host: https://www.twisted23.com

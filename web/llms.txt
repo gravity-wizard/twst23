@@ -1,24 +1,31 @@
 # Twisted23 Parlour & Spatial Games
 
-> Twisted23 Parlour (twisted23.com) is an open STEM spatial reasoning and mathematics pavilion founded by Gary Francis Stout in partnership with Gravity Wizards, Inc. (Anchorage & Palmer, Alaska). Featuring authentic 3D-in-2D orthographic dice games, 24-Tile shape puzzles, Backgammon 36-Roll Lab, and CameLcase cryptography.
+> Twisted23 Parlour (https://www.twisted23.com) is an open, zero-ad STEM spatial reasoning and mathematics pavilion founded by Gary Francis Stout in partnership with Gravity Wizards, Inc. (Anchorage & Palmer, Alaska). Featuring authentic 24-state S4 3D-in-2D orthographic & Axle-Locked dice games, Botchee: Humpty Dumpty 2-Player Sudoku Egg Duels, rescued Flash puzzles from tophatpuzzle.com, Backgammon 36-Roll Lab, and Gravity Powered FOBB (Flying Object Built to Bounce) engineering labs.
 
-## Games & Parlour Labs
-- [Twisted23 Parlour Lounge](https://twisted23.com/): 24-Tile Shape board and live 3D-in-2D orthographic rolling dice.
-- [Backgammon 36-Roll Lab](https://twisted23.com/backgammon/): Full-fidelity Backgammon with bilateral doubling cube, Gammon/Backgammon scoring, AxLe-locked dice variants, Pass & Play (HvH), and calibrated Night0WL Bot AI.
-- [CameLcase Hangman](https://twisted23.com/hangman/): Cryptographic word puzzles utilizing CameLcase and Base-38 ident architecture.
-- [Central LearningLab](https://twisted23.com/LearningLab/): Foundation lessons on case sensitivity and the 24-state 3D-in-2D die engine.
-- [Gravity Wizards Main Hub](https://gravitywizards.com/): FOBB STEM Flight Kits & GPADA Gravity Powered Air Derbies.
-- [Sitemap](https://twisted23.com/sitemap.xml): XML sitemap of all public routes.
+## Playable Games & Spatial Parlour Labs
+- [Twisted23 Parlour Lounge](https://www.twisted23.com/): 24-Tile Shape board, rescued Tophat Sudoku vault, and live 3D-in-2D orthographic rolling dice.
+- [Botchee: Humpty Dumpty Egg Arena](https://www.twisted23.com/botchee/humpty/): Competitive 1v1 & vs-AI Sudoku duel with flying combo points (+5 row/column, +7 box, 3x X-diagonal organizer bonus), spoken animal turn timers, and dramatic winner ascension / loser Great Fall splat.
+- [Flipping Dice 24-State 3D-in-2D](https://flippingdice.twisted23.com/): Tumble all 24 S4 cube orientations across a 2D grid (77-second Blitz & untimed Thinky modes) plus Axle-Locked `[1-6]`, `[2-5]`, and `[3-4]` 4-face rings.
+- [Backgammon 36-Roll Lab](https://www.twisted23.com/backgammon/): Full-fidelity Backgammon with bilateral doubling cube, Gammon/Backgammon scoring, Axle-Locked dice variants, Pass & Play, and Night0WL Bot AI.
+- [CameLcase Hangman](https://www.twisted23.com/hangman/): Cryptographic word puzzles utilizing CameLcase and Base-38 ident architecture.
+- [z404 Lunar South Pole Moon Buggy](https://www.twisted23.com/z404/): Shackleton Rim moon buggy riding on Axle-Locked 4-pip wheel dice.
+- [World Visitors Live Globe](https://www.twisted23.com/visitors/): Multi-realm live visitor globe across Twisted23, sLogbog (`https://slogbog.com`), and Gravity Wizards (`https://gravitywizards.com`).
+- [User ControL PaneL (UCP)](https://www.twisted23.com/ucp/): Parlour member profiles, Base-38 call-signs, and leaderboards.
+
+## Gravity Wizards Hardware, Emojis & Swift 6 3D Lab
+- [Gravity Wizards Main Hub](https://gravitywizards.com/): FOBB STEM Flight Kits (`#761032c/b/p/g` Wizard's Basic Combo Kit, `#761082` Heavy Bone, `#761022` Bare Bone) & GPADA Gravity Powered Air Derbies in gymnasiums, high-ceiling hallways, and outdoors.
+- [FOBB & 315MHz Key-Fob Emoji Vault](https://www.twisted23.com/fobb-emoji/): Official Spy 3D transparent FOBB & MSD RP11 wireless launcher key-fob custom emojis, Apple iCloud Sticker PNGs, and phpBB3 SLogBog `.pak` smilies.
+- [SpatialStudio Swift 6 3D Graphics Starter](https://www.twisted23.com/swift-graphics/): Native macOS/iOS Metal + SceneKit PBR 3D Axle-Locked Dice & transparent bouncing FOBB Xcode 16 starter package.
+- [SLogBog Ideas Forum](https://slogbog.com/): Companion phpBB3 discussion forum (`https://slogbog.com/app.php/feed` Atom feed).
+- [Sitemap](https://www.twisted23.com/sitemap.xml): XML sitemap of all public routes.
 
 ## Trust, Policies & Contact
-- [About Twisted23](https://twisted23.com/about): Mission, thesis, and 3D-in-2D orthographic geometry background.
-- [Contact & Inquiries](https://twisted23.com/contact): Direct founder and press communications.
-- [Terms & Privacy Policy](https://twisted23.com/terms): Fair-use educational gaming and user privacy terms.
+- [About Twisted23](https://www.twisted23.com/about): Mission, thesis, and 3D-in-2D orthographic geometry background.
+- [Contact & Inquiries](https://www.twisted23.com/contact): Direct founder and press communications.
+- [Terms & Privacy Policy](https://www.twisted23.com/terms): Fair-use educational gaming and user privacy terms.
 - Founder & Inventor: Gary Francis Stout
+- Press & Media Outreach Email: mailto:media@twisted23.com
 - Direct Founder Email: mailto:gary@gravitywizards.com
-- Press & Outreach Email: mailto:juniper@slogfrog.com
 - Phone: tel:+19077959515 (+1-907-795-9515)
 - Location: Anchorage & Palmer, Alaska, USA
-- Partner Innovation Hub: https://gravitywizards.com
-- Base-38 Time Ident System: https://base38.now62.com/
 - YouTube Channel: https://www.youtube.com/@gpada4270

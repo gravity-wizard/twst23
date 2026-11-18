@@ -1,4 +1,4 @@
-let state = { contacts: [], derbies: [], triage: [] };
+let state = { contacts: [], derbies: [], triage: [], bom: [], bom_ideas: [] };
 let activeContactId = null;
 let serverStatus = { resendConfigured: false };
 
@@ -160,6 +160,149 @@ function renderTriage() {
   `
     )
     .join('');
+}
+
+function fmtUsd(val) {
+  return '$' + Number(val || 0).toFixed(2);
+}
+
+function renderBom() {
+  const tbody = $('#bom-tbody');
+  if (!tbody) return;
+  const items = Array.isArray(state.bom) ? state.bom : [];
+  const ideas = Array.isArray(state.bom_ideas) ? state.bom_ideas : [];
+
+  const launcherQty = Math.max(0, Number($('#bom-qty-launchers')?.value || 0));
+  const kitQty = Math.max(0, Number($('#bom-qty-kits')?.value || 0));
+  const asmFilter = ($('#filter-bom-assembly')?.value || 'all').trim();
+
+  let unitLauncherCost = 0;
+  let unitKitCost = 0;
+  items.forEach((b) => {
+    unitLauncherCost += Number(b.qty_per_launcher || 0) * Number(b.unit_cost_usd || 0);
+    unitKitCost += Number(b.qty_per_fobb_kit || 0) * Number(b.unit_cost_usd || 0);
+  });
+
+  const batchTotal = launcherQty * unitLauncherCost + kitQty * unitKitCost;
+  const comboRetail = 19.99;
+  const kitMargin = comboRetail - unitKitCost;
+  const kitMarginPct = comboRetail > 0 ? Math.round((kitMargin / comboRetail) * 100) : 0;
+
+  const ulEl = $('#bom-unit-launcher');
+  if (ulEl) ulEl.textContent = fmtUsd(unitLauncherCost);
+  const ukEl = $('#bom-unit-kit');
+  if (ukEl) ukEl.textContent = fmtUsd(unitKitCost);
+  const kmEl = $('#bom-kit-margin');
+  if (kmEl) kmEl.textContent = `+${fmtUsd(kitMargin)} margin (${kitMarginPct}%) vs $19.99`;
+  const btEl = $('#bom-batch-total');
+  if (btEl) btEl.textContent = fmtUsd(batchTotal);
+  const brEl = $('#bom-batch-retail');
+  if (brEl) brEl.textContent = `${launcherQty} Launcher${launcherQty === 1 ? '' : 's'} + ${kitQty} Kits (${fmtUsd(kitQty * comboRetail)} retail value)`;
+
+  const visible = items.filter((b) => asmFilter === 'all' || b.assembly === asmFilter);
+  if (visible.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:22px;color:var(--muted);">No BOM items match this assembly filter.</td></tr>`;
+  } else {
+    tbody.innerHTML = visible
+      .map((b) => {
+        const ql = Number(b.qty_per_launcher || 0);
+        const qk = Number(b.qty_per_fobb_kit || 0);
+        const unit = Number(b.unit_cost_usd || 0);
+        const ext = (ql * launcherQty + qk * kitQty) * unit;
+        const statusCls = (b.status || '').includes('Stock') || (b.status || '').includes('Verified')
+          ? 'status-ok'
+          : ((b.status || '').includes('Critical') ? 'status-warn' : 'status-info');
+        return `
+        <tr>
+          <td>
+            <span class="mono-tag">${escapeHtml(b.id)}</span>
+            <div style="font-size:0.77rem;font-family:var(--font-mono);margin-top:3px;">
+              ${b.supplier_url ? `<a href="${escapeHtml(b.supplier_url)}" target="_blank" rel="noopener">${escapeHtml(b.part_no)} ↗</a>` : escapeHtml(b.part_no)}
+            </div>
+          </td>
+          <td>
+            <div style="font-size:0.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.03em;font-weight:600;">${escapeHtml(b.assembly)}</div>
+            <span class="outlet-name">${escapeHtml(b.name)}</span>
+            <span class="outlet-angle">${escapeHtml(b.spec_notes || '')}</span>
+          </td>
+          <td style="font-family:var(--font-mono);font-size:0.82rem;">
+            ${ql > 0 ? `<div>🚀 ${ql}/Launcher</div>` : ''}
+            ${qk > 0 ? `<div>📦 ${qk}/Kit</div>` : ''}
+          </td>
+          <td style="font-family:var(--font-mono);">
+            <strong>${fmtUsd(unit)}</strong>
+            ${b.retail_sku_usd ? `<div style="font-size:0.73rem;color:var(--muted);">SKU: ${fmtUsd(b.retail_sku_usd)}</div>` : ''}
+          </td>
+          <td style="font-family:var(--font-mono);"><strong>${fmtUsd(ext)}</strong></td>
+          <td>
+            <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-start;">
+              <span class="status-pill ${statusCls}">${escapeHtml(b.status || 'Spec')}</span>
+              <button class="btn btn-secondary btn-sm" type="button" data-edit-bom="${escapeHtml(b.id)}">Edit</button>
+            </div>
+          </td>
+        </tr>`;
+      })
+      .join('');
+
+    tbody.querySelectorAll('[data-edit-bom]').forEach((btn) => {
+      btn.addEventListener('click', () => openBomEditModal(btn.dataset.editBom));
+    });
+  }
+
+  const ideasEl = $('#bom-ideas-list');
+  if (ideasEl) {
+    ideasEl.innerHTML = ideas
+      .map(
+        (idea) => `
+      <article class="info-card">
+        <span class="mono-tag">${escapeHtml(idea.tag || 'Upgrade')}</span>
+        <h3 style="margin-top:6px;">${escapeHtml(idea.title)}</h3>
+        <p>${escapeHtml(idea.body)}</p>
+      </article>`
+      )
+      .join('');
+  }
+}
+
+function openBomEditModal(bomId) {
+  const item = (state.bom || []).find((x) => x.id === bomId);
+  if (!item) return;
+  showModal(
+    `Edit ${item.id} — ${item.part_no}`,
+    `<form id="edit-bom-form" class="drawer-body" style="padding:0;">
+      <label class="field"><span>Component Name</span><input id="eb-name" class="input" value="${escapeHtml(item.name)}" required /></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <label class="field"><span>Part # / SKU</span><input id="eb-part" class="input" value="${escapeHtml(item.part_no)}" required /></label>
+        <label class="field"><span>Est. Unit Cost ($)</span><input id="eb-cost" class="input" type="number" step="0.01" min="0" value="${Number(item.unit_cost_usd || 0)}" required /></label>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <label class="field"><span>Qty / Launcher</span><input id="eb-ql" class="input" type="number" step="1" min="0" value="${Number(item.qty_per_launcher || 0)}" /></label>
+        <label class="field"><span>Qty / Combo Kit</span><input id="eb-qk" class="input" type="number" step="1" min="0" value="${Number(item.qty_per_fobb_kit || 0)}" /></label>
+        <label class="field"><span>Status</span><input id="eb-status" class="input" value="${escapeHtml(item.status || '')}" /></label>
+      </div>
+      <label class="field"><span>Supplier URL (e.g. eBay / McMaster / Store)</span><input id="eb-url" class="input" value="${escapeHtml(item.supplier_url || '')}" /></label>
+      <label class="field"><span>Engineering &amp; Safety Notes</span><textarea id="eb-notes" class="textarea" rows="3">${escapeHtml(item.spec_notes || '')}</textarea></label>
+      <button class="btn btn-primary" type="submit">Save BOM Part</button>
+    </form>`
+  );
+  $('#edit-bom-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await api(`api.php?action=bom_item&id=${encodeURIComponent(bomId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        name: $('#eb-name').value,
+        part_no: $('#eb-part').value,
+        unit_cost_usd: Number($('#eb-cost').value || 0),
+        qty_per_launcher: Number($('#eb-ql').value || 0),
+        qty_per_fobb_kit: Number($('#eb-qk').value || 0),
+        status: $('#eb-status').value,
+        supplier_url: $('#eb-url').value,
+        spec_notes: $('#eb-notes').value,
+      }),
+    });
+    $('#modal-backdrop').hidden = true;
+    await refresh();
+  });
 }
 
 function openDrawer(id) {
@@ -353,6 +496,7 @@ async function refresh() {
     }
     renderMetrics();
     renderContacts();
+    renderBom();
     renderDerbies();
     renderTriage();
   } catch (err) {
@@ -371,23 +515,38 @@ async function refresh() {
 }
 
 // Tabs
-document.querySelectorAll('.tab').forEach((tab) => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach((t) => {
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-    });
-    document.querySelectorAll('.panel').forEach((p) => {
-      p.classList.remove('active');
-      p.hidden = true;
-    });
-    tab.classList.add('active');
-    tab.setAttribute('aria-selected', 'true');
-    const panel = $(`#panel-${tab.dataset.tab}`);
-    panel.classList.add('active');
-    panel.hidden = false;
+function activateTab(tabName, pushQuery = false) {
+  const targetTab = $(`.tab[data-tab="${tabName}"]`);
+  const targetPanel = $(`#panel-${tabName}`);
+  if (!targetTab || !targetPanel) return;
+  document.querySelectorAll('.tab').forEach((t) => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
   });
+  document.querySelectorAll('.panel').forEach((p) => {
+    p.classList.remove('active');
+    p.hidden = true;
+  });
+  targetTab.classList.add('active');
+  targetTab.setAttribute('aria-selected', 'true');
+  targetPanel.classList.add('active');
+  targetPanel.hidden = false;
+  if (pushQuery && window.history?.replaceState) {
+    const url = new URL(window.location.href);
+    if (tabName === 'outreach') url.searchParams.delete('tab');
+    else url.searchParams.set('tab', tabName);
+    window.history.replaceState({}, '', url.toString());
+  }
+}
+
+document.querySelectorAll('.tab').forEach((tab) => {
+  tab.addEventListener('click', () => activateTab(tab.dataset.tab, true));
 });
+
+const initialTabParam = new URLSearchParams(window.location.search).get('tab');
+if (initialTabParam) {
+  activateTab(initialTabParam, false);
+}
 
 $('#search-contacts').addEventListener('input', renderContacts);
 $('#filter-stage').addEventListener('change', renderContacts);
@@ -1092,6 +1251,118 @@ $('#btn-add-triage').addEventListener('click', () => {
     await refresh();
   });
 });
+
+// BOM & Launcher Lab Controls
+['#bom-qty-launchers', '#bom-qty-kits', '#filter-bom-assembly'].forEach((sel) => {
+  const el = $(sel);
+  if (el) {
+    el.addEventListener('input', renderBom);
+    el.addEventListener('change', renderBom);
+  }
+});
+
+document.querySelectorAll('[data-bom-preset]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const [l, k] = (btn.dataset.bomPreset || '1,1').split(',').map(Number);
+    const lIn = $('#bom-qty-launchers');
+    const kIn = $('#bom-qty-kits');
+    if (lIn) lIn.value = l;
+    if (kIn) kIn.value = k;
+    renderBom();
+  });
+});
+
+const exportBomBtn = $('#btn-export-bom-csv');
+if (exportBomBtn) {
+  exportBomBtn.addEventListener('click', () => {
+    const items = Array.isArray(state.bom) ? state.bom : [];
+    const launcherQty = Math.max(0, Number($('#bom-qty-launchers')?.value || 0));
+    const kitQty = Math.max(0, Number($('#bom-qty-kits')?.value || 0));
+    const csvEscape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = [
+      'BOM_ID', 'Assembly', 'Part_No_or_SKU', 'Component_Name',
+      'Qty_Per_Launcher', 'Qty_Per_FOBB_Kit', 'Est_Unit_Cost_USD',
+      `Batch_Ext_USD_${launcherQty}L_${kitQty}K`, 'Retail_SKU_USD', 'Status', 'Supplier_URL', 'Spec_Notes'
+    ];
+    const lines = [header.join(',')];
+    items.forEach((b) => {
+      const ql = Number(b.qty_per_launcher || 0);
+      const qk = Number(b.qty_per_fobb_kit || 0);
+      const unit = Number(b.unit_cost_usd || 0);
+      const ext = (ql * launcherQty + qk * kitQty) * unit;
+      lines.push([
+        csvEscape(b.id),
+        csvEscape(b.assembly),
+        csvEscape(b.part_no),
+        csvEscape(b.name),
+        ql,
+        qk,
+        unit.toFixed(2),
+        ext.toFixed(2),
+        b.retail_sku_usd != null ? Number(b.retail_sku_usd).toFixed(2) : '',
+        csvEscape(b.status || ''),
+        csvEscape(b.supplier_url || ''),
+        csvEscape(b.spec_notes || ''),
+      ].join(','));
+    });
+    const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `GwCrm-FOBB-Launcher-BOM-${launcherQty}L-${kitQty}Kits.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+const addBomBtn = $('#btn-add-bom');
+if (addBomBtn) {
+  addBomBtn.addEventListener('click', () => {
+    showModal(
+      'Add Launcher / FOBB BOM Part',
+      `<form id="quick-bom-form" class="drawer-body" style="padding:0;">
+        <label class="field"><span>Sub-Assembly</span>
+          <select id="nb-asm" class="select">
+            <option value="Launcher Wireless RF Trigger">A. Launcher Wireless RF Trigger (RP11)</option>
+            <option value="Launcher Counterweight & Guide-Board">B. Launcher Counterweight &amp; Guide-Board</option>
+            <option value="FOBB Airframe (Flying Object Built to Bounce)">C. FOBB Airframe (Flying Object Built to Bounce)</option>
+            <option value="Wizard's Basic Combo Kit (#761032c/b/p/g)">D. Wizard&rsquo;s Basic Combo Kit ($19.99)</option>
+          </select>
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label class="field"><span>Part # / SKU</span><input id="nb-part" class="input" placeholder="e.g. eBay #350965353954" required /></label>
+          <label class="field"><span>Est. Unit Cost ($)</span><input id="nb-cost" class="input" type="number" step="0.01" min="0" value="5.00" required /></label>
+        </div>
+        <label class="field"><span>Component Name</span><input id="nb-name" class="input" required /></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label class="field"><span>Qty / Launcher</span><input id="nb-ql" class="input" type="number" step="1" min="0" value="1" /></label>
+          <label class="field"><span>Qty / Combo Kit</span><input id="nb-qk" class="input" type="number" step="1" min="0" value="0" /></label>
+        </div>
+        <label class="field"><span>Supplier URL (optional)</span><input id="nb-url" class="input" placeholder="https://..." /></label>
+        <label class="field"><span>Engineering &amp; Safety Notes</span><textarea id="nb-notes" class="textarea" rows="3"></textarea></label>
+        <button class="btn btn-primary" type="submit">Add to BOM</button>
+      </form>`
+    );
+    $('#quick-bom-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await api('api.php?action=bom', {
+        method: 'POST',
+        body: JSON.stringify({
+          assembly: $('#nb-asm').value,
+          part_no: $('#nb-part').value,
+          unit_cost_usd: Number($('#nb-cost').value || 0),
+          name: $('#nb-name').value,
+          qty_per_launcher: Number($('#nb-ql').value || 0),
+          qty_per_fobb_kit: Number($('#nb-qk').value || 0),
+          supplier_url: $('#nb-url').value,
+          spec_notes: $('#nb-notes').value,
+        }),
+      });
+      $('#modal-backdrop').hidden = true;
+      await refresh();
+    });
+  });
+}
 
 // GwCrm Staff Login Gate (Passcode + 6-Digit Email Code)
 (function initGwCrmAuthGate() {
