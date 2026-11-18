@@ -10,3 +10,5 @@ crm/data/crm.runtime.json
 crm/data/sent_log.jsonl
 web/crm/data/crm.runtime.json
 web/crm/data/sent_log.jsonl
+auth/data/
+web/auth/data/

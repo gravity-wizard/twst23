@@ -260,8 +260,17 @@ function classify_inbound_message(string $fromEmail, string $fromName, string $s
     ];
 }
 
+require_once dirname(__DIR__) . '/auth/guard.php';
+
 $action = $_GET['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+// Inbound server-to-server mail webhooks authenticate via webhook payload/signature;
+// all interactive GwCrm endpoints require Founder / Administrator session.
+$authCtx = null;
+if (!in_array($action, ['webhooks_resend', 'webhooks_hostinger'], true)) {
+    $authCtx = tw23_require_admin_json();
+}
 
 if ($action === 'status' && $method === 'GET') {
     $key = trim((string)(getenv('RESEND_API_KEY') ?: ''));
@@ -273,6 +282,7 @@ if ($action === 'status' && $method === 'GET') {
         'mailAvailable' => function_exists('mail'),
         'fromAddress' => $FROM_ADDRESS,
         'replyTo' => $REPLY_TO,
+        'authUser' => $authCtx ? tw23_sanitize_user($authCtx['user'], true) : null,
     ]);
     exit;
 }
@@ -651,7 +661,11 @@ if ($action === 'send' && $method === 'POST') {
         $results[] = ['id' => $c['id'], 'outlet' => $c['outlet'], 'status' => 'sent', 'resend_id' => $c['resend_id']];
     }
 
-    if (!$dryRun) write_data($DATA_FILE, $data);
+    if (!$dryRun) {
+        write_data($DATA_FILE, $data);
+        $sentOutlets = array_map(fn($r) => ($r['outlet'] ?? $r['id'] ?? '?') . ':' . ($r['status'] ?? '?'), $results);
+        tw23_audit_log('GWCRM_SEND', $authCtx['user']['username'] ?? 'Staff', "Step {$step} -> " . implode(', ', $sentOutlets));
+    }
     echo json_encode(['dryRun' => $dryRun, 'step' => $step, 'results' => $results]);
     exit;
 }

@@ -12,16 +12,34 @@
 </head>
 <body>
   <header class="topbar">
+    <div class="phpbb-staff-strip">
+      <div class="phpbb-staff-inner">
+        <div class="phpbb-crumbs">
+          <a href="/">🏠 Twisted23 Board Index</a>
+          <span>‹</span>
+          <a href="/ucp/?mode=memberlist">👥 MemberList</a>
+          <span>‹</span>
+          <a href="/ucp/">👤 User ControL PaneL</a>
+          <span>‹</span>
+          <a href="/acp/">🛡️ ACP</a>
+          <span>‹</span>
+          <strong>📬 GwCrm Hub</strong>
+        </div>
+        <div id="gwcrm-staff-slot" class="phpbb-staff-user">
+          <a href="/ucp/?mode=login&amp;redirect=/crm/" class="staff-link-pill">🔑 Staff Login</a>
+        </div>
+      </div>
+    </div>
     <div class="topbar-inner">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">23</span>
         <div>
-          <h1>Twisted23 &amp; Gravity Wizards</h1>
+          <h1>GwCrm &middot; Twisted23 &amp; Gravity Wizards</h1>
           <p class="subtitle">Coordination Hub &middot; <code>media@twisted23.com</code></p>
         </div>
       </div>
-      <div class="topbar-status">
-        <span id="resend-badge" class="status-pill status-warn">Checking Resend&hellip;</span>
+      <div id="gwcrm-toolbar-actions" class="topbar-status">
+        <span id="resend-badge" class="status-pill status-warn">Checking Mail Relay&hellip;</span>
         <button id="btn-refresh" class="btn btn-secondary" type="button" title="Sync live pipeline state">↻ Refresh</button>
         <button id="btn-dry-run-2" class="btn btn-secondary" type="button">Preview Next 2</button>
         <button id="btn-send-2" class="btn btn-primary" type="button">Send Next 2</button>
@@ -30,6 +48,60 @@
   </header>
 
   <main class="container">
+    <!-- STAFF AUTH GATE (Shown when not signed in as Founder / GwCrm Admin) -->
+    <section id="gwcrm-auth-gate" class="auth-gate-card" hidden>
+      <div class="auth-gate-header">
+        <span class="auth-gate-badge">🛡️ RESTRICTED STAFF PANEL</span>
+        <h2>Sign In to GwCrm &amp; Outreach Dispatch</h2>
+        <p id="gwcrm-auth-msg">Authenticate with your Twisted23 <strong>Founder</strong> or <strong>Administrator</strong> session (<a href="/ucp/?mode=login&amp;redirect=/crm/">or open full UCP</a>).</p>
+      </div>
+
+      <div class="auth-gate-tabs">
+        <button type="button" id="gate-tab-pw" class="gate-tab active">🔑 Passcode Sign-In</button>
+        <button type="button" id="gate-tab-otp" class="gate-tab">📧 6-Digit Email Code (Founder / First Login)</button>
+      </div>
+
+      <form id="gwcrm-pw-form" class="auth-gate-form">
+        <label class="field">
+          <span>Call-Sign or Registered Email</span>
+          <input id="gate-username" class="input" type="text" placeholder="Gary or gary@gravitywizards.com" autocomplete="username" required />
+        </label>
+        <label class="field">
+          <span>Passcode</span>
+          <input id="gate-password" class="input" type="password" placeholder="Enter your Twisted23 passcode" autocomplete="current-password" required />
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.84rem;color:var(--muted);">
+          <input id="gate-remember" type="checkbox" checked />
+          <span>Log me on automatically each visit (30-day phpBB session key)</span>
+        </label>
+        <div id="gate-pw-feedback" class="gate-feedback"></div>
+        <button type="submit" class="btn btn-primary" style="padding:11px 16px;font-weight:600;">🔑 Sign In to GwCrm</button>
+      </form>
+
+      <div id="gwcrm-otp-panel" class="auth-gate-form" hidden>
+        <label class="field">
+          <span>Founder / Staff Call-Sign or Email</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="gate-otp-identity" class="input" type="text" value="Gary" placeholder="Gary or A7si" style="flex:1;min-width:180px;" />
+            <button type="button" id="btn-send-otp" class="btn btn-secondary" style="white-space:nowrap;font-weight:600;">📧 Send 6-Digit Code</button>
+          </div>
+        </label>
+        <form id="gwcrm-otp-verify-form" style="display:flex;flex-direction:column;gap:12px;">
+          <label class="field">
+            <span>6-Digit Verification Code (sent via Hostinger Mail API)</span>
+            <input id="gate-otp-code" class="input" type="text" inputmode="numeric" maxlength="6" placeholder="123456" style="font-family:var(--font-mono);font-size:1.15rem;letter-spacing:0.2em;" required />
+          </label>
+          <label class="field">
+            <span>Optional: Set / Update Permanent Passcode (6+ chars)</span>
+            <input id="gate-otp-newpw" class="input" type="password" minlength="6" placeholder="Leave blank or set your permanent passcode now" autocomplete="new-password" />
+          </label>
+          <div id="gate-otp-feedback" class="gate-feedback"></div>
+          <button type="submit" class="btn btn-primary" style="padding:11px 16px;font-weight:600;">✓ Verify Code &amp; Enter GwCrm</button>
+        </form>
+      </div>
+    </section>
+
+    <div id="gwcrm-app-shell">
     <section class="summary-strip" aria-label="Pipeline Summary">
       <div class="metric" data-stage="all" title="Filter by All Stages">
         <span class="metric-label">Total Contacts</span>
@@ -149,6 +221,7 @@
         </article>
       </div>
     </section>
+    </div>
   </main>
 
   <!-- SLIDE-OVER CONTACT DRAWER -->
@@ -237,6 +310,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

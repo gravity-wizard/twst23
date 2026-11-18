@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User ControL PaneL (UCP) • Twisted23 UniversaL Universe</title>
+  <meta name="description" content="phpBB-style Login, MemberList, Public ProfiLes, and User ControL PaneL (UCP) for GwCrm and the Twisted23 UniversaL Universe." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090e18;
+      --panel: #111a2b;
+      --panel-alt: #0d1524;
+      --panel-header: #16233a;
+      --border: #223352;
+      --border-bright: #334e7b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --amber: #e5a932;
+      --amber-hover: #f5b942;
+      --cyan: #38bdf8;
+      --emerald: #34d399;
+      --crimson: #f87171;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14.5px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; color: #7dd3fc; }
+
+    .wrap {
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 18px 44px;
+      flex: 1;
+    }
+
+    /* phpBB Header Banner */
+    .forum-headerbar {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--amber);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .brand-die {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #0b1322;
+      border: 1.5px solid var(--amber);
+      color: var(--amber);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.2rem;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand-left h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.22rem;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .brand-left p {
+      margin: 2px 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .quick-nav {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .qpill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 11px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--panel-alt);
+      color: var(--text);
+      font-size: 0.81rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .qpill:hover {
+      border-color: var(--cyan);
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .qpill.active {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .qpill.amber {
+      background: var(--amber);
+      border-color: var(--amber);
+      color: #0b101b;
+      font-weight: 700;
+    }
+
+    .qpill.amber:hover {
+      background: var(--amber-hover);
+      color: #0b101b;
+    }
+
+    .qpill.staff {
+      background: rgba(229, 169, 50, 0.14);
+      border-color: rgba(229, 169, 50, 0.55);
+      color: var(--amber);
+    }
+
+    /* phpBB Breadcrumb Bar */
+    .phpbb-navbar {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      margin-bottom: 16px;
+    }
+
+    .crumbs {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .crumbs .sep { color: #64748b; }
+    .crumbs strong { color: var(--amber); }
+
+    .mono-badge {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--cyan);
+    }
+
+    /* phpBB Panel Box */
+    .forabg {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .forabg-head {
+      background: var(--panel-header);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .forabg-head h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 0.98rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--amber);
+    }
+
+    .forabg-body {
+      padding: 18px;
+    }
+
+    /* Login & Register Grid */
+    .login-split {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 820px) {
+      .login-split { grid-template-columns: 1fr; }
+    }
+
+    .field-row {
+      margin-bottom: 13px;
+    }
+
+    .field-row label {
+      display: block;
+      font-size: 0.81rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+    }
+
+    .field-hint {
+      display: block;
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      background: #09101d;
+      border: 1px solid var(--border-bright);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 9px 11px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      outline: none;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: var(--cyan);
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.83rem;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 16px;
+      border-radius: 7px;
+      border: 1px solid var(--border-bright);
+      background: var(--panel-header);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-decoration: none;
+      font-family: inherit;
+    }
+
+    .btn:hover {
+      border-color: var(--cyan);
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--amber);
+      border-color: var(--amber);
+      color: #090e18;
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      background: var(--amber-hover);
+      border-color: var(--amber-hover);
+      color: #090e18;
+    }
+
+    .btn-cyan {
+      background: var(--cyan);
+      border-color: var(--cyan);
+      color: #090e18;
+      font-weight: 700;
+    }
+
+    .btn-danger {
+      background: rgba(248, 113, 113, 0.14);
+      border-color: rgba(248, 113, 113, 0.45);
+      color: var(--crimson);
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 0.78rem;
+    }
+
+    .subtabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .subtab {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.81rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .subtab.active {
+      background: rgba(229, 169, 50, 0.16);
+      border-color: var(--amber);
+      color: var(--amber);
+    }
+
+    .notice {
+      padding: 10px 12px;
+      border-radius: 7px;
+      font-size: 0.84rem;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .notice.ok { background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.45); color: var(--emerald); }
+    .notice.err { background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.45); color: var(--crimson); }
+    .notice.info { background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.4); color: var(--cyan); }
+
+    /* UCP 2-Column Layout (Left Navigation Tabs + Main Pane) */
+    .ucp-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 820px) {
+      .ucp-layout { grid-template-columns: 1fr; }
+    }
+
+    .ucp-menu {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .ucp-menu-title {
+      padding: 10px 14px;
+      background: var(--panel-header);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-display);
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--amber);
+    }
+
+    .ucp-menu-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(34, 51, 82, 0.6);
+      color: #cbd5e1;
+      padding: 11px 14px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: inherit;
+    }
+
+    .ucp-menu-btn:hover {
+      background: rgba(56, 189, 248, 0.08);
+      color: #fff;
+    }
+
+    .ucp-menu-btn.active {
+      background: rgba(229, 169, 50, 0.14);
+      color: var(--amber);
+      border-left: 3px solid var(--amber);
+    }
+
+    /* KPI / Stat Cards */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 11px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .stat-card .k-label {
+      display: block;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-card .k-val {
+      font-family: var(--font-display);
+      font-size: 1.32rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* Tables (MemberList & Sessions) */
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table.phpbb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+
+    table.phpbb-table th {
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--panel-alt);
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    table.phpbb-table td {
+      padding: 11px 12px;
+      border-bottom: 1px solid rgba(34, 51, 82, 0.65);
+      vertical-align: middle;
+    }
+
+    table.phpbb-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    /* Badge Picker */
+    .badge-picker {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge-choice {
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: #09101d;
+      font-size: 1.15rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .badge-choice.selected {
+      border-color: var(--amber);
+      background: rgba(229, 169, 50, 0.2);
+    }
+
+    /* View Profile Card */
+    .profile-view-grid {
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 760px) {
+      .profile-view-grid { grid-template-columns: 1fr; }
+    }
+
+    .avatar-pedestal {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+
+    .avatar-big {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 10px;
+      border-radius: 16px;
+      background: #09101d;
+      border: 2px solid var(--border-bright);
+      display: grid;
+      place-items: center;
+      font-size: 2.3rem;
+    }
+
+    .sig-box {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border-bright);
+      color: #cbd5e1;
+      font-size: 0.84rem;
+      font-style: italic;
+    }
+
+    .online-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      margin-right: 5px;
+    }
+
+    /* phpBB Who Is Online Footer Box */
+    .who-online-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .who-online-box h3 {
+      margin: 0 0 6px;
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cyan);
+    }
+
+    .legend-row {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(34, 51, 82, 0.65);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 0.79rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- TOP HEADER BAR -->
+    <header class="forum-headerbar">
+      <div class="brand-left">
+        <a href="/" class="brand-die" title="Return to Twisted23 Parlour Home">23</a>
+        <div>
+          <h1>Twisted23 UniversaL Universe</h1>
+          <p>phpBB-Style Login, ProfiLe, MemberList &amp; GwCrm Gatekeeper</p>
+        </div>
+      </div>
+      <nav class="quick-nav" id="topQuickNav"></nav>
+    </header>
+
+    <!-- BREADCRUMB BAR -->
+    <div class="phpbb-navbar">
+      <div class="crumbs" id="breadcrumbTrail">
+        <a href="/">🏠 Board Index</a>
+        <span class="sep">‹</span>
+        <a href="/ucp/">UniversaL Universe</a>
+        <span class="sep">‹</span>
+        <strong id="crumbCurrent">User ControL PaneL</strong>
+      </div>
+      <div>
+        <a href="https://base38.now62.com/" target="_blank" rel="noopener" class="mono-badge" title="Base-38 UTC Time Ident">🐸 SLog 🐬 <span id="liveBase38">2OCRXG</span></a>
+      </div>
+    </div>
+
+    <!-- GLOBAL BANNER FEEDBACK -->
+    <div id="globalNotice" hidden></div>
+
+    <!-- MAIN DYNAMIC STAGE -->
+    <main id="stageRoot"></main>
+
+    <!-- PHPBB WHO IS ONLINE & GROUP LEGEND -->
+    <section class="who-online-box" id="whoIsOnlineSection">
+      <h3>🌍 Who Is Online</h3>
+      <div id="whoOnlineStats">Loading active Parlour telemetry&hellip;</div>
+      <div id="whoOnlineUsers" style="margin-top:5px;"></div>
+      <div class="legend-row">
+        <span><strong>Legend:</strong></span>
+        <span style="color:#e5a932;font-weight:700;">👑 Founder • GwCrm Prime</span>
+        <span>•</span>
+        <span style="color:#f87171;font-weight:700;">🛡️ Administrators</span>
+        <span>•</span>
+        <span style="color:#34d399;font-weight:700;">⚖️ GLobaL Moderators</span>
+        <span>•</span>
+        <span style="color:#38bdf8;font-weight:700;">🦉 Gravity Wizards VIP</span>
+        <span>•</span>
+        <span style="color:#cbd5e1;font-weight:600;">🎲 Registered Parlour Members</span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const BADGE_CHOICES = ['👑', '🛡️', '🦉', '⚖️', '🧝', '🎲', '🐸', '🐬', '🎩', '🌀', '🥚', '🦀', '🌙', '🚀', '⚡'];
+      const T0UX = 1584540571;
+      const B38 = '0123456789abcdefghijklmnopqrstuvwxyz|^';
+
+      let sessionUser = null;
+      let sessionVia = 'password';
+      let onlineState = null;
+      let currentMode = 'ucp';
+      let currentUcpTab = 'front';
+
+      function calcBase38Now() {
+        let rel = Math.floor(Date.now() / 1000) - T0UX;
+        if (rel <= 0) return '0';
+        let s = '';
+        while (rel > 0) {
+          s = B38[rel % 38] + s;
+          rel = Math.floor(rel / 38);
+        }
+        return s.toUpperCase();
+      }
+
+      function updateBase38Clock() {
+        const el = document.getElementById('liveBase38');
+        if (el) el.textContent = calcBase38Now();
+      }
+      updateBase38Clock();
+      setInterval(updateBase38Clock, 1000);
+
+      function esc(v) {
+        return String(v == null ? '' : v)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function fmtDate(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return esc(iso);
+        return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      }
+
+      function fmtEpoch(sec) {
+        if (!sec) return '—';
+        return fmtDate(new Date(sec * 1000).toISOString());
+      }
+
+      function axleLabel(code) {
+        if (code === '25') return 'AxLe [2–5] (Faces 1·3·6·4)';
+        if (code === '16') return 'AxLe [1–6] (Faces 2·3·5·4)';
+        return 'AxLe [3–4] (Lunar 4-Pip Rim)';
+      }
+
+      function showNotice(msg, kind = 'info') {
+        const box = document.getElementById('globalNotice');
+        if (!msg) {
+          box.hidden = true;
+          return;
+        }
+        box.className = `notice ${kind}`;
+        box.textContent = msg;
+        box.hidden = false;
+      }
+
+      function getParams() {
+        return new URLSearchParams(window.location.search);
+      }
+
+      function setUrlMode(mode, extra = {}) {
+        const p = new URLSearchParams();
+        p.set('mode', mode);
+        Object.entries(extra).forEach(([k, v]) => {
+          if (v !== undefined && v !== null && v !== '') p.set(k, v);
+        });
+        const nextUrl = `${window.location.pathname}?${p.toString()}`;
+        window.history.pushState({}, '', nextUrl);
+        route();
+      }
+
+      async function authApi(action, method = 'GET', body = null, queryExtra = '') {
+        const url = `/auth/auth.php?action=${encodeURIComponent(action)}${queryExtra}&_t=${Date.now()}`;
+        const opts = { method, headers: {} };
+        if (body !== null) {
+          opts.headers['Content-Type'] = 'application/json';
+          opts.body = JSON.stringify(body);
+        }
+        const res = await fetch(url, opts);
+        const data = await res.json();
+        return { ok: res.ok, status: res.status, data };
+      }
+
+      function syncCallsignToLocalStorage(user) {
+        if (!user) return;
+        try {
+          localStorage.setItem('tw23_callsign', user.username);
+          localStorage.setItem('tw23_base38_id', user.base38_id || '');
+          if (user.prefs && user.prefs.default_pace) {
+            localStorage.setItem('gw.fdtoo0.speed', user.prefs.default_pace);
+          }
+        } catch (_) {}
+      }
+
+      function readBrowserGameStats() {
+        const out = {
+          botchee_best: 0,
+          tophat_elo: 1200,
+          tophat_solved: 0,
+          fd_unlocked: 1,
+          backgammon_elo: 1200,
+          backgammon_wins: 0,
+        };
+        try {
+          const b = parseInt(localStorage.getItem('twst23_botchee_best_score') || '0', 10);
+          if (b > 0) out.botchee_best = b;
+          const fd = parseInt(localStorage.getItem('gw.fdtoo0.unlocked') || '1', 10);
+          if (fd > 0) out.fd_unlocked = fd;
+          const thRaw = localStorage.getItem('tophatpuzzle_elo_profile_v1');
+          if (thRaw) {
+            const th = JSON.parse(thRaw);
+            if (th && typeof th === 'object') {
+              if (th.elo) out.tophat_elo = Math.round(Number(th.elo));
+              if (th.solvedCount) out.tophat_solved = parseInt(th.solvedCount, 10) || 0;
+            }
+          }
+          const bgRaw = localStorage.getItem('tw23_backgammon_profile_v1');
+          if (bgRaw) {
+            const bg = JSON.parse(bgRaw);
+            if (bg && typeof bg === 'object') {
+              if (bg.elo) out.backgammon_elo = Math.round(Number(bg.elo));
+              if (bg.wins) out.backgammon_wins = parseInt(bg.wins, 10) || 0;
+            }
+          }
+        } catch (_) {}
+        return out;
+      }
+
+      function renderHeaderAndOnline() {
+        const nav = document.getElementById('topQuickNav');
+        const isAdmin = !!(sessionUser && sessionUser.is_admin);
+        nav.innerHTML = `
+          <a href="/" class="qpill">🏠 Parlour Home</a>
+          <a href="/ucp/?mode=memberlist" class="qpill ${currentMode === 'memberlist' || currentMode === 'viewprofile' ? 'active' : ''}" data-nav="memberlist">👥 MemberList</a>
+          ${sessionUser ? `
+            <a href="/ucp/?mode=ucp" class="qpill ${currentMode === 'ucp' ? 'active' : ''}" data-nav="ucp">👤 UCP (${esc(sessionUser.username)})</a>
+            ${isAdmin ? `
+              <a href="/crm/" class="qpill staff">📬 GwCrm</a>
+              <a href="/acp/" class="qpill staff">🛡️ ACP</a>
+            ` : ''}
+            <button type="button" class="qpill" id="btnHeaderLogout">🚪 Logout</button>
+          ` : `
+            <a href="/ucp/?mode=login" class="qpill ${currentMode === 'login' ? 'active' : ''}" data-nav="login">🔑 Login</a>
+            <a href="/ucp/?mode=register" class="qpill amber" data-nav="register">🧝 Register</a>
+          `}
+        `;
+
+        nav.querySelectorAll('[data-nav]').forEach((el) => {
+          el.addEventListener('click', (e) => {
+            e.preventDefault();
+            showNotice('');
+            setUrlMode(el.getAttribute('data-nav'));
+          });
+        });
+
+        const lo = document.getElementById('btnHeaderLogout');
+        if (lo) {
+          lo.addEventListener('click', async () => {
+            await authApi('logout', 'POST');
+            sessionUser = null;
+            showNotice('You have been signed out of the Twisted23 UniversaL Universe.', 'info');
+            setUrlMode('login');
+          });
+        }
+
+        if (onlineState) {
+          const statsEl = document.getElementById('whoOnlineStats');
+          const usersEl = document.getElementById('whoOnlineUsers');
+          statsEl.innerHTML = `In total there ${onlineState.total === 1 ? 'is <strong>1</strong> user' : `are <strong>${onlineState.total}</strong> users`} online :: <strong>${onlineState.registered}</strong> registered, <strong>${onlineState.hidden}</strong> hidden and <strong>${onlineState.guests}</strong> guests <span style="opacity:0.8;">(based on users active over the past ${onlineState.window_minutes} minutes)</span>`;
+          if (onlineState.users && onlineState.users.length > 0) {
+            usersEl.innerHTML = 'Registered users online: ' + onlineState.users.map(
+              (u) => `<a href="/ucp/?mode=viewprofile&amp;u=${encodeURIComponent(u.username)}" data-profile="${esc(u.username)}" style="color:${esc(u.color)};font-weight:700;">${esc(u.badge)} ${esc(u.username)}</a> <span style="font-size:0.74rem;color:#64748b;">(${esc(u.page || '/')})</span>`
+            ).join(', ');
+            usersEl.querySelectorAll('[data-profile]').forEach((a) => {
+              a.addEventListener('click', (e) => {
+                e.preventDefault();
+                setUrlMode('viewprofile', { u: a.getAttribute('data-profile') });
+              });
+            });
+          } else {
+            usersEl.innerHTML = 'Registered users online: <em>None visible</em>';
+          }
+        }
+      }
+
+      // =====================================================================
+      // VIEW 1: LOGIN & 6-DIGIT EMAIL CODE (phpBB ucp.php?mode=login)
+      // =====================================================================
+      function renderLoginView() {
+        const redirectTarget = getParams().get('redirect') || '';
+        document.getElementById('crumbCurrent').textContent = 'Sign In • Gatekeeper';
+        const root = document.getElementById('stageRoot');
+
+        root.innerHTML = `
+          <div class="forabg">
+            <div class="forabg-head">
+              <h2>🔑 Sign In to Twisted23 UniversaL Universe ${redirectTarget ? `• Destination: ${esc(redirectTarget)}` : ''}</h2>
+              <span class="mono-badge">phpBB Session Engine</span>
+            </div>
+            <div class="forabg-body">
+              <div class="login-split">
+                <div>
+                  <div class="subtabs">
+                    <button type="button" class="subtab active" id="subTabPw">🔑 Call-Sign &amp; Passcode</button>
+                    <button type="button" class="subtab" id="subTabOtp">📧 6-Digit Email Code (Founder / Reset)</button>
+                  </div>
+
+                  <form id="loginPwForm">
+                    <div class="field-row">
+                      <label for="inIdentity">Call-Sign or Email Address:</label>
+                      <input id="inIdentity" class="input" type="text" placeholder="e.g. Gary, A7si, CQ, or email" autocomplete="username" required />
+                    </div>
+                    <div class="field-row">
+                      <label for="inPassword">Passcode:</label>
+                      <input id="inPassword" class="input" type="password" placeholder="Enter your Twisted23 passcode" autocomplete="current-password" required />
+                    </div>
+                    <label class="check-row">
+                      <input id="inRemember" type="checkbox" checked />
+                      <span>Remember me (30-day persistent login key)</span>
+                    </label>
+                    <label class="check-row" style="margin-bottom:14px;">
+                      <input id="inHideOnline" type="checkbox" />
+                      <span>Hide my online status this session</span>
+                    </label>
+                    <div id="loginPwMsg"></div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                      <button type="submit" class="btn btn-primary">🔑 Login</button>
+                      <button type="button" class="btn" id="btnSwitchToOtp">Forgot Passcode / Email Code</button>
+                    </div>
+
+                    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                      <span style="font-size:0.76rem;color:var(--muted);">Quick Fill:</span>
+                      <button type="button" class="btn btn-sm" data-founder-otp="Gary">👑 Gary (Founder Email Code)</button>
+                      <button type="button" class="btn btn-sm" data-demo="CQ:slogbog23">🐸 CQ (Member Demo)</button>
+                      <button type="button" class="btn btn-sm" data-demo="Siea:nightowl23">🐬 Siea (Member Demo)</button>
+                    </div>
+                  </form>
+
+                  <div id="loginOtpPane" hidden>
+                    <div class="field-row">
+                      <label for="otpIdentity">Call-Sign or Registered Email:</label>
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <input id="otpIdentity" class="input" type="text" value="Gary" placeholder="Gary, A7si, or your email" style="flex:1;min-width:190px;" />
+                        <button type="button" id="btnSendCode" class="btn btn-cyan">📧 Send 6-Digit Code</button>
+                      </div>
+                      <span class="field-hint">Dispatches an instant 6-digit login code via Hostinger Mail API (<code>media@twisted23.com</code>).</span>
+                    </div>
+                    <form id="otpVerifyForm">
+                      <div class="field-row">
+                        <label for="otpCode">6-Digit Verification Code:</label>
+                        <input id="otpCode" class="input" type="text" inputmode="numeric" maxlength="6" placeholder="123456" style="font-family:var(--font-mono);font-size:1.15rem;letter-spacing:0.24em;" required />
+                      </div>
+                      <div class="field-row">
+                        <label for="otpNewPw">Optional — Set or Update Permanent Passcode:</label>
+                        <input id="otpNewPw" class="input" type="password" minlength="6" placeholder="Leave blank or set a 6+ char passcode for future logins" autocomplete="new-password" />
+                      </div>
+                      <div id="loginOtpMsg"></div>
+                      <button type="submit" class="btn btn-primary">✓ Verify Code &amp; Sign In</button>
+                    </form>
+                  </div>
+                </div>
+
+                <div style="background:var(--panel-alt);border:1px solid var(--border);border-radius:9px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;">
+                  <div>
+                    <h3 style="margin:0 0 8px;font-family:var(--font-display);color:#fff;font-size:1.06rem;">🧝 Enroll in the Twisted23 Guild</h3>
+                    <p style="margin:0 0 10px;color:var(--muted);font-size:0.86rem;">
+                      In order to synchronize your 3D-in-2D game ratings, customize your forum signature, claim a permanent <strong>Base-38 Member Ident</strong>, and appear in the UniversaL MemberList, enroll in seconds.
+                    </p>
+                    <ul style="margin:0;padding-left:18px;color:#cbd5e1;font-size:0.83rem;line-height:1.65;">
+                      <li>Instant <code>base38.now62.com</code> Member Ident</li>
+                      <li>Two-way Trophy &amp; ELO Vault across Backgammon, Top Hat, Botchee &amp; Flipping Dice</li>
+                      <li>Choose your signature <strong>AxLe Lock</strong> (<code>[3–4]</code>, <code>[2–5]</code>, or <code>[1–6]</code>)</li>
+                      <li>Unified Founder/Admin gateway into <strong>GwCrm</strong> &amp; <strong>ACP</strong></li>
+                    </ul>
+                  </div>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-cyan" id="btnGoRegister">🧝 Register New Call-Sign</button>
+                    <button type="button" class="btn" id="btnGoMembers">👥 Browse MemberList</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const subPw = document.getElementById('subTabPw');
+        const subOtp = document.getElementById('subTabOtp');
+        const pwForm = document.getElementById('loginPwForm');
+        const otpPane = document.getElementById('loginOtpPane');
+
+        function toggleSub(mode) {
+          if (mode === 'otp') {
+            subPw.classList.remove('active');
+            subOtp.classList.add('active');
+            pwForm.hidden = true;
+            otpPane.hidden = false;
+          } else {
+            subOtp.classList.remove('active');
+            subPw.classList.add('active');
+            otpPane.hidden = true;
+            pwForm.hidden = false;
+          }
+        }
+
+        subPw.onclick = () => toggleSub('pw');
+        subOtp.onclick = () => toggleSub('otp');
+        document.getElementById('btnSwitchToOtp').onclick = () => {
+          const typed = document.getElementById('inIdentity').value.trim();
+          if (typed) document.getElementById('otpIdentity').value = typed;
+          toggleSub('otp');
+        };
+        document.getElementById('btnGoRegister').onclick = () => setUrlMode('register');
+        document.getElementById('btnGoMembers').onclick = () => setUrlMode('memberlist');
+
+        root.querySelectorAll('[data-demo]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const [u, p] = btn.getAttribute('data-demo').split(':');
+            document.getElementById('inIdentity').value = u;
+            document.getElementById('inPassword').value = p;
+          });
+        });
+
+        root.querySelectorAll('[data-founder-otp]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            document.getElementById('otpIdentity').value = btn.getAttribute('data-founder-otp');
+            toggleSub('otp');
+          });
+        });
+
+        pwForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById('loginPwMsg');
+          msg.innerHTML = `<div class="notice info">Authenticating&hellip;</div>`;
+          const { data } = await authApi('login', 'POST', {
+            username: document.getElementById('inIdentity').value.trim(),
+            password: document.getElementById('inPassword').value,
+            remember: document.getElementById('inRemember').checked,
+            hide_online: document.getElementById('inHideOnline').checked,
+          });
+          if (data.status === 'otp_required') {
+            document.getElementById('otpIdentity').value = data.username || document.getElementById('inIdentity').value.trim();
+            toggleSub('otp');
+            document.getElementById('loginOtpMsg').innerHTML = `<div class="notice info">${esc(data.message)}</div>`;
+            return;
+          }
+          if (data.status === 'success' && data.user) {
+            sessionUser = data.user;
+            sessionVia = 'password';
+            syncCallsignToLocalStorage(sessionUser);
+            if (redirectTarget && redirectTarget.startsWith('/')) {
+              window.location.href = redirectTarget;
+              return;
+            }
+            showNotice(`Welcome back to the Parlour, ${sessionUser.username}!`, 'ok');
+            setUrlMode('ucp');
+          } else {
+            msg.innerHTML = `<div class="notice err">${esc(data.message || 'Login failed.')}</div>`;
+          }
+        });
+
+        document.getElementById('btnSendCode').addEventListener('click', async () => {
+          const btn = document.getElementById('btnSendCode');
+          const idVal = document.getElementById('otpIdentity').value.trim();
+          const msg = document.getElementById('loginOtpMsg');
+          if (!idVal) {
+            msg.innerHTML = `<div class="notice err">Enter your Call-Sign or email address first.</div>`;
+            return;
+          }
+          btn.disabled = true;
+          msg.innerHTML = `<div class="notice info">Dispatching 6-digit login code&hellip;</div>`;
+          const { data } = await authApi('request_code', 'POST', { identity: idVal });
+          btn.disabled = false;
+          if (data.status === 'success') {
+            msg.innerHTML = `<div class="notice ok">✓ ${esc(data.message)}</div>`;
+            document.getElementById('otpCode').focus();
+          } else {
+            msg.innerHTML = `<div class="notice err">${esc(data.message || 'Could not dispatch code.')}</div>`;
+          }
+        });
+
+        document.getElementById('otpVerifyForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById('loginOtpMsg');
+          msg.innerHTML = `<div class="notice info">Verifying 6-digit code&hellip;</div>`;
+          const { data } = await authApi('verify_code', 'POST', {
+            identity: document.getElementById('otpIdentity').value.trim(),
+            code: document.getElementById('otpCode').value.trim(),
+            new_password: document.getElementById('otpNewPw').value,
+            remember: true,
+          });
+          if (data.status === 'success' && data.user) {
+            sessionUser = data.user;
+            sessionVia = 'otp';
+            syncCallsignToLocalStorage(sessionUser);
+            if (redirectTarget && redirectTarget.startsWith('/')) {
+              window.location.href = redirectTarget;
+              return;
+            }
+            showNotice(`Authenticated via 6-digit code as ${sessionUser.username}!`, 'ok');
+            setUrlMode('ucp');
+          } else {
+            msg.innerHTML = `<div class="notice err">${esc(data.message || 'Verification failed.')}</div>`;
+          }
+        });
+      }
+
+      // =====================================================================
+      // VIEW 2: REGISTER (phpBB ucp.php?mode=register)
+      // =====================================================================
+      function renderRegisterView() {
+        document.getElementById('crumbCurrent').textContent = 'Register Call-Sign';
+        const root = document.getElementById('stageRoot');
+
+        root.innerHTML = `
+          <div class="forabg">
+            <div class="forabg-head">
+              <h2>🧝 Twisted23 UniversaL Universe — Member Registration</h2>
+              <span class="mono-badge">Instant Base-38 Ident</span>
+            </div>
+            <div class="forabg-body" style="max-width:660px;">
+              <form id="regForm">
+                <div class="field-row">
+                  <label for="regUser">Call-Sign (Username):</label>
+                  <input id="regUser" class="input" type="text" minlength="3" maxlength="24" placeholder="3–24 letters, numbers, underscores, or hyphens" required />
+                </div>
+                <div class="field-row">
+                  <label for="regEmail">Email Address (Optional — enables 6-digit login &amp; passcode recovery):</label>
+                  <input id="regEmail" class="input" type="email" placeholder="you@example.com" />
+                </div>
+                <div class="field-row">
+                  <label for="regPass">Create Passcode:</label>
+                  <input id="regPass" class="input" type="password" minlength="6" placeholder="Minimum 6 characters" required />
+                </div>
+                <div class="login-split" style="grid-template-columns:1fr 1fr;gap:12px;">
+                  <div class="field-row">
+                    <label for="regArch">Player Archetype:</label>
+                    <select id="regArch" class="select">
+                      <option value="eLeven eLve Explorer">🧝 eLeven eLve Explorer</option>
+                      <option value="CameLcase Cryptographer">🦉 CameLcase Cryptographer</option>
+                      <option value="High Roller">🎲 High Roller (3D-in-2D)</option>
+                      <option value="Night0WL Strategist">🌙 Night0WL Strategist</option>
+                    </select>
+                  </div>
+                  <div class="field-row">
+                    <label for="regAxle">Preferred Sum-7 AxLe Lock:</label>
+                    <select id="regAxle" class="select">
+                      <option value="34">AxLe [3–4] • 4-Pip Moon Rim</option>
+                      <option value="25">AxLe [2–5] • Faces 1·3·6·4</option>
+                      <option value="16">AxLe [1–6] • Faces 2·3·5·4</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <label for="regLoc">Location (Optional):</label>
+                  <input id="regLoc" class="input" type="text" maxlength="48" placeholder="e.g. Anchorage, AK or Shackleton Rim" />
+                </div>
+                <div id="regMsg"></div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                  <button type="submit" class="btn btn-cyan">🧝 Create Account &amp; Claim Base-38 ID</button>
+                  <button type="button" class="btn" id="btnRegToLogin">Already registered? Sign In</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('btnRegToLogin').onclick = () => setUrlMode('login');
+        document.getElementById('regForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById('regMsg');
+          msg.innerHTML = `<div class="notice info">Minting your Base-38 Member Ident&hellip;</div>`;
+          const { data } = await authApi('register', 'POST', {
+            username: document.getElementById('regUser').value.trim(),
+            email: document.getElementById('regEmail').value.trim(),
+            password: document.getElementById('regPass').value,
+            archetype: document.getElementById('regArch').value,
+            preferred_axle: document.getElementById('regAxle').value,
+            location: document.getElementById('regLoc').value.trim(),
+          });
+          if (data.status === 'success' && data.user) {
+            sessionUser = data.user;
+            syncCallsignToLocalStorage(sessionUser);
+            showNotice(`🎉 Welcome ${sessionUser.username}! Your Base-38 Member Ident is ${sessionUser.base38_id}.`, 'ok');
+            setUrlMode('ucp');
+          } else {
+            msg.innerHTML = `<div class="notice err">${esc(data.message || 'Registration failed.')}</div>`;
+          }
+        });
+      }
+
+      // =====================================================================
+      // VIEW 3: USER CONTROL PANEL — UCP (phpBB ucp.php)
+      // =====================================================================
+      async function renderUcpView() {
+        if (!sessionUser) {
+          renderLoginView();
+          return;
+        }
+        document.getElementById('crumbCurrent').textContent = `User ControL PaneL (${sessionUser.username})`;
+        const root = document.getElementById('stageRoot');
+        const tabParam = getParams().get('tab');
+        if (tabParam && ['front', 'profile', 'prefs', 'stats'].includes(tabParam)) {
+          currentUcpTab = tabParam;
+        }
+
+        root.innerHTML = `
+          <div class="ucp-layout">
+            <aside class="ucp-menu" aria-label="UCP Tabs">
+              <div class="ucp-menu-title">⚙️ UCP Navigation</div>
+              <button type="button" class="ucp-menu-btn ${currentUcpTab === 'front' ? 'active' : ''}" data-ucp-tab="front">
+                <span>📋 Overview &amp; Sessions</span><span>›</span>
+              </button>
+              <button type="button" class="ucp-menu-btn ${currentUcpTab === 'profile' ? 'active' : ''}" data-ucp-tab="profile">
+                <span>🪪 Edit ProfiLe &amp; Sig</span><span>›</span>
+              </button>
+              <button type="button" class="ucp-menu-btn ${currentUcpTab === 'prefs' ? 'active' : ''}" data-ucp-tab="prefs">
+                <span>🎛️ Universe Preferences</span><span>›</span>
+              </button>
+              <button type="button" class="ucp-menu-btn ${currentUcpTab === 'stats' ? 'active' : ''}" data-ucp-tab="stats">
+                <span>🏆 Ratings &amp; Trophy Vault</span><span>›</span>
+              </button>
+              <button type="button" class="ucp-menu-btn" id="btnViewMyPublic">
+                <span>👁️ View Public ProfiLe</span><span>↗</span>
+              </button>
+            </aside>
+            <div id="ucpTabBody"></div>
+          </div>
+        `;
+
+        root.querySelectorAll('[data-ucp-tab]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            currentUcpTab = btn.getAttribute('data-ucp-tab');
+            setUrlMode('ucp', { tab: currentUcpTab });
+          });
+        });
+
+        document.getElementById('btnViewMyPublic').onclick = () => {
+          setUrlMode('viewprofile', { u: sessionUser.username });
+        };
+
+        const pane = document.getElementById('ucpTabBody');
+        if (currentUcpTab === 'front') await renderUcpFront(pane);
+        else if (currentUcpTab === 'profile') renderUcpProfile(pane);
+        else if (currentUcpTab === 'prefs') renderUcpPrefs(pane);
+        else if (currentUcpTab === 'stats') renderUcpStats(pane);
+      }
+
+      async function renderUcpFront(pane) {
+        const u = sessionUser;
+        pane.innerHTML = `
+          <div class="forabg">
+            <div class="forabg-head">
+              <h2>📋 UCP Overview — ${esc(u.badge)} ${esc(u.username)}</h2>
+              <span class="mono-badge">Base-38 ID: ${esc(u.base38_id)}</span>
+            </div>
+            <div class="forabg-body">
+              <div class="stat-grid">
+                <div class="stat-card">
+                  <span class="k-label">Call-Sign &amp; Rank</span>
+                  <div class="k-val" style="color:${esc(u.group_color)};font-size:1.1rem;">${esc(u.badge)} ${esc(u.username)}</div>
+                  <div style="font-size:0.77rem;color:var(--muted);margin-top:3px;">${esc(u.custom_title || u.group_label)}</div>
+                </div>
+                <div class="stat-card">
+                  <span class="k-label">Base-38 Member ID</span>
+                  <div class="k-val" style="font-family:var(--font-mono);color:var(--cyan);">${esc(u.base38_id)}</div>
+                  <div style="font-size:0.77rem;color:var(--muted);margin-top:3px;">Member #${u.id}</div>
+                </div>
+                <div class="stat-card">
+                  <span class="k-label">Enrolled</span>
+                  <div class="k-val" style="font-size:0.98rem;">${fmtDate(u.joined_at)}</div>
+                  <div style="font-size:0.77rem;color:var(--muted);margin-top:3px;">AxLe: ${esc(axleLabel(u.preferred_axle))}</div>
+                </div>
+                <div class="stat-card">
+                  <span class="k-label">Security Status</span>
+                  <div class="k-val" style="font-size:0.98rem;color:${u.has_password ? 'var(--emerald)' : 'var(--amber)'};">
+                    ${u.has_password ? '✓ Passcode Active' : '📧 Email Code Only'}
+                  </div>
+                  <div style="font-size:0.77rem;color:var(--muted);margin-top:3px;">${u.email ? esc(u.email) : 'No recovery email set'}</div>
+                </div>
+              </div>
+
+              ${u.is_admin ? `
+                <div style="background:rgba(229,169,50,0.1);border:1px solid rgba(229,169,50,0.45);border-radius:9px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                  <div>
+                    <strong style="color:var(--amber);font-family:var(--font-display);">👑 Staff Command Launchpad</strong>
+                    <div style="font-size:0.82rem;color:#cbd5e1;">Your Founder / Administrator session unlocks direct entry into GwCrm outreach and the phpBB-style ACP.</div>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <a href="/crm/" class="btn btn-primary">📬 Open GwCrm Hub</a>
+                    <a href="/acp/" class="btn">🛡️ Open ACP</a>
+                  </div>
+                </div>
+              ` : ''}
+
+              <h3 style="margin:0 0 10px;font-family:var(--font-display);font-size:0.96rem;color:#fff;">🎲 Jump Into a Twisted23 Table (Signed In as ${esc(u.username)})</h3>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+                <a href="/backgammon/" class="btn">🔴⚪ 2P Backgammon</a>
+                <a href="/flippingdice/" class="btn">🐬 Flipping Dice</a>
+                <a href="/botchee/" class="btn">🎲 Botchee</a>
+                <a href="/botchee/humpty/" class="btn">🥚 Humpty Dumpty</a>
+                <a href="/tophat/" class="btn">🎩 Top Hat Sudoku</a>
+                <a href="/slider/" class="btn">🌀 Twisted 23</a>
+                <a href="/z404/" class="btn">🚀 z404 Moon Buggy</a>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                <h3 style="margin:0;font-family:var(--font-display);font-size:0.96rem;color:#fff;">🔐 Manage Login Keys &amp; Active Sessions</h3>
+                <button type="button" class="btn btn-sm btn-danger" id="btnRevokeOthers">Revoke All Other Devices</button>
+              </div>
+              <div class="table-scroll" id="sessionsTableWrap">Loading active sessions&hellip;</div>
+            </div>
+          </div>
+        `;
+
+        const sessRes = await authApi('sessions');
+        const wrap = document.getElementById('sessionsTableWrap');
+        if (sessRes.data && sessRes.data.sessions) {
+          const rows = sessRes.data.sessions.map((s) => `
+            <tr>
+              <td><code style="color:var(--cyan);">${esc(s.sid_id)}</code> ${s.is_current ? '<span class="mono-badge" style="margin-left:4px;">Current</span>' : ''}</td>
+              <td>${esc(s.auth_via)} ${s.remember ? '• 30d' : '• Session'}</td>
+              <td><code>${esc(s.current_page || '/')}</code></td>
+              <td>${fmtEpoch(s.last_active)}</td>
+              <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(s.ua)}">${esc(s.ua)}</td>
+              <td>${s.is_current ? '—' : `<button type="button" class="btn btn-sm btn-danger" data-revoke="${esc(s.sid_id)}">Revoke</button>`}</td>
+            </tr>
+          `).join('');
+          wrap.innerHTML = `
+            <table class="phpbb-table">
+              <thead><tr><th>Key ID</th><th>Method</th><th>Last Page</th><th>Last Active</th><th>Browser / Device</th><th>Action</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          `;
+          wrap.querySelectorAll('[data-revoke]').forEach((b) => {
+            b.addEventListener('click', async () => {
+              await authApi('revoke_session', 'POST', { sid_id: b.getAttribute('data-revoke') });
+              renderUcpFront(pane);
+            });
+          });
+        }
+
+        document.getElementById('btnRevokeOthers').addEventListener('click', async () => {
+          await authApi('revoke_session', 'POST', { all_others: true });
+          showNotice('Revoked all other device sessions.', 'ok');
+          renderUcpFront(pane);
+        });
+      }
+
+      function renderUcpProfile(pane) {
+        const u = sessionUser;
+        const recentOtpHint = sessionVia === 'otp' || !u.has_password;
+
+        pane.innerHTML = `
+          <div class="forabg">
+            <div class="forabg-head">
+              <h2>🪪 Edit ProfiLe &amp; Forum Signature</h2>
+              <span class="mono-badge">${esc(u.group_label)}</span>
+            </div>
+            <div class="forabg-body">
+              <form id="profileForm">
+                <div class="field-row">
+                  <label>Parlour Avatar / Badge Emblem:</label>
+                  <div class="badge-picker" id="badgePicker">
+                    ${BADGE_CHOICES.map((b) => `<button type="button" class="badge-choice ${u.badge === b ? 'selected' : ''}" data-badge="${esc(b)}">${esc(b)}</button>`).join('')}
+                  </div>
+                </div>
+
+                <div class="login-split" style="grid-template-columns:1fr 1fr;gap:12px;">
+                  <div class="field-row">
+                    <label for="pfTitle">Custom Rank / Title:</label>
+                    <input id="pfTitle" class="input" type="text" maxlength="48" value="${esc(u.custom_title)}" />
+                  </div>
+                  <div class="field-row">
+                    <label for="pfArch">Player Archetype:</label>
+                    <input id="pfArch" class="input" type="text" maxlength="40" value="${esc(u.archetype)}" />
+                  </div>
+                </div>
+
+                <div class="login-split" style="grid-template-columns:1fr 1fr;gap:12px;">
+                  <div class="field-row">
+                    <label for="pfGame">Favorite Parlour Game:</label>
+                    <select id="pfGame" class="select">
+                      ${['Backgammon 36-Roll', 'Flipping Dice', 'Botchee (Spatial Yahtzee!)', 'Humpty Dumpty Sudoku', 'Top Hat Sudoku', 'Twisted 23 Slider', 'eXtreme 24', 'z404 Moon Buggy'].map((g) => `<option value="${esc(g)}" ${u.favorite_game === g ? 'selected' : ''}>${esc(g)}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="field-row">
+                    <label for="pfAxle">Signature Sum-7 AxLe Lock:</label>
+                    <select id="pfAxle" class="select">
+                      <option value="34" ${u.preferred_axle === '34' ? 'selected' : ''}>AxLe [3–4] • 4-Pip Moon Rim</option>
+                      <option value="25" ${u.preferred_axle === '25' ? 'selected' : ''}>AxLe [2–5] • Faces 1·3·6·4</option>
+                      <option value="16" ${u.preferred_axle === '16' ? 'selected' : ''}>AxLe [1–6] • Faces 2·3·5·4</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="login-split" style="grid-template-columns:1fr 1fr;gap:12px;">
+                  <div class="field-row">
+                    <label for="pfLoc">Location:</label>
+                    <input id="pfLoc" class="input" type="text" maxlength="48" value="${esc(u.location)}" placeholder="e.g. Anchorage, AK" />
+                  </div>
+                  <div class="field-row">
+                    <label for="pfWeb">Website URL:</label>
+                    <input id="pfWeb" class="input" type="url" maxlength="120" value="${esc(u.website)}" placeholder="https://..." />
+                  </div>
+                </div>
+
+                <div class="field-row">
+                  <label for="pfBio">About / Spatial Bio (max 300 chars):</label>
+                  <textarea id="pfBio" class="textarea" rows="3" maxlength="300">${esc(u.bio)}</textarea>
+                </div>
+
+                <div class="field-row">
+                  <label for="pfSig">Forum &amp; Public ProfiLe Signature (max 220 chars):</label>
+                  <textarea id="pfSig" class="textarea" rows="2" maxlength="220">${esc(u.signature)}</textarea>
+                  <div class="sig-box" id="sigLivePreview">${esc(u.signature || 'Your signature preview will appear here…')}</div>
+                </div>
+
+                <div id="pfMsg"></div>
+                <button type="submit" class="btn btn-primary">💾 Save ProfiLe &amp; Signature</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="forabg">
+            <div class="forabg-head">
+              <h2>🔐 Account Settings (Email &amp; Passcode)</h2>
+            </div>
+            <div class="forabg-body">
+              <form id="accountForm" style="max-width:540px;">
+                ${recentOtpHint ? `<div class="notice info">✓ Verified via Email Code / First-Time Setup — you can set or update your permanent passcode below without entering a previous passcode.</div>` : ''}
+                <div class="field-row">
+                  <label for="acEmail">Registered Email Address:</label>
+                  <input id="acEmail" class="input" type="email" value="${esc(u.email || '')}" placeholder="you@example.com" />
+                </div>
+                <div class="field-row">
+                  <label for="acNewPw">New Passcode (leave blank to keep unchanged):</label>
+                  <input id="acNewPw" class="input" type="password" minlength="6" placeholder="At least 6 characters" autocomplete="new-password" />
+                </div>
+                ${!recentOtpHint ? `
+                  <div class="field-row">
+                    <label for="acCurPw">Current Passcode (required to confirm changes):</label>
+                    <input id="acCurPw" class="input" type="password" autocomplete="current-password" required />
+                  </div>
+                ` : ''}
+                <div id="acMsg"></div>
+                <button type="submit" class="btn btn-cyan">🔐 Update Account Credentials</button>
+              </form>
+            </div>
+          </div>
+        `;
+
+        let chosenBadge = u.badge || '🧝';
+        pane.querySelectorAll('[data-badge]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            pane.querySelectorAll('[data-badge]').forEach((x) => x.classList.remove('selected'));
+            btn.classList.add('selected');
+            chosenBadge = btn.getAttribute('data-badge');
+          });
+        });
+
+        const sigIn = document.getElementById('pfSig');
+        const sigPrev = document.getElementById('sigLivePreview');
+        sigIn.addEventListener('input', () => {
+          sigPrev.textContent = sigIn.value.trim() || 'Your signature preview will appear here…';
+        });
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById('pfMsg');
+          const { data } = await authApi('update_profile', 'POST', {
+            badge: chosenBadge,
+            custom_title: document.getElementById('pfTitle').value.trim(),
+            archetype: document.getElementById('pfArch').value.trim(),
+            favorite_game: document.getElementById('pfGame').value,
+            preferred_axle: document.getElementById('pfAxle').value,
+            location: document.getElementById('pfLoc').value.trim(),
+            website: document.getElementById('pfWeb').value.trim(),
+            bio: document.getElementById('pfBio').value.trim(),
+            signature: document.getElementById('pfSig').value.trim(),
+          });
+          if (data.status === 'success' && data.user) {
+            sessionUser = data.user;
+            renderHeaderAndOnline();
+            msg.innerHTML = `<div class="notice ok">✓ ${esc(data.message)}</div>`;
+          } else {
+            msg.innerHTML = `<div class="notice err">${esc(data.message || 'Could not update profile.')}</div>`;
+          }
+        });
+
+        document.getElementById('accountForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById('acMsg');
+          const curPwEl = document.getElementById('acCurPw');
+          const { data } = await authApi('update_account', 'POST', {
+            email: document.getElementById('acEmail').value.trim(),
+            new_password: document.getElementById('acNewPw').value,
+            current_password: curPwEl ? curPwEl.value : '',
+          });
+          if (data.status === 'success' && data.user) {
+            sessionUser = data.user;
+            msg.innerHTML = `<div class="notice ok">✓ ${esc(data.message)}</div>`;
+            document.getElementById('acNewPw').value = '';
+          } else {
+            msg.innerHTML = `<div class="notice err">${esc(data.message || 'Update failed.')}</div>`;
+          }
+        });
+      }
+
+      function renderUcpPrefs(pane) {
+        const p = (sessionUser && sessionUser.prefs) || {};
+        pane.innerHTML = `
+          <div class="forabg">
+            <div class="forabg-head">
+              <h2>🎛️ Board &amp; UniversaL Universe Preferences</h2>
+            </div>
+            <div class="forabg-body" style="max-width:580px;">
+              <form id="prefsForm">
+                <label class="check-row">
+                  <input id="prHide" type="checkbox" ${p.hide_online ? 'checked' : ''} />
+                  <span><strong>Hide my online status</strong> — Appear as a hidden user in "Who Is Online"</span>
+                </label>
+                <label class="check-row">
+                  <input id="prChallenge" type="checkbox" ${p.allow_challenges !== false ? 'checked' : ''} />
+                  <span><strong>Allow 2-Player Backgammon Challenges</strong> — Show challenge link on my public ProfiLe</span>
+                </label>
+                <label class="check-row" style="margin-bottom:16px;">
+                  <input id="prSound" type="checkbox" ${p.sound_fx !== false ? 'checked' : ''} />
+                  <span><strong>Enable Spatial Dice &amp; Parlour Sound FX</strong></span>
+                </label>
+
+                <div class="field-row">
+                  <label for="prPace">Default Game &amp; Rover Pace:</label>
+                  <select id="prPace" class="select">
+                    <option value="snail" ${p.default_pace === 'snail' ? 'selected' : ''}>🐌 SnaiL (Deliberate inspection)</option>
+                    <option value="turtle" ${(!p.default_pace || p.default_pace === 'turtle') ? 'selected' : ''}>🐢 TurtLe (Balanced Parlour cadence)</option>
+                    <option value="rabbit" ${p.default_pace === 'rabbit' ? 'selected' : ''}>🐇 Rabbit (Rapid tournament tempo)</option>
+                  </select>
+                </div>
+
+                <div id="prMsg"></div>
+                <button type="submit" class="btn btn-primary">💾 Save Preferences</button>
+              </form>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('prefsForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById('prMsg');
+          const { data } = await authApi('update_prefs', 'POST', {
+            hide_online: document.getElementById('prHide').checked,
+            allow_challenges: document.getElementById('prChallenge').checked,
+            sound_fx: document.getElementById('prSound').checked,
+            default_pace: document.getElementById('prPace').value,
+          });
+          if (data.status === 'success' && data.user) {
+            sessionUser = data.user;
+            syncCallsignToLocalStorage(sessionUser);
+            msg.innerHTML = `<div class="notice ok">✓ ${esc(data.message)}</div>`;
+          } else {
+            msg.innerHTML = `<div class="notice err">${esc(data.message || 'Could not save preferences.')}</div>`;
+          }
+        });
+      }
+
+      function renderUcpStats(pane) {
+        const s = (sessionUser && sessionUser.stats) || {};
+        const local = readBrowserGameStats();
+
+        pane.innerHTML = `
+          <div class="forabg">
+            <div class="forabg-head">
+              <h2>🏆 UniversaL Ratings &amp; Trophy Vault</h2>
+              <button type="button" class="btn btn-sm btn-cyan" id="btnSyncVault">☁️ Sync Browser ↔ Cloud ProfiLe</button>
+            </div>
+            <div class="forabg-body">
+              <p style="margin:0 0 14px;color:var(--muted);font-size:0.85rem;">
+                Synchronize high-water ELO ratings, puzzle unlocks, and best scores stored in this browser with your permanent Twisted23 Cloud ProfiLe.
+              </p>
+              <div id="syncMsg"></div>
+              <div class="stat-grid">
+                <div class="stat-card">
+                  <span class="k-label">🔴⚪ Backgammon ELO</span>
+                  <div class="k-val">${s.backgammon_elo || 1200}</div>
+                  <div style="font-size:0.76rem;color:var(--muted);">${s.backgammon_wins || 0} wins / ${s.backgammon_games || 0} games</div>
+                </div>
+                <div class="stat-card">
+                  <span class="k-label">🎩 Top Hat Sudoku ELO</span>
+                  <div class="k-val">${Math.max(s.tophat_elo || 1200, local.tophat_elo || 1200)}</div>
+                  <div style="font-size:0.76rem;color:var(--muted);">Solved: ${Math.max(s.tophat_solved || 0, local.tophat_solved || 0)}</div>
+                </div>
+                <div class="stat-card">
+                  <span class="k-label">🎲 Botchee High Score</span>
+                  <div class="k-val">${Math.max(s.botchee_best || 0, local.botchee_best || 0)}</div>
+                  <div style="font-size:0.76rem;color:var(--muted);">Browser: ${local.botchee_best || 0}</div>
+                </div>
+                <div class="stat-card">
+                  <span class="k-label">🐬 Flipping Dice Level</span>
+                  <div class="k-val">#${Math.max(s.fd_unlocked || 1, local.fd_unlocked || 1)}</div>
+                  <div style="font-size:0.76rem;color:var(--muted);">230 Spatial Levels</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('btnSyncVault').addEventListener('click', async () => {
+          const msg = document.getElementById('syncMsg');
+          msg.innerHTML = `<div class="notice info">Synchronizing browser trophies with Cloud ProfiLe&hellip;</div>`;
+          const { data } = await authApi('sync_stats', 'POST', { stats: local });
+          if (data.status === 'success' && data.user) {
+            sessionUser = data.user;
+            try {
+              const st = sessionUser.stats || {};
+              if (st.botchee_best > (local.botchee_best || 0)) {
+                localStorage.setItem('twst23_botchee_best_score', String(st.botchee_best));
+              }
+              if (st.fd_unlocked > (local.fd_unlocked || 1)) {
+                localStorage.setItem('gw.fdtoo0.unlocked', String(st.fd_unlocked));
+              }
+            } catch (_) {}
+            renderUcpStats(pane);
+            document.getElementById('syncMsg').innerHTML = `<div class="notice ok">✓ Trophy Vault &amp; browser localStorage synchronized!</div>`;
+          }
+        });
+      }
+
+      // =====================================================================
+      // VIEW 4: MEMBERLIST (phpBB memberlist.php)
+      // =====================================================================
+      async function renderMemberListView() {
+        document.getElementById('crumbCurrent').textContent = 'MemberList';
+        const root = document.getElementById('stageRoot');
+        root.innerHTML = `<div class="forabg"><div class="forabg-head"><h2>👥 UniversaL MemberList</h2></div><div class="forabg-body">Loading guild roster&hellip;</div></div>`;
+
+        const { data } = await authApi('memberlist');
+        if (!data || !data.members) return;
+        if (data.online) {
+          onlineState = data.online;
+          renderHeaderAndOnline();
+        }
+
+        let searchTerm = '';
+        let roleFilter = 'all';
+
+        function drawRoster() {
+          const filtered = data.members.filter((m) => {
+            if (roleFilter !== 'all' && m.role !== roleFilter) return false;
+            if (!searchTerm) return true;
+            return [m.username, m.custom_title, m.base38_id, m.location, m.archetype]
+              .join(' ')
+              .toLowerCase()
+              .includes(searchTerm);
+          });
+
+          root.innerHTML = `
+            <div class="forabg">
+              <div class="forabg-head">
+                <h2>👥 Twisted23 UniversaL MemberList (${filtered.length} / ${data.members.length})</h2>
+                ${data.board_stats && data.board_stats.newest_member ? `<span style="font-size:0.79rem;color:var(--muted);">Newest Member: <strong style="color:var(--cyan);">${esc(data.board_stats.newest_member.username)}</strong> [<code>${esc(data.board_stats.newest_member.base38_id)}</code>]</span>` : ''}
+              </div>
+              <div class="forabg-body">
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+                  <input id="mlSearch" class="input" type="search" value="${esc(searchTerm)}" placeholder="Search Call-Sign, Base-38 ID, location&hellip;" style="max-width:300px;" />
+                  <select id="mlRole" class="select" style="max-width:240px;">
+                    <option value="all" ${roleFilter === 'all' ? 'selected' : ''}>All Ranks &amp; Groups</option>
+                    <option value="founder" ${roleFilter === 'founder' ? 'selected' : ''}>👑 Founder</option>
+                    <option value="admin" ${roleFilter === 'admin' ? 'selected' : ''}>🛡️ Administrators</option>
+                    <option value="moderator" ${roleFilter === 'moderator' ? 'selected' : ''}>⚖️ GLobaL Moderators</option>
+                    <option value="wizard" ${roleFilter === 'wizard' ? 'selected' : ''}>🦉 Gravity Wizards VIP</option>
+                    <option value="member" ${roleFilter === 'member' ? 'selected' : ''}>🎲 Parlour Members</option>
+                  </select>
+                </div>
+
+                <div class="table-scroll">
+                  <table class="phpbb-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Call-Sign &amp; Rank</th>
+                        <th>Base-38 ID</th>
+                        <th>Preferred AxLe</th>
+                        <th>Backgammon ELO</th>
+                        <th>Location</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${filtered.map((m, idx) => `
+                        <tr>
+                          <td style="color:var(--muted);">${idx + 1}</td>
+                          <td>
+                            <a href="/ucp/?mode=viewprofile&amp;u=${encodeURIComponent(m.username)}" data-open-user="${esc(m.username)}" style="color:${esc(m.group_color)};font-weight:700;font-size:0.95rem;">
+                              ${esc(m.badge)} ${esc(m.username)}
+                            </a>
+                            <div style="font-size:0.76rem;color:var(--muted);">${esc(m.custom_title || m.group_label)}</div>
+                          </td>
+                          <td><span class="mono-badge">${esc(m.base38_id)}</span></td>
+                          <td style="font-size:0.81rem;">AxLe [${esc((m.preferred_axle || '34').split('').join('–'))}]</td>
+                          <td style="font-family:var(--font-mono);font-weight:600;">${(m.stats && m.stats.backgammon_elo) || 1200}</td>
+                          <td style="color:var(--muted);font-size:0.82rem;">${esc(m.location || '—')}</td>
+                          <td style="color:var(--muted);font-size:0.8rem;">${fmtDate(m.joined_at)}</td>
+                          <td>${m.is_online ? `<span style="color:var(--emerald);font-weight:600;font-size:0.8rem;"><span class="online-dot"></span>Online</span>` : `<span style="color:#64748b;font-size:0.8rem;">Offline</span>`}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          `;
+
+          const sIn = document.getElementById('mlSearch');
+          sIn.addEventListener('input', () => {
+            const pos = sIn.selectionStart;
+            searchTerm = sIn.value.trim().toLowerCase();
+            drawRoster();
+            const nextIn = document.getElementById('mlSearch');
+            nextIn.focus();
+            nextIn.setSelectionRange(pos, pos);
+          });
+
+          document.getElementById('mlRole').addEventListener('change', (ev) => {
+            roleFilter = ev.target.value;
+            drawRoster();
+          });
+
+          root.querySelectorAll('[data-open-user]').forEach((a) => {
+            a.addEventListener('click', (e) => {
+              e.preventDefault();
+              setUrlMode('viewprofile', { u: a.getAttribute('data-open-user') });
+            });
+          });
+        }
+
+        drawRoster();
+      }
+
+      // =====================================================================
+      // VIEW 5: VIEW PUBLIC PROFILE (phpBB memberlist.php?mode=viewprofile)
+      // =====================================================================
+      async function renderViewProfile() {
+        const target = getParams().get('u') || (sessionUser && sessionUser.username) || 'Gary';
+        document.getElementById('crumbCurrent').textContent = `Viewing ProfiLe — ${target}`;
+        const root = document.getElementById('stageRoot');
+        root.innerHTML = `<div class="forabg"><div class="forabg-head"><h2>🪪 Viewing ProfiLe</h2></div><div class="forabg-body">Loading member card&hellip;</div></div>`;
+
+        const { data } = await authApi('view_profile', 'GET', null, `&u=${encodeURIComponent(target)}`);
+        if (!data || !data.profile) {
+          root.innerHTML = `<div class="forabg"><div class="forabg-body"><div class="notice err">Member "${esc(target)}" was not found.</div><button class="btn" id="btnBackRoster">← Back to MemberList</button></div></div>`;
+          document.getElementById('btnBackRoster').onclick = () => setUrlMode('memberlist');
+          return;
+        }
+
+        const m = data.profile;
+        const st = m.stats || {};
+        const isMe = sessionUser && sessionUser.id === m.id;
+
+        root.innerHTML = `
+          <div class="forabg">
+            <div class="forabg-head">
+              <h2>🪪 Viewing ProfiLe — ${esc(m.username)}</h2>
+              <div style="display:flex;gap:8px;">
+                ${isMe ? `<button type="button" class="btn btn-sm btn-primary" id="btnEditMe">✏️ Edit My ProfiLe</button>` : ''}
+                <button type="button" class="btn btn-sm" id="btnRosterBack">← MemberList</button>
+              </div>
+            </div>
+            <div class="forabg-body">
+              <div class="profile-view-grid">
+                <div class="avatar-pedestal">
+                  <div class="avatar-big" style="border-color:${esc(m.group_color)};">${esc(m.badge)}</div>
+                  <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:${esc(m.group_color)};">${esc(m.username)}</div>
+                  <div style="font-size:0.83rem;color:#cbd5e1;margin-top:2px;">${esc(m.custom_title)}</div>
+                  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px;">${esc(m.group_label)}</div>
+                  <div style="margin-bottom:10px;"><span class="mono-badge">Base-38: ${esc(m.base38_id)}</span></div>
+                  <div style="font-size:0.81rem;margin-bottom:14px;">
+                    ${m.is_online ? `<span style="color:var(--emerald);font-weight:600;"><span class="online-dot"></span>Online (${esc(m.current_page || '/')})</span>` : `<span style="color:#64748b;">Currently Offline</span>`}
+                  </div>
+                  <a href="/backgammon/" class="btn btn-sm btn-primary" style="width:100%;">🔴⚪ Challenge in 2P Backgammon</a>
+                </div>
+
+                <div>
+                  <div class="stat-grid">
+                    <div class="stat-card"><span class="k-label">Backgammon ELO</span><div class="k-val">${st.backgammon_elo || 1200}</div></div>
+                    <div class="stat-card"><span class="k-label">Top Hat ELO</span><div class="k-val">${st.tophat_elo || 1200}</div></div>
+                    <div class="stat-card"><span class="k-label">Botchee Best</span><div class="k-val">${st.botchee_best || 0}</div></div>
+                    <div class="stat-card"><span class="k-label">Flipping Dice</span><div class="k-val">#${st.fd_unlocked || 1}</div></div>
+                  </div>
+
+                  <table class="phpbb-table">
+                    <tbody>
+                      <tr><th style="width:180px;">Archetype</th><td>${esc(m.archetype)}</td></tr>
+                      <tr><th>Preferred AxLe Lock</th><td>${esc(axleLabel(m.preferred_axle))}</td></tr>
+                      <tr><th>Favorite Table</th><td>${esc(m.favorite_game)}</td></tr>
+                      <tr><th>Location</th><td>${esc(m.location || '—')}</td></tr>
+                      <tr><th>Website</th><td>${m.website ? `<a href="${esc(m.website)}" target="_blank" rel="noopener">${esc(m.website)}</a>` : '—'}</td></tr>
+                      <tr><th>Joined Parlour</th><td>${fmtDate(m.joined_at)}</td></tr>
+                      <tr><th>Last Active</th><td>${fmtDate(m.last_visit)}</td></tr>
+                      <tr><th>Bio</th><td>${esc(m.bio || '—')}</td></tr>
+                    </tbody>
+                  </table>
+
+                  ${m.signature ? `<div class="sig-box">${esc(m.signature)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('btnRosterBack').onclick = () => setUrlMode('memberlist');
+        const editMe = document.getElementById('btnEditMe');
+        if (editMe) editMe.onclick = () => { currentUcpTab = 'profile'; setUrlMode('ucp', { tab: 'profile' }); };
+      }
+
+      // =====================================================================
+      // ROUTER & BOOTSTRAP
+      // =====================================================================
+      async function route() {
+        const p = getParams();
+        const requested = p.get('mode') || '';
+        if (['login', 'register', 'ucp', 'memberlist', 'viewprofile'].includes(requested)) {
+          currentMode = requested;
+        } else if (requested === 'forgot') {
+          currentMode = 'login';
+        } else {
+          currentMode = sessionUser ? 'ucp' : 'login';
+        }
+
+        if (currentMode === 'login' && sessionUser) {
+          const redir = p.get('redirect') || '';
+          if (redir && redir.startsWith('/')) {
+            window.location.href = redir;
+            return;
+          }
+          currentMode = 'ucp';
+        }
+
+        renderHeaderAndOnline();
+        if (currentMode === 'login') renderLoginView();
+        else if (currentMode === 'register') renderRegisterView();
+        else if (currentMode === 'memberlist') await renderMemberListView();
+        else if (currentMode === 'viewprofile') await renderViewProfile();
+        else await renderUcpView();
+      }
+
+      window.addEventListener('popstate', route);
+
+      (async function init() {
+        try {
+          const { data } = await authApi('check_session', 'GET', null, '&page=%2Fucp%2F');
+          if (data && data.online) onlineState = data.online;
+          if (data && data.status === 'authenticated' && data.user) {
+            sessionUser = data.user;
+            sessionVia = data.session_via || 'password';
+            syncCallsignToLocalStorage(sessionUser);
+          }
+        } catch (_) {}
+        await route();
+      })();
+    })();
+  </script>
+</body>
+</html>

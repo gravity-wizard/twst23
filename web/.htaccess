@@ -17,9 +17,13 @@ RewriteCond %{QUERY_STRING} format=md [NC,OR]
 RewriteCond %{HTTP_USER_AGENT} (ClaudeBot|GPTBot|ChatGPT|Anthropic|PerplexityBot|Perplexity|Cohere|DeepSeek|Google-Extended) [NC]
 RewriteRule ^$ /llms.txt [L]
 
-# 3. Redirect missing legacy /is23pbHL/ to home
+# 3. Redirect missing legacy /is23pbHL/ to home & friendly aliases for UCP/GwCrm
 Redirect 301 /is23pbHL/ /
 Redirect 301 /is23pbHL /
+Redirect 302 /forum /ucp/?mode=memberlist
+Redirect 302 /forum/ /ucp/?mode=memberlist
+Redirect 302 /gwcrm /crm/
+Redirect 302 /GwCrm /crm/
 
 # 4. Standard UTF-8 charset
 AddDefaultCharset UTF-8

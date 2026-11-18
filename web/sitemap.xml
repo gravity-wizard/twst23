@@ -96,4 +96,16 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://twisted23.com/ucp/</loc>
+    <lastmod>2026-11-18T19:20:00.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://twisted23.com/ucp/?mode=memberlist</loc>
+    <lastmod>2026-11-18T19:20:00.000Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
 </urlset>

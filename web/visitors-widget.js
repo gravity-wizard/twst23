@@ -21,6 +21,13 @@
     return (eps0 + dEps) / 3600;
   }
 
+  if (!window.__TW23_UNIVERSE_BAR_LOADED__ && !document.querySelector('script[src*="/tw23-universe-bar.js"]')) {
+    var ubScript = document.createElement('script');
+    ubScript.src = '/tw23-universe-bar.js';
+    ubScript.defer = true;
+    (document.head || document.documentElement).appendChild(ubScript);
+  }
+
   if (/^\/visitors(\/index\.html|\/)?$/i.test(path)) {
     return;
   }

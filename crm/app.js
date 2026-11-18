@@ -20,7 +20,12 @@ async function api(url, opts = {}) {
   } catch (err) {
     throw new Error(`Server returned non-JSON (${res.status} ${res.statusText}): ${text.slice(0, 160)}`);
   }
-  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  if (!res.ok) {
+    const err = new Error(data.error || data.message || `Request failed (${res.status})`);
+    err.httpStatus = res.status;
+    err.payload = data;
+    throw err;
+  }
   return data;
 }
 
@@ -272,22 +277,81 @@ async function runSendBatch(ids, dryRun, step = 1) {
   }
 }
 
-async function refresh() {
-  const [status, data] = await Promise.all([api('api.php?action=status'), api('api.php?action=state')]);
-  serverStatus = status;
-  state = data;
-  const badge = $('#resend-badge');
-  if (status.resendConfigured) {
-    badge.textContent = 'Resend API Ready';
-    badge.className = 'status-pill status-ok';
-  } else {
-    badge.textContent = 'Dry-Run Mode (Add RESEND_API_KEY in .env)';
-    badge.className = 'status-pill status-warn';
+function renderStaffTopbar(user) {
+  const slot = $('#gwcrm-staff-slot');
+  if (!slot) return;
+  if (!user) {
+    slot.innerHTML = `<a href="/ucp/?mode=login&amp;redirect=/crm/" class="staff-link-pill">🔑 Staff Login</a>`;
+    return;
   }
-  renderMetrics();
-  renderContacts();
-  renderDerbies();
-  renderTriage();
+  slot.innerHTML = `
+    <a href="/ucp/" class="staff-link-pill" title="Open User ControL PaneL">
+      <span>${escapeHtml(user.badge || '👑')}</span>
+      <span>${escapeHtml(user.username)}</span>
+      <code style="background:rgba(0,0,0,0.28);color:#38bdf8;padding:1px 5px;border-radius:4px;">${escapeHtml(user.base38_id || '')}</code>
+    </a>
+    <button type="button" id="btn-gwcrm-logout" class="staff-logout-btn">Sign Out</button>
+  `;
+  const logoutBtn = $('#btn-gwcrm-logout');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/auth/auth.php?action=logout', { method: 'POST' });
+      } catch (_) {}
+      renderStaffTopbar(null);
+      await refresh();
+    });
+  }
+}
+
+function setAuthGateVisible(visible, message = '') {
+  const gate = $('#gwcrm-auth-gate');
+  const shell = $('#gwcrm-app-shell');
+  const toolbar = $('#gwcrm-toolbar-actions');
+  if (gate) gate.hidden = !visible;
+  if (shell) shell.hidden = visible;
+  if (toolbar) toolbar.style.display = visible ? 'none' : 'flex';
+  if (visible && message) {
+    const msgEl = $('#gwcrm-auth-msg');
+    if (msgEl) msgEl.textContent = message;
+  }
+}
+
+async function refresh() {
+  try {
+    const [status, data] = await Promise.all([api('api.php?action=status'), api('api.php?action=state')]);
+    setAuthGateVisible(false);
+    serverStatus = status;
+    state = data;
+    renderStaffTopbar(status.authUser || null);
+    const badge = $('#resend-badge');
+    if (status.hostingerMailConfigured) {
+      badge.textContent = 'Hostinger Mail API Ready';
+      badge.className = 'status-pill status-ok';
+    } else if (status.resendConfigured) {
+      badge.textContent = 'Resend API Ready';
+      badge.className = 'status-pill status-ok';
+    } else {
+      badge.textContent = 'Dry-Run / PHP Mail Mode';
+      badge.className = 'status-pill status-warn';
+    }
+    renderMetrics();
+    renderContacts();
+    renderDerbies();
+    renderTriage();
+  } catch (err) {
+    if (err.httpStatus === 401 || err.httpStatus === 403) {
+      renderStaffTopbar(null);
+      setAuthGateVisible(
+        true,
+        err.httpStatus === 403
+          ? 'Your current Twisted23 account does not have Founder / GwCrm Administrator privileges. Sign in as Gary or A7si below.'
+          : 'Sign in with your Twisted23 Founder or GwCrm Administrator credentials to unlock outreach dispatch.'
+      );
+      return;
+    }
+    console.error('GwCrm refresh failed:', err);
+  }
 }
 
 // Tabs
@@ -984,4 +1048,142 @@ $('#btn-add-triage').addEventListener('click', () => {
   });
 });
 
+// GwCrm Staff Login Gate (Passcode + 6-Digit Email Code)
+(function initGwCrmAuthGate() {
+  const tabPw = $('#gate-tab-pw');
+  const tabOtp = $('#gate-tab-otp');
+  const formPw = $('#gwcrm-pw-form');
+  const panelOtp = $('#gwcrm-otp-panel');
+  const sendOtpBtn = $('#btn-send-otp');
+  const formOtpVerify = $('#gwcrm-otp-verify-form');
+
+  function switchGateTab(which) {
+    if (!tabPw || !tabOtp || !formPw || !panelOtp) return;
+    if (which === 'otp') {
+      tabPw.classList.remove('active');
+      tabOtp.classList.add('active');
+      formPw.hidden = true;
+      panelOtp.hidden = false;
+    } else {
+      tabOtp.classList.remove('active');
+      tabPw.classList.add('active');
+      panelOtp.hidden = true;
+      formPw.hidden = false;
+    }
+  }
+
+  if (tabPw) tabPw.addEventListener('click', () => switchGateTab('pw'));
+  if (tabOtp) tabOtp.addEventListener('click', () => switchGateTab('otp'));
+
+  if (formPw) {
+    formPw.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fb = $('#gate-pw-feedback');
+      fb.style.color = 'var(--muted)';
+      fb.textContent = 'Authenticating with Twisted23 Gatekeeper...';
+      try {
+        const res = await fetch('/auth/auth.php?action=login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: $('#gate-username').value.trim(),
+            password: $('#gate-password').value,
+            remember: $('#gate-remember').checked,
+          }),
+        });
+        const data = await res.json();
+        if (data.status === 'otp_required') {
+          $('#gate-otp-identity').value = data.username || $('#gate-username').value.trim();
+          switchGateTab('otp');
+          const otpFb = $('#gate-otp-feedback');
+          otpFb.style.color = 'var(--accent)';
+          otpFb.textContent = data.message;
+          return;
+        }
+        if (data.status === 'success') {
+          fb.style.color = 'var(--ok-text)';
+          fb.textContent = `✓ Welcome back, ${data.user.username}! Loading GwCrm...`;
+          await refresh();
+        } else {
+          fb.style.color = '#b91c1c';
+          fb.textContent = data.message || 'Invalid credentials.';
+        }
+      } catch (err) {
+        fb.style.color = '#b91c1c';
+        fb.textContent = 'Connection error: ' + err.message;
+      }
+    });
+  }
+
+  if (sendOtpBtn) {
+    sendOtpBtn.addEventListener('click', async () => {
+      const identity = ($('#gate-otp-identity').value || '').trim();
+      const fb = $('#gate-otp-feedback');
+      if (!identity) {
+        fb.style.color = '#b91c1c';
+        fb.textContent = 'Enter your Call-Sign (Gary or A7si) or email first.';
+        return;
+      }
+      sendOtpBtn.disabled = true;
+      fb.style.color = 'var(--muted)';
+      fb.textContent = 'Dispatching 6-digit login code via Hostinger Mail API...';
+      try {
+        const res = await fetch('/auth/auth.php?action=request_code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identity }),
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          fb.style.color = 'var(--ok-text)';
+          fb.textContent = `✓ ${data.message}`;
+          $('#gate-otp-code').focus();
+        } else {
+          fb.style.color = '#b91c1c';
+          fb.textContent = data.message || 'Could not send code.';
+        }
+      } catch (err) {
+        fb.style.color = '#b91c1c';
+        fb.textContent = 'Mail dispatch error: ' + err.message;
+      } finally {
+        sendOtpBtn.disabled = false;
+      }
+    });
+  }
+
+  if (formOtpVerify) {
+    formOtpVerify.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fb = $('#gate-otp-feedback');
+      fb.style.color = 'var(--muted)';
+      fb.textContent = 'Verifying 6-digit code...';
+      try {
+        const res = await fetch('/auth/auth.php?action=verify_code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            identity: $('#gate-otp-identity').value.trim(),
+            code: $('#gate-otp-code').value.trim(),
+            new_password: $('#gate-otp-newpw').value,
+            remember: true,
+          }),
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          fb.style.color = 'var(--ok-text)';
+          fb.textContent = `✓ Authenticated as ${data.user.username}! Loading GwCrm...`;
+          await refresh();
+        } else {
+          fb.style.color = '#b91c1c';
+          fb.textContent = data.message || 'Verification failed.';
+        }
+      } catch (err) {
+        fb.style.color = '#b91c1c';
+        fb.textContent = 'Verification error: ' + err.message;
+      }
+    });
+  }
+})();
+
 refresh();
+

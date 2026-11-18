@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administration ControL PaneL (ACP) • Twisted23 &amp; GwCrm</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c14;
+      --panel: #101929;
+      --panel-alt: #0c1321;
+      --panel-head: #17243b;
+      --border: #233554;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --amber: #e5a932;
+      --cyan: #38bdf8;
+      --emerald: #34d399;
+      --crimson: #f87171;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14.5px;
+      line-height: 1.5;
+    }
+
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 18px 48px;
+    }
+
+    .acp-header {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--crimson);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .acp-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .acp-shield {
+      width: 42px;
+      height: 42px;
+      border-radius: 9px;
+      background: rgba(248, 113, 113, 0.14);
+      border: 1.5px solid var(--crimson);
+      display: grid;
+      place-items: center;
+      font-size: 1.25rem;
+    }
+
+    .acp-brand h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.18rem;
+      color: #fff;
+    }
+
+    .acp-brand p {
+      margin: 2px 0 0;
+      font-size: 0.79rem;
+      color: var(--muted);
+    }
+
+    .nav-row {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--panel-alt);
+      color: var(--text);
+      font-size: 0.81rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      font-family: inherit;
+    }
+
+    .pill-btn:hover { border-color: var(--cyan); color: #fff; text-decoration: none; }
+    .pill-btn.amber { background: var(--amber); border-color: var(--amber); color: #080c14; font-weight: 700; }
+
+    .acp-grid {
+      display: grid;
+      grid-template-columns: 245px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 840px) {
+      .acp-grid { grid-template-columns: 1fr; }
+    }
+
+    .acp-sidebar {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .acp-side-head {
+      padding: 10px 14px;
+      background: var(--panel-head);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--crimson);
+    }
+
+    .side-btn {
+      width: 100%;
+      text-align: left;
+      padding: 11px 14px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(35, 53, 84, 0.65);
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 0.86rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      font-family: inherit;
+    }
+
+    .side-btn:hover { background: rgba(56, 189, 248, 0.08); color: #fff; }
+    .side-btn.active {
+      background: rgba(248, 113, 113, 0.14);
+      color: var(--crimson);
+      border-left: 3px solid var(--crimson);
+    }
+
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .box-head {
+      background: var(--panel-head);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .box-head h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 0.96rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--amber);
+    }
+
+    .box-body { padding: 18px; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+      gap: 11px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .kpi span {
+      display: block;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .kpi strong {
+      display: block;
+      margin-top: 4px;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: #fff;
+    }
+
+    table.acp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    table.acp-table th {
+      text-align: left;
+      padding: 9px 11px;
+      background: var(--panel-alt);
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+    }
+
+    table.acp-table td {
+      padding: 10px 11px;
+      border-bottom: 1px solid rgba(35, 53, 84, 0.65);
+    }
+
+    .input, .select {
+      width: 100%;
+      background: #070d18;
+      border: 1px solid #304973;
+      color: var(--text);
+      border-radius: 7px;
+      padding: 8px 11px;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 4px; }
+
+    .notice {
+      padding: 10px 12px;
+      border-radius: 7px;
+      font-size: 0.84rem;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+    .notice.ok { background: rgba(52, 211, 153, 0.12); border-color: rgba(52, 211, 153, 0.45); color: var(--emerald); }
+    .notice.err { background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.45); color: var(--crimson); }
+    .notice.info { background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.45); color: var(--cyan); }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 0.77rem;
+      background: rgba(56, 189, 248, 0.13);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--cyan);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="acp-header">
+      <div class="acp-brand">
+        <div class="acp-shield">🛡️</div>
+        <div>
+          <h1>Administration ControL PaneL (ACP)</h1>
+          <p>Twisted23 UniversaL Universe &amp; GwCrm Command Index</p>
+        </div>
+      </div>
+      <nav class="nav-row" id="acpTopNav">
+        <a href="/" class="pill-btn">🏠 Board Index</a>
+        <a href="/ucp/?mode=memberlist" class="pill-btn">👥 MemberList</a>
+        <a href="/ucp/" class="pill-btn">👤 UCP</a>
+        <a href="/crm/" class="pill-btn amber">📬 GwCrm Hub</a>
+      </nav>
+    </header>
+
+    <main id="acpRoot"></main>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      let overviewData = null;
+      let usersList = [];
+      let activeTab = 'overview';
+      let editingUserId = null;
+
+      function esc(v) {
+        return String(v == null ? '' : v)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      async function api(action, method = 'GET', body = null) {
+        const opts = { method, headers: {} };
+        if (body) {
+          opts.headers['Content-Type'] = 'application/json';
+          opts.body = JSON.stringify(body);
+        }
+        const res = await fetch(`/auth/auth.php?action=${encodeURIComponent(action)}&_t=${Date.now()}`, opts);
+        const data = await res.json();
+        return { ok: res.ok, status: res.status, data };
+      }
+
+      function renderGate(reason) {
+        const root = document.getElementById('acpRoot');
+        root.innerHTML = `
+          <div class="box" style="max-width:540px;margin:28px auto;">
+            <div class="box-head">
+              <h2>🛡️ ACP Staff Authentication Required</h2>
+            </div>
+            <div class="box-body">
+              <p style="margin:0 0 14px;color:var(--muted);font-size:0.88rem;">${esc(reason || 'To administer the Twisted23 UniversaL Universe and GwCrm roles, authenticate with a Founder or Administrator account.')}</p>
+              <div style="display:flex;gap:6px;margin-bottom:14px;">
+                <button type="button" class="pill-btn" id="gTabPw" style="border-color:var(--amber);color:var(--amber);">🔑 Passcode</button>
+                <button type="button" class="pill-btn" id="gTabOtp">📧 6-Digit Email Code (Gary / A7si)</button>
+              </div>
+
+              <form id="acpLoginForm">
+                <div class="field"><label>Call-Sign or Email</label><input id="acpUser" class="input" value="Gary" required /></div>
+                <div class="field"><label>Passcode</label><input id="acpPass" class="input" type="password" required /></div>
+                <div id="acpLoginMsg"></div>
+                <button type="submit" class="pill-btn amber" style="padding:9px 16px;">🔑 Authenticate into ACP</button>
+              </form>
+
+              <div id="acpOtpBox" hidden>
+                <div class="field">
+                  <label>Founder / Admin Call-Sign</label>
+                  <div style="display:flex;gap:8px;">
+                    <input id="acpOtpUser" class="input" value="Gary" />
+                    <button type="button" class="pill-btn" id="btnAcpSendOtp" style="white-space:nowrap;">📧 Send Code</button>
+                  </div>
+                </div>
+                <form id="acpOtpForm">
+                  <div class="field"><label>6-Digit Code</label><input id="acpOtpCode" class="input" maxlength="6" placeholder="123456" style="font-family:var(--font-mono);letter-spacing:0.2em;" required /></div>
+                  <div class="field"><label>Optional: Set Permanent Passcode</label><input id="acpOtpNewPw" class="input" type="password" minlength="6" placeholder="6+ chars (optional)" /></div>
+                  <div id="acpOtpMsg"></div>
+                  <button type="submit" class="pill-btn amber" style="padding:9px 16px;">✓ Verify &amp; Enter ACP</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const fPw = document.getElementById('acpLoginForm');
+        const bOtp = document.getElementById('acpOtpBox');
+        document.getElementById('gTabPw').onclick = () => { fPw.hidden = false; bOtp.hidden = true; };
+        document.getElementById('gTabOtp').onclick = () => { fPw.hidden = true; bOtp.hidden = false; };
+
+        fPw.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const { data } = await api('login', 'POST', {
+            username: document.getElementById('acpUser').value.trim(),
+            password: document.getElementById('acpPass').value,
+            remember: true,
+          });
+          if (data.status === 'otp_required') {
+            fPw.hidden = true;
+            bOtp.hidden = false;
+            document.getElementById('acpOtpMsg').innerHTML = `<div class="notice info">${esc(data.message)}</div>`;
+            return;
+          }
+          if (data.status === 'success') {
+            await boot();
+          } else {
+            document.getElementById('acpLoginMsg').innerHTML = `<div class="notice err">${esc(data.message || 'Login failed.')}</div>`;
+          }
+        });
+
+        document.getElementById('btnAcpSendOtp').onclick = async () => {
+          const msg = document.getElementById('acpOtpMsg');
+          msg.innerHTML = `<div class="notice info">Sending 6-digit code&hellip;</div>`;
+          const { data } = await api('request_code', 'POST', { identity: document.getElementById('acpOtpUser').value.trim() });
+          msg.innerHTML = `<div class="notice ${data.status === 'success' ? 'ok' : 'err'}">${esc(data.message || 'Failed')}</div>`;
+        };
+
+        document.getElementById('acpOtpForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const { data } = await api('verify_code', 'POST', {
+            identity: document.getElementById('acpOtpUser').value.trim(),
+            code: document.getElementById('acpOtpCode').value.trim(),
+            new_password: document.getElementById('acpOtpNewPw').value,
+            remember: true,
+          });
+          if (data.status === 'success') {
+            await boot();
+          } else {
+            document.getElementById('acpOtpMsg').innerHTML = `<div class="notice err">${esc(data.message || 'Invalid code.')}</div>`;
+          }
+        });
+      }
+
+      async function renderShell() {
+        const actor = overviewData.actor;
+        const nav = document.getElementById('acpTopNav');
+        nav.innerHTML = `
+          <span class="mono">${esc(actor.badge)} ${esc(actor.username)} [${esc(actor.role.toUpperCase())}]</span>
+          <a href="/" class="pill-btn">🏠 Parlour</a>
+          <a href="/ucp/" class="pill-btn">👤 UCP</a>
+          <a href="/crm/" class="pill-btn amber">📬 GwCrm Hub</a>
+          <button type="button" class="pill-btn" id="btnAcpLogout">🚪 Sign Out</button>
+        `;
+        document.getElementById('btnAcpLogout').onclick = async () => {
+          await api('logout', 'POST');
+          boot();
+        };
+
+        const root = document.getElementById('acpRoot');
+        root.innerHTML = `
+          <div class="acp-grid">
+            <aside class="acp-sidebar">
+              <div class="acp-side-head">🛡️ ACP Modules</div>
+              <button type="button" class="side-btn ${activeTab === 'overview' ? 'active' : ''}" data-tab="overview"><span>📊 ACP Index &amp; Stats</span><span>›</span></button>
+              <button type="button" class="side-btn ${activeTab === 'users' ? 'active' : ''}" data-tab="users"><span>👥 Manage Users &amp; Ranks</span><span>›</span></button>
+              <button type="button" class="side-btn ${activeTab === 'create' ? 'active' : ''}" data-tab="create"><span>➕ Enroll Member / Staff</span><span>›</span></button>
+              <button type="button" class="side-btn ${activeTab === 'logs' ? 'active' : ''}" data-tab="logs"><span>📜 Security &amp; Audit Log</span><span>›</span></button>
+            </aside>
+            <section id="acpPane"></section>
+          </div>
+        `;
+
+        root.querySelectorAll('[data-tab]').forEach((b) => {
+          b.addEventListener('click', () => {
+            activeTab = b.getAttribute('data-tab');
+            renderShell();
+          });
+        });
+
+        const pane = document.getElementById('acpPane');
+        if (activeTab === 'overview') renderOverviewPane(pane);
+        else if (activeTab === 'users') await renderUsersPane(pane);
+        else if (activeTab === 'create') renderCreatePane(pane);
+        else if (activeTab === 'logs') await renderLogsPane(pane);
+      }
+
+      function renderOverviewPane(pane) {
+        const b = overviewData.board;
+        const crm = overviewData.gwcrm;
+        const bg = overviewData.backgammon;
+        const sys = overviewData.system;
+        const on = overviewData.online;
+
+        pane.innerHTML = `
+          <div class="box">
+            <div class="box-head">
+              <h2>📊 Twisted23 UniversaL Board Statistics</h2>
+              <span class="mono">Base-38 Now: ${esc(b.base38_now)}</span>
+            </div>
+            <div class="box-body">
+              <div class="kpi-grid">
+                <div class="kpi"><span>Registered Accounts</span><strong>${b.total_users}</strong></div>
+                <div class="kpi"><span>Users Online (15m)</span><strong style="color:var(--emerald);">${on.total}</strong></div>
+                <div class="kpi"><span>2P Backgammon Rooms</span><strong>${bg.active_24h} <small style="font-size:0.75rem;color:var(--muted);">/ ${bg.total_rooms}</small></strong></div>
+                <div class="kpi"><span>Newest Member</span><strong style="font-size:1.05rem;color:var(--cyan);">${b.newest_member ? esc(b.newest_member.username) : '—'}</strong></div>
+              </div>
+
+              <table class="acp-table">
+                <tbody>
+                  <tr><th style="width:220px;">PHP Runtime</th><td><code>PHP ${esc(sys.php_version)}</code> • ${esc(sys.server_utc)}</td></tr>
+                  <tr><th>Auth Runtime Storage</th><td>${sys.auth_data_writable ? '<span style="color:var(--emerald);">✓ Writable (.gitignore protected)</span>' : '<span style="color:var(--crimson);">⚠️ Not writable</span>'}</td></tr>
+                  <tr><th>GwCrm Runtime Storage</th><td>${sys.crm_data_writable ? '<span style="color:var(--emerald);">✓ Writable (.gitignore protected)</span>' : '<span style="color:var(--crimson);">⚠️ Not writable</span>'}</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="box">
+            <div class="box-head">
+              <h2>📬 GwCrm Coordination &amp; Outreach Telemetry</h2>
+              <a href="/crm/" class="pill-btn amber">📬 Launch GwCrm Hub →</a>
+            </div>
+            <div class="box-body">
+              <div class="kpi-grid">
+                <div class="kpi"><span>Total Press Contacts</span><strong>${crm.total_contacts}</strong></div>
+                <div class="kpi"><span>Queued</span><strong style="color:var(--amber);">${crm.queued}</strong></div>
+                <div class="kpi"><span>Sent Step 1 / 2</span><strong style="color:var(--cyan);">${crm.sent}</strong></div>
+                <div class="kpi"><span>Human Replies</span><strong style="color:var(--emerald);">${crm.human_replies}</strong></div>
+                <div class="kpi"><span>Auto-Acknowledged</span><strong>${crm.auto_ack}</strong></div>
+                <div class="kpi"><span>Open Triage / Derby</span><strong>${crm.open_triage} / ${crm.derby_items}</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="box">
+            <div class="box-head"><h2>📜 Recent Admin &amp; Security Events</h2></div>
+            <div class="box-body" style="padding:0;">
+              <table class="acp-table">
+                <thead><tr><th>UTC Time</th><th>Event</th><th>Actor</th><th>IP Hash</th><th>Detail</th></tr></thead>
+                <tbody>
+                  ${(overviewData.recent_logs || []).slice(0, 10).map((l) => `
+                    <tr>
+                      <td style="color:var(--muted);font-size:0.78rem;">${esc(l.ts)}</td>
+                      <td><span class="mono">${esc(l.event)}</span></td>
+                      <td><strong>${esc(l.actor)}</strong></td>
+                      <td><code>${esc(l.ip_hash || '')}</code></td>
+                      <td>${esc(l.detail || '')}</td>
+                    </tr>
+                  `).join('') || '<tr><td colspan="5" style="color:var(--muted);">No events recorded yet.</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      async function renderUsersPane(pane) {
+        const res = await api('acp_users');
+        usersList = (res.data && res.data.users) || [];
+
+        const editing = usersList.find((u) => u.id === editingUserId) || null;
+
+        pane.innerHTML = `
+          ${editing ? `
+            <div class="box">
+              <div class="box-head">
+                <h2>✏️ Inspect &amp; Edit User #${editing.id} — ${esc(editing.username)}</h2>
+                <button type="button" class="pill-btn" id="btnCloseEdit">✕ Close</button>
+              </div>
+              <div class="box-body">
+                <form id="editUserForm" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                  <div class="field">
+                    <label>Group / Permission Rank</label>
+                    <select id="euRole" class="select">
+                      ${['founder', 'admin', 'moderator', 'wizard', 'member', 'banned'].map((r) => `<option value="${r}" ${editing.role === r ? 'selected' : ''}>${r.toUpperCase()}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Custom Rank Title</label>
+                    <input id="euTitle" class="input" value="${esc(editing.custom_title)}" />
+                  </div>
+                  <div class="field">
+                    <label>Badge Emblem</label>
+                    <input id="euBadge" class="input" value="${esc(editing.badge)}" maxlength="8" />
+                  </div>
+                  <div class="field">
+                    <label>Registered Email</label>
+                    <input id="euEmail" class="input" type="email" value="${esc(editing.email || '')}" />
+                  </div>
+                  <div class="field" style="grid-column:1/-1;">
+                    <label>Set / Reset Passcode (leave blank to keep current)</label>
+                    <input id="euNewPw" class="input" type="password" minlength="6" placeholder="Enter 6+ characters to set/override passcode" />
+                  </div>
+                  <div id="euMsg" style="grid-column:1/-1;"></div>
+                  <div style="grid-column:1/-1;">
+                    <button type="submit" class="pill-btn amber" style="padding:9px 16px;">💾 Save User Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="box">
+            <div class="box-head">
+              <h2>👥 Registered Users &amp; Staff Ranks (${usersList.length})</h2>
+            </div>
+            <div class="box-body" style="padding:0;overflow-x:auto;">
+              <table class="acp-table">
+                <thead>
+                  <tr><th>ID</th><th>Call-Sign</th><th>Group / Rank</th><th>Base-38</th><th>Email</th><th>Passcode</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                  ${usersList.map((u) => `
+                    <tr>
+                      <td>#${u.id}</td>
+                      <td><strong style="color:${esc(u.group_color)};">${esc(u.badge)} ${esc(u.username)}</strong><div style="font-size:0.75rem;color:var(--muted);">${esc(u.custom_title)}</div></td>
+                      <td><span class="mono">${esc(u.role)}</span></td>
+                      <td><code>${esc(u.base38_id)}</code></td>
+                      <td style="font-size:0.8rem;color:var(--muted);">${esc(u.email || '—')}</td>
+                      <td>${u.has_password ? '<span style="color:var(--emerald);">Set</span>' : '<span style="color:var(--amber);">OTP Only</span>'}</td>
+                      <td><button type="button" class="pill-btn" data-edit-uid="${u.id}">Inspect / Edit</button></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+
+        pane.querySelectorAll('[data-edit-uid]').forEach((b) => {
+          b.addEventListener('click', () => {
+            editingUserId = parseInt(b.getAttribute('data-edit-uid'), 10);
+            renderUsersPane(pane);
+          });
+        });
+
+        const closeBtn = document.getElementById('btnCloseEdit');
+        if (closeBtn) closeBtn.onclick = () => { editingUserId = null; renderUsersPane(pane); };
+
+        const editForm = document.getElementById('editUserForm');
+        if (editForm) {
+          editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('euMsg');
+            const { data } = await api('acp_update_user', 'POST', {
+              id: editing.id,
+              role: document.getElementById('euRole').value,
+              custom_title: document.getElementById('euTitle').value.trim(),
+              badge: document.getElementById('euBadge').value.trim(),
+              email: document.getElementById('euEmail').value.trim(),
+              new_password: document.getElementById('euNewPw').value,
+            });
+            if (data.status === 'success') {
+              msg.innerHTML = `<div class="notice ok">✓ ${esc(data.message)}</div>`;
+              setTimeout(() => renderUsersPane(pane), 600);
+            } else {
+              msg.innerHTML = `<div class="notice err">${esc(data.message || 'Error')}</div>`;
+            }
+          });
+        }
+      }
+
+      function renderCreatePane(pane) {
+        pane.innerHTML = `
+          <div class="box">
+            <div class="box-head"><h2>➕ Enroll New Member or GwCrm Staff Account</h2></div>
+            <div class="box-body" style="max-width:560px;">
+              <form id="acpCreateForm">
+                <div class="field"><label>Call-Sign (Username)</label><input id="cuUser" class="input" required minlength="2" maxlength="24" /></div>
+                <div class="field"><label>Email Address (recommended for 6-digit OTP login)</label><input id="cuEmail" class="input" type="email" /></div>
+                <div class="field"><label>Initial Passcode (optional if Email OTP will be used)</label><input id="cuPass" class="input" type="password" placeholder="6+ chars or leave blank for OTP-only" /></div>
+                <div class="field">
+                  <label>Group / Rank</label>
+                  <select id="cuRole" class="select">
+                    <option value="member">Registered Parlour Member</option>
+                    <option value="wizard">Gravity Wizards VIP</option>
+                    <option value="moderator">GLobaL Moderator</option>
+                    <option value="admin">Administrator (GwCrm + ACP Access)</option>
+                  </select>
+                </div>
+                <div class="field"><label>Custom Rank Title (optional)</label><input id="cuTitle" class="input" placeholder="e.g. GwCrm Outreach Coordinator" /></div>
+                <div id="cuMsg"></div>
+                <button type="submit" class="pill-btn amber" style="padding:9px 16px;">➕ Create Account</button>
+              </form>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('acpCreateForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById('cuMsg');
+          const { data } = await api('acp_create_user', 'POST', {
+            username: document.getElementById('cuUser').value.trim(),
+            email: document.getElementById('cuEmail').value.trim(),
+            password: document.getElementById('cuPass').value,
+            role: document.getElementById('cuRole').value,
+            custom_title: document.getElementById('cuTitle').value.trim(),
+          });
+          if (data.status === 'success') {
+            msg.innerHTML = `<div class="notice ok">✓ ${esc(data.message)} [Base-38: ${esc(data.user.base38_id)}]</div>`;
+            e.target.reset();
+          } else {
+            msg.innerHTML = `<div class="notice err">${esc(data.message || 'Creation failed.')}</div>`;
+          }
+        });
+      }
+
+      async function renderLogsPane(pane) {
+        const res = await api('acp_logs');
+        const logs = (res.data && res.data.logs) || [];
+        pane.innerHTML = `
+          <div class="box">
+            <div class="box-head"><h2>📜 Full Admin, Auth &amp; GwCrm Audit Log (${logs.length})</h2></div>
+            <div class="box-body" style="padding:0;overflow-x:auto;">
+              <table class="acp-table">
+                <thead><tr><th>UTC Timestamp</th><th>Event</th><th>Actor</th><th>IP Hash</th><th>Details</th></tr></thead>
+                <tbody>
+                  ${logs.map((l) => `
+                    <tr>
+                      <td style="color:var(--muted);font-size:0.78rem;white-space:nowrap;">${esc(l.ts)}</td>
+                      <td><span class="mono">${esc(l.event)}</span></td>
+                      <td><strong>${esc(l.actor)}</strong></td>
+                      <td><code>${esc(l.ip_hash || '')}</code></td>
+                      <td>${esc(l.detail || '')}</td>
+                    </tr>
+                  `).join('') || '<tr><td colspan="5" style="color:var(--muted);">No audit entries yet.</td></tr>'}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      async function boot() {
+        const res = await api('acp_overview');
+        if (!res.ok || !res.data || res.data.status !== 'success') {
+          renderGate(res.data && res.data.error ? res.data.error : '');
+          return;
+        }
+        overviewData = res.data;
+        await renderShell();
+      }
+
+      boot();
+    })();
+  </script>
+</body>
+</html>
