@@ -345,11 +345,11 @@
       "angle": "Lost Web Game Archaeology: Rescuing Orphaned Flash Puzzles & 24-State Cube Math",
       "subject_line": "Pitch: Rescuing a vanished Flash dev's orphaned puzzle database from Alaska",
       "custom_blurb": "Hi Kotaku team, Here's a story of internet archaeology, puzzle obsession, and open-web revival: Years after the Flash game tophatpuzzle.com went dark when its creator vanished, I recovered the orphaned puzzle database and resurrected it as Tophat Sudoku (https://twisted23.com), fixing the core algorithmic flaw that allowed multiple solutions. Alongside it, we built Flipping Dice (https://flippingdice.twisted23.com)—a spatial puzzle encoding 24 3D cube rotations directly onto a 2D canvas. We're keeping classic browser puzzle design alive from Anchorage, Alaska, completely ad-free and open to all.",
-      "stage": "Queued",
-      "notes": "Ready for batch review and dispatch.",
-      "delivery_status": "Not Sent",
+      "stage": "Sent Step 1",
+      "notes": "Dispatched Step 1 via Hostinger Mail API (2026-11-18 18:11:21 UTC).",
+      "delivery_status": "Sent (Hostinger Mail API)",
       "resend_id": null,
-      "sent_at": null,
+      "sent_at": "2026-11-18T18:11:21+00:00",
       "step_2_sent_at": null
     },
     {
@@ -362,11 +362,11 @@
       "angle": "Deep Mechanics: Encoding 24 3D Cube Orientations into 2D (Top*10 + Front) & Unique Sudoku Solvers",
       "subject_line": "Design Breakdown Pitch: Encoding 24 3D cube states into 2D & algorithmic unique-solution Sudoku generation",
       "custom_blurb": "Hi Game Developer editorial team, I’d love to pitch an engineering deep-dive on mechanical puzzle design and retro web preservation: 1) In Flipping Dice (https://flippingdice.twisted23.com), how we encoded 24 distinct 3D cube rotational states into a clean 2D mathematical representation (Top*10 + Front) using axle-locked transitions (7-1-7-5 states) without heavy 3D frameworks. 2) In Tophat Sudoku (https://twisted23.com), how we reverse-engineered an orphaned Flash puzzle database after its developer vanished, and built an automated backtracking solver to eliminate ambiguous multi-solution boards. Written by an independent developer building accessible spatial reasoning tools in Anchorage, Alaska.",
-      "stage": "Queued",
-      "notes": "Ready for batch review and dispatch.",
-      "delivery_status": "Not Sent",
+      "stage": "Sent Step 1",
+      "notes": "Dispatched Step 1 via Hostinger Mail API (2026-11-18 18:11:22 UTC).",
+      "delivery_status": "Sent (Hostinger Mail API)",
       "resend_id": null,
-      "sent_at": null,
+      "sent_at": "2026-11-18T18:11:22+00:00",
       "step_2_sent_at": null
     },
     {
