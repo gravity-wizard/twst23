@@ -757,7 +757,93 @@
       .bg-rail-right { width: 64px; }
       .bearoff-chip { width: 46px; }
     }
+
+    /* 2 Remote Players & Social Invite Suite */
+    .btn-mode.highlight-gold {
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .btn-mode.highlight-gold:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #fff;
+    }
+    .btn-mode.highlight-gold.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #fff;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
+    }
+    .remote-tab {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .remote-tab.active {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+    }
+    .btn-social {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: transform 0.12s ease, opacity 0.15s;
+    }
+    .btn-social:hover {
+      transform: translateY(-1px);
+      opacity: 0.92;
+    }
+    .btn-remote-pill {
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-remote-pill:hover { opacity: 0.85; }
+    .btn-reaction {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.15s;
+    }
+    .btn-reaction:hover {
+      transform: scale(1.18);
+      background: #334155;
+    }
+    .pulsing-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      display: inline-block;
+      animation: pulseGlow 1.5s infinite ease-in-out;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 15px #34d399; }
+    }
   </style>
+  <script src="qrcode.min.js"></script>
+  <script src="remote.js"></script>
 </head>
 <body>
   <header>
@@ -782,6 +868,25 @@
     <div class="sub">Functional Player (White) vs Night0WL Bot (Red) &bull; Standard 15-Checker Tournament Rules</div>
 
     <!-- HUD Stats Bar -->
+    <!-- Online Multiplayer Status & Reaction Bar -->
+    <div id="remoteStatusBar" style="display:none; max-width:960px; margin: 0 auto 10px; background: rgba(15,28,50,0.95); border: 1.5px solid #0284c7; border-radius: 12px; padding: 8px 14px; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; box-shadow: 0 4px 20px rgba(2,132,199,0.25);">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span id="remoteRoleBadge" style="padding:3px 8px; border-radius:9999px; font-size:0.75rem; font-weight:800; background:#38bdf8; color:#070d18;">WHITE (HOST)</span>
+        <span id="remoteRoomPill" style="font-size:0.8rem; font-weight:700; color:#f8fafc; font-family:monospace; background:#1e293b; padding:3px 8px; border-radius:6px; cursor:pointer;" title="Click to view room &amp; invite links">Room: <strong id="remoteRoomIdText">TW-XXXX</strong> 📋</span>
+        <span id="remoteTransportBadge" style="font-size:0.72rem; color:#10b981; font-weight:700; display:inline-flex; align-items:center; gap:4px;">⚡ P2P Direct</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+        <button id="btnRemoteInvite" class="btn-remote-pill" style="background:#0284c7; color:#fff;" title="Invite friends or copy link">🔗 Share Invite</button>
+        <div class="remote-reactions" style="display:flex; gap:4px;">
+          <button class="btn-reaction" data-react="🎲 Roll!">🎲</button>
+          <button class="btn-reaction" data-react="👏 Nice!">👏</button>
+          <button class="btn-reaction" data-react="⚡ Double?">⚡</button>
+          <button class="btn-reaction" data-react="🦉 GG!">🦉</button>
+        </div>
+        <button id="btnRemoteLeave" class="btn-remote-pill" style="background:#475569; color:#f1f5f9;">✕ Exit Match</button>
+      </div>
+    </div>
+
     <div class="game-hud">
       <div id="turnBadge" class="turn-badge white">⚪ YOUR TURN (WHITE)</div>
       <div class="pip-counter">
@@ -911,6 +1016,7 @@
       <div class="mode-toggle-group">
         <button class="btn-mode active" id="btnModeBot">🤖 vs Night0WL Bot</button>
         <button class="btn-mode" id="btnModeHvh">👥 Pass & Play (HvH)</button>
+        <button class="btn-mode highlight-gold" id="btnModeRemote">🌐 2 Remote Players</button>
       </div>
       <div class="mode-toggle-group" title="Bot AI Difficulty">
         <button class="btn-mode" id="btnEloNovice">Novice</button>
@@ -936,6 +1042,121 @@
       </div>
     </div>
   </main>
+
+  <!-- Remote 2-Player Match Lounge & Social Media Share Modal -->
+  <div class="victory-overlay" id="remoteModal">
+    <div class="victory-card remote-card" style="max-width:560px; width:92%; padding:1.75rem 1.5rem; border-color:#38bdf8; box-shadow:0 0 50px rgba(56,189,248,0.4);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border-bottom:1px solid #1e293b; padding-bottom:0.75rem;">
+        <div style="text-align:left;">
+          <h2 style="font-size:1.35rem; font-weight:900; color:#38bdf8; margin:0;">🌐 2 Remote Players</h2>
+          <p style="font-size:0.78rem; color:#94a3b8; margin:2px 0 0;">Zero-Latency WebRTC P2P + Hostinger Cloud Relay</p>
+        </div>
+        <button id="btnCloseRemoteModal" style="background:transparent; border:none; color:#94a3b8; font-size:1.5rem; cursor:pointer; line-height:1;">✕</button>
+      </div>
+
+      <!-- Tab selector: Host vs Join -->
+      <div id="remoteTabRow" style="display:flex; gap:6px; margin-bottom:1.25rem;">
+        <button id="tabHostRoom" class="remote-tab active" style="flex:1;">🚀 Host Game (Player 1)</button>
+        <button id="tabJoinRoom" class="remote-tab" style="flex:1;">🎮 Join Game (Player 2)</button>
+      </div>
+
+      <!-- Panel 1: Host Game Setup -->
+      <div id="panelHostSetup" style="display:block;">
+        <div style="text-align:left; margin-bottom:1rem;">
+          <label style="font-size:0.78rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">Your Player Name:</label>
+          <input type="text" id="hostPlayerNameInput" value="Player 1" maxlength="20" style="width:100%; padding:8px 12px; background:#070d18; border:1px solid #334155; border-radius:8px; color:#f8fafc; font-size:0.9rem;" />
+        </div>
+        <div style="text-align:left; margin-bottom:1.25rem;">
+          <label style="font-size:0.78rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:6px;">Dice Variant for Match:</label>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn-mode active" id="btnHostDiceStd" style="flex:1;">🎲 Standard 1–6</button>
+            <button type="button" class="btn-mode" id="btnHostDiceAxle1" style="flex:1;">AxLe {2,3,4,5}</button>
+            <button type="button" class="btn-mode" id="btnHostDiceAxle2" style="flex:1;">AxLe {1,2,5,6}</button>
+          </div>
+        </div>
+        <button id="btnCreateRoomSubmit" class="btn-action" style="width:100%; font-size:1rem; padding:12px; background:#0284c7; border-color:#38bdf8;">
+          ✨ Create Match Room &amp; Generate Invite
+        </button>
+      </div>
+
+      <!-- Panel 2: Join Existing Game -->
+      <div id="panelJoinSetup" style="display:none;">
+        <div style="text-align:left; margin-bottom:1rem;">
+          <label style="font-size:0.78rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">Room Code (or paste full link):</label>
+          <input type="text" id="joinRoomCodeInput" placeholder="e.g. TW-8492" maxlength="40" style="width:100%; padding:10px 12px; background:#070d18; border:1px solid #38bdf8; border-radius:8px; color:#f8fafc; font-size:1.1rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;" />
+        </div>
+        <div style="text-align:left; margin-bottom:1.25rem;">
+          <label style="font-size:0.78rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:4px;">Your Player Name:</label>
+          <input type="text" id="joinPlayerNameInput" value="Player 2" maxlength="20" style="width:100%; padding:8px 12px; background:#070d18; border:1px solid #334155; border-radius:8px; color:#f8fafc; font-size:0.9rem;" />
+        </div>
+        <button id="btnJoinRoomSubmit" class="btn-action" style="width:100%; font-size:1rem; padding:12px; background:#10b981; border-color:#34d399;">
+          🎮 Connect &amp; Start Playing
+        </button>
+      </div>
+
+      <!-- Panel 3: Room Active / Invite Friends via Social Media -->
+      <div id="panelRoomShare" style="display:none;">
+        <div style="background:#070d18; border:1px solid #334155; border-radius:12px; padding:12px; margin-bottom:1rem;">
+          <div style="font-size:0.72rem; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px;">Your Match Room Code</div>
+          <div style="display:flex; justify-content:center; align-items:center; gap:8px;">
+            <span id="shareRoomCodeDisplay" style="font-size:1.9rem; font-weight:900; color:#fbbf24; font-family:monospace; letter-spacing:0.1em;">TW-XXXX</span>
+            <button id="btnCopyRoomCodeOnly" class="btn-mode" style="padding:4px 10px; font-size:0.78rem;" title="Copy Code">📋 Code</button>
+          </div>
+        </div>
+
+        <!-- 1-Click Copy Link Button -->
+        <div style="display:flex; gap:8px; margin-bottom:1rem;">
+          <input type="text" id="shareRoomLinkInput" readonly style="flex:1; padding:8px 10px; background:#070d18; border:1px solid #334155; border-radius:8px; color:#38bdf8; font-size:0.8rem; font-family:monospace;" />
+          <button id="btnCopyFullLink" class="btn-action" style="padding:8px 14px; font-size:0.85rem; white-space:nowrap; background:#0284c7; border-color:#38bdf8;">📋 Copy Link</button>
+        </div>
+
+        <!-- Native Share API button (iOS / Android / macOS) -->
+        <button id="btnNativeShare" class="btn-action" style="width:100%; padding:10px; margin-bottom:1rem; background:linear-gradient(135deg, #10b981 0%, #059669 100%); border-color:#34d399; font-size:0.9rem; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span>📲 Invite via Messages / WhatsApp / Share Sheet</span>
+        </button>
+
+        <!-- Social Media Intent Buttons -->
+        <div style="margin-bottom:1.1rem;">
+          <div style="font-size:0.72rem; color:#94a3b8; font-weight:700; margin-bottom:6px; text-transform:uppercase;">Or Share via SociaL Media:</div>
+          <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+            <a id="shareTwitter" href="#" target="_blank" rel="noopener" class="btn-social" style="background:#000; border-color:#333; color:#fff;" title="Share to 𝕏 / Twitter">
+              𝕏 Post
+            </a>
+            <a id="shareWhatsApp" href="#" target="_blank" rel="noopener" class="btn-social" style="background:#128c7e; border-color:#25d366; color:#fff;" title="Share to WhatsApp">
+              💬 WhatsApp
+            </a>
+            <a id="shareFacebook" href="#" target="_blank" rel="noopener" class="btn-social" style="background:#1877f2; border-color:#4267b2; color:#fff;" title="Share to Facebook">
+              📘 Facebook
+            </a>
+            <a id="shareReddit" href="#" target="_blank" rel="noopener" class="btn-social" style="background:#ff4500; border-color:#ff5722; color:#fff;" title="Share to Reddit">
+              🔴 Reddit
+            </a>
+            <a id="shareEmail" href="#" class="btn-social" style="background:#334155; border-color:#475569; color:#fff;" title="Send Email Invite">
+              ✉️ Email
+            </a>
+          </div>
+        </div>
+
+        <!-- QR Code Scan -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px; background:rgba(255,255,255,0.03); border:1px dashed #334155; border-radius:12px; margin-bottom:1rem;">
+          <div id="qrCanvasContainer" style="background:#fff; padding:8px; border-radius:8px; line-height:0;"></div>
+          <span style="font-size:0.72rem; color:#94a3b8;">Point phone camera to join match instantly</span>
+        </div>
+
+        <!-- Pulsing Status -->
+        <div style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.85rem; color:#38bdf8; font-weight:700;">
+          <span class="pulsing-dot"></span>
+          <span id="roomStatusNotice">Waiting for Player 2 (Red) to connect...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-Game Chat / Banter Toast -->
+  <div id="remoteChatToast" style="display:none; position:fixed; bottom:20px; right:20px; z-index:9999; background:#0f1c36; border:2px solid #38bdf8; border-radius:12px; padding:10px 16px; color:#f8fafc; font-size:0.9rem; font-weight:700; box-shadow:0 8px 30px rgba(0,0,0,0.8);">
+    <span id="remoteChatSender" style="color:#38bdf8; margin-right:6px;"></span>
+    <span id="remoteChatText"></span>
+  </div>
 
   <!-- Doubling Cube Modal (HvH) -->
   <div class="victory-overlay" id="cubeModal">
@@ -1009,7 +1230,8 @@
     }
 
     // Backgammon State
-    let gameMode = 'bot';          // 'bot' or 'hvh'
+    let gameMode = 'bot';          // 'bot', 'hvh', or 'remote'
+    let remoteMgr = new window.BackgammonRemote();
     let botElo = 'club';           // 'novice' (1100), 'club' (1550), 'gm' (2050)
     let diceVariant = 'standard';  // 'standard' (1..6), 'axle_1_6' {2,3,4,5}, 'axle_3_4' {1,2,5,6}
     let board = [];                // indices 1..24: { player: 'white'|'red'|null, count: number }
@@ -1088,10 +1310,14 @@
       updateCubeUI();
       renderBoard();
       updateHUD();
-      document.getElementById('btnRollDice').disabled = false;
-      document.getElementById('btnDoubleCube').disabled = false;
-      document.getElementById('statusHead').textContent = "Game Ready — White to Roll";
-      document.getElementById('statusDesc').textContent = "Click 'Roll Two 3D Dice' to roll.";
+      if (gameMode === 'remote') {
+        updateRemoteTurnUI();
+      } else {
+        document.getElementById('btnRollDice').disabled = false;
+        document.getElementById('btnDoubleCube').disabled = false;
+        document.getElementById('statusHead').textContent = "Game Ready — White to Roll";
+        document.getElementById('statusDesc').textContent = "Click 'Roll Two 3D Dice' to roll.";
+      }
     }
 
     function updateCubeUI() {
@@ -1182,11 +1408,13 @@
       // Bar click handlers
       document.getElementById('barWhite').onclick = () => {
         if (turn === 'white' && bar.white > 0 && diceRemaining.length > 0) {
+          if (gameMode === 'remote' && remoteMgr.role !== 'white') return;
           selectSource('bar');
         }
       };
       document.getElementById('barRed').onclick = () => {
-        if (gameMode === 'hvh' && turn === 'red' && bar.red > 0 && diceRemaining.length > 0) {
+        const canClickRed = (gameMode === 'hvh' && turn === 'red') || (gameMode === 'remote' && turn === 'red' && remoteMgr.role === 'red');
+        if (canClickRed && bar.red > 0 && diceRemaining.length > 0) {
           selectSource('bar');
         }
       };
@@ -1194,11 +1422,13 @@
       // Bear-off tray handlers
       document.getElementById('trayWhite').onclick = () => {
         if (turn === 'white' && selectedSource !== null && legalMovesForSource.includes('off')) {
+          if (gameMode === 'remote' && remoteMgr.role !== 'white') return;
           onHumanMoveConfirmed(selectedSource, 'off');
         }
       };
       document.getElementById('trayRed').onclick = () => {
-        if (gameMode === 'hvh' && turn === 'red' && selectedSource !== null && legalMovesForSource.includes('off')) {
+        const canClickRed = (gameMode === 'hvh' && turn === 'red') || (gameMode === 'remote' && turn === 'red' && remoteMgr.role === 'red');
+        if (canClickRed && selectedSource !== null && legalMovesForSource.includes('off')) {
           onHumanMoveConfirmed(selectedSource, 'off');
         }
       };
@@ -1367,6 +1597,9 @@
       if (!match) return;
 
       applyCheckerMove(active, source, dest, match.dieUsed);
+      if (gameMode === 'remote') {
+        remoteMgr.sendAction('move', { source, dest, dieUsed: match.dieUsed });
+      }
 
       selectedSource = null;
       legalMovesForSource = [];
@@ -1375,6 +1608,9 @@
 
       // Check Victory
       if (off[active] >= 15) {
+        if (gameMode === 'remote') {
+          remoteMgr.sendAction('victory', { winner: active });
+        }
         showVictory(active);
         return;
       }
@@ -1417,6 +1653,19 @@
 
     // Turn Advance Coordinator
     function advanceTurn() {
+      if (gameMode === 'remote') {
+        const next = turn === 'white' ? 'red' : 'white';
+        remoteMgr.sendAction('pass_turn', { nextTurn: next });
+        turn = next;
+        diceRemaining = [];
+        selectedSource = null;
+        legalMovesForSource = [];
+        updateDicePills();
+        renderBoard();
+        updateHUD();
+        updateRemoteTurnUI();
+        return;
+      }
       if (turn === 'white') {
         if (gameMode === 'bot') {
           setTimeout(startBotTurn, 750);
@@ -1432,6 +1681,7 @@
     function onPointClicked(pointNum) {
       if (isBotMoving || diceRemaining.length === 0) return;
       if (gameMode === 'bot' && turn !== 'white') return;
+      if (gameMode === 'remote' && turn !== remoteMgr.role) return;
       const active = turn;
 
       // If must enter from bar
@@ -1500,6 +1750,7 @@
     document.getElementById('btnRollDice').onclick = () => {
       if (isBotMoving || diceRemaining.length > 0) return;
       if (gameMode === 'bot' && turn !== 'white') return;
+      if (gameMode === 'remote' && turn !== remoteMgr.role) return;
 
       const btnRoll = document.getElementById('btnRollDice');
       try {
@@ -1512,6 +1763,9 @@
 
         const isDoubles = d1 === d2;
         diceRemaining = isDoubles ? [d1, d1, d1, d1] : [d1, d2];
+        if (gameMode === 'remote') {
+          remoteMgr.sendAction('roll', { d1, d2, diceRemaining: [...diceRemaining] });
+        }
 
         const pLabel = active === 'white' ? (gameMode === 'hvh' ? 'Player 1 (White)' : 'You') : 'Player 2 (Red)';
         if (isDoubles) {
@@ -1744,6 +1998,22 @@
         return;
       }
       if (gameMode === 'bot' && turn !== 'white') return;
+      if (gameMode === 'remote') {
+        if (turn !== remoteMgr.role) {
+          showToast("⚠️ Can only offer double on your turn!");
+          return;
+        }
+        if (cubeOwner !== null && cubeOwner !== remoteMgr.role) {
+          showToast("⚠️ Opponent owns doubling cube! Only owner may redouble.");
+          return;
+        }
+        playClack(640);
+        const nextVal = cubeValue === 64 ? 2 : (cubeValue * 2);
+        remoteMgr.sendAction('double_offer', { nextVal, offering: remoteMgr.role });
+        showToast(`⚖️ Double offered to ${nextVal} pts! Waiting for opponent...`);
+        logAction(`⚖️ You offered a double to <strong>${nextVal} points</strong>. Waiting for opponent response...`);
+        return;
+      }
 
       const active = turn;
       const opponent = active === 'white' ? 'red' : 'white';
@@ -1787,6 +2057,19 @@
     };
 
     document.getElementById('btnAcceptDouble').onclick = () => {
+      if (gameMode === 'remote' && pendingCubeDouble) {
+        const { nextVal, receiving } = pendingCubeDouble;
+        remoteMgr.sendAction('double_accept', { nextVal, owner: receiving });
+        cubeValue = nextVal;
+        cubeOwner = receiving;
+        updateCubeUI();
+        showToast(`⚖️ You ACCEPTED double to ${cubeValue} pts!`);
+        logAction(`⚖️ You ACCEPTED double to ${cubeValue} points.`);
+        playClack(680);
+        document.getElementById('cubeModal').classList.remove('open');
+        pendingCubeDouble = null;
+        return;
+      }
       if (!pendingCubeDouble) return;
       const { receiving, nextVal } = pendingCubeDouble;
       cubeValue = nextVal;
@@ -1803,6 +2086,16 @@
     };
 
     document.getElementById('btnResignDouble').onclick = () => {
+      if (gameMode === 'remote' && pendingCubeDouble) {
+        const { offering } = pendingCubeDouble;
+        remoteMgr.sendAction('double_resign', { offering });
+        document.getElementById('cubeModal').classList.remove('open');
+        pendingCubeDouble = null;
+        showToast(`🏳️ You resigned the double match.`);
+        logAction(`🏳️ You resigned match. Opponent wins.`);
+        showVictory(offering);
+        return;
+      }
       if (!pendingCubeDouble) return;
       const { offering, receiving } = pendingCubeDouble;
       document.getElementById('cubeModal').classList.remove('open');
@@ -1826,7 +2119,7 @@
 
       // Highlight legal targets and movable sources
       const active = turn;
-      const isHumanTurn = (gameMode === 'hvh') || (gameMode === 'bot' && active === 'white');
+      const isHumanTurn = (gameMode === 'hvh') || (gameMode === 'bot' && active === 'white') || (gameMode === 'remote' && active === remoteMgr.role);
 
       document.getElementById('trayWhite').classList.remove('highlight');
       document.getElementById('trayRed').classList.remove('highlight');
@@ -1931,6 +2224,7 @@
         let msg = 'CLICK ROLL TO BEGIN';
         if (gameMode === 'bot' && turn === 'red') msg = 'BOT ROLLING...';
         else if (gameMode === 'hvh' && turn === 'red') msg = 'P2 (RED) TO ROLL';
+        else if (gameMode === 'remote') msg = turn === remoteMgr.role ? 'ROLL YOUR DICE' : 'WAITING FOR OPPONENT...';
         else msg = 'P1 (WHITE) TO ROLL';
         wrap.innerHTML = `<span style="color:#94a3b8; font-size:0.85rem; font-family:ui-monospace, monospace;">${msg}</span>`;
         return;
@@ -1949,10 +2243,10 @@
       const tb = document.getElementById('turnBadge');
       if (turn === 'white') {
         tb.className = 'turn-badge white';
-        tb.textContent = gameMode === 'hvh' ? '⚪ PLAYER 1 (WHITE)' : '⚪ YOUR TURN (WHITE)';
+        tb.textContent = gameMode === 'hvh' ? '⚪ PLAYER 1 (WHITE)' : (gameMode === 'remote' ? (remoteMgr.role === 'white' ? '⚪ YOUR TURN (WHITE)' : `⚪ ${(remoteMgr.hostName || 'PLAYER 1').toUpperCase()}'S TURN (WHITE)`) : '⚪ YOUR TURN (WHITE)');
       } else {
         tb.className = 'turn-badge red';
-        tb.textContent = gameMode === 'hvh' ? '🔴 PLAYER 2 (RED)' : '🤖 NIGHT0WL BOT (RED)';
+        tb.textContent = gameMode === 'hvh' ? '🔴 PLAYER 2 (RED)' : (gameMode === 'remote' ? (remoteMgr.role === 'red' ? '🔴 YOUR TURN (RED)' : `🔴 ${(remoteMgr.guestName || 'PLAYER 2').toUpperCase()}'S TURN (RED)`) : '🤖 NIGHT0WL BOT (RED)');
       }
       const { white, red } = getPipCounts();
       document.getElementById('whitePipCount').textContent = white;
@@ -2010,7 +2304,18 @@
       const totalPts = basePts * multiplier;
       const typeBadge = multiplier > 1 ? ` • ${victoryType}` : '';
 
-      if (gameMode === 'hvh') {
+      if (gameMode === 'remote') {
+        const isMe = player === remoteMgr.role;
+        const myName = remoteMgr.role === 'white' ? remoteMgr.hostName : remoteMgr.guestName;
+        const oppName = remoteMgr.role === 'white' ? (remoteMgr.guestName || 'Player 2 (Red)') : (remoteMgr.hostName || 'Player 1 (White)');
+        if (isMe) {
+          title.textContent = multiplier === 3 ? '👑 BACKGAMMON VICTORY!' : (multiplier === 2 ? '⚡ GAMMON VICTORY!' : '🏆 VICTORY!');
+          desc.innerHTML = `Congratulations, <strong>${myName}</strong>! You defeated ${oppName} for <strong>${totalPts} point(s)</strong> (${basePts} base × ${multiplier})${typeBadge}!`;
+        } else {
+          title.textContent = multiplier === 3 ? '👑 OPPONENT WINS WITH BACKGAMMON!' : (multiplier === 2 ? '⚡ OPPONENT WINS WITH GAMMON!' : '🏳️ OPPONENT WINS');
+          desc.innerHTML = `<strong>${oppName}</strong> bore off all 15 checkers first for <strong>${totalPts} point(s)</strong> (${basePts} base × ${multiplier})${typeBadge}. Good game!`;
+        }
+      } else if (gameMode === 'hvh') {
         if (player === 'white') {
           title.textContent = multiplier === 3 ? '👑 BACKGAMMON! PLAYER 1 (WHITE) WINS!' : (multiplier === 2 ? '⚡ GAMMON! PLAYER 1 (WHITE) WINS!' : '🏆 PLAYER 1 (WHITE) WINS!');
           desc.innerHTML = `Player 1 bore off all 15 checkers first for <strong>${totalPts} point(s)</strong> (${basePts} base × ${multiplier})${typeBadge}! Splendid match.`;
@@ -2032,6 +2337,23 @@
 
     // Game Mode Switcher
     function setGameMode(mode) {
+      if (gameMode === mode) return;
+      gameMode = mode;
+      document.getElementById('btnModeBot').classList.toggle('active', mode === 'bot');
+      document.getElementById('btnModeHvh').classList.toggle('active', mode === 'hvh');
+      document.getElementById('btnModeRemote').classList.toggle('active', mode === 'remote');
+      document.getElementById('remoteStatusBar').style.display = mode === 'remote' ? 'flex' : 'none';
+      setupStandardBoard();
+      if (mode === 'hvh') {
+        logAction("👥 Mode switched to Pass & Play (HvH). Player 1 (White) rolls first!");
+      } else if (mode === 'bot') {
+        logAction("🤖 Mode switched to vs Night0WL Bot. You play White, Bot plays Red.");
+      } else if (mode === 'remote') {
+        logAction("🌐 2 Remote Players Mode active.");
+      }
+      return;
+    }
+    function _legacy_setGameMode(mode) {
       if (gameMode === mode) return;
       gameMode = mode;
       document.getElementById('btnModeBot').classList.toggle('active', mode === 'bot');
@@ -2060,6 +2382,364 @@
 
     bindClick('btnModeBot', () => setGameMode('bot'));
     bindClick('btnModeHvh', () => setGameMode('hvh'));
+
+    // ==========================================
+    // 2 REMOTE PLAYERS & SOCIAL INVITE SUITE
+    // ==========================================
+    let remoteHostDiceVariant = 'standard';
+    let remoteChatToastTimer = null;
+
+    function showRemoteChatToast(sender, text) {
+      const toast = document.getElementById('remoteChatToast');
+      const senderEl = document.getElementById('remoteChatSender');
+      const textEl = document.getElementById('remoteChatText');
+      if (!toast) return;
+      senderEl.textContent = sender ? `${sender}:` : '';
+      textEl.textContent = text;
+      toast.style.display = 'block';
+      if (remoteChatToastTimer) clearTimeout(remoteChatToastTimer);
+      remoteChatToastTimer = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    function openRemoteModal(tab = 'host') {
+      const modal = document.getElementById('remoteModal');
+      if (tab === 'host') {
+        document.getElementById('tabHostRoom').classList.add('active');
+        document.getElementById('tabJoinRoom').classList.remove('active');
+        document.getElementById('panelHostSetup').style.display = 'block';
+        document.getElementById('panelJoinSetup').style.display = 'none';
+        document.getElementById('panelRoomShare').style.display = 'none';
+      } else if (tab === 'join') {
+        document.getElementById('tabJoinRoom').classList.add('active');
+        document.getElementById('tabHostRoom').classList.remove('active');
+        document.getElementById('panelJoinSetup').style.display = 'block';
+        document.getElementById('panelHostSetup').style.display = 'none';
+        document.getElementById('panelRoomShare').style.display = 'none';
+      } else if (tab === 'share') {
+        document.getElementById('panelHostSetup').style.display = 'none';
+        document.getElementById('panelJoinSetup').style.display = 'none';
+        document.getElementById('panelRoomShare').style.display = 'block';
+      }
+      modal.classList.add('open');
+    }
+
+    function closeRemoteModal() {
+      document.getElementById('remoteModal').classList.remove('open');
+    }
+
+    function updateRemoteTurnUI() {
+      if (gameMode !== 'remote') return;
+      const isMyTurn = turn === remoteMgr.role;
+      const btnRoll = document.getElementById('btnRollDice');
+      const btnCube = document.getElementById('btnDoubleCube');
+      
+      if (isMyTurn) {
+        btnRoll.disabled = diceRemaining.length > 0;
+        btnRoll.className = 'btn-action';
+        btnRoll.textContent = `🎲 Roll ${remoteMgr.role === 'white' ? 'White' : 'Red'} Dice`;
+        btnCube.disabled = diceRemaining.length > 0;
+        document.getElementById('statusHead').textContent = `🟢 YOUR TURN (${remoteMgr.role.toUpperCase()}) — Roll the Dice`;
+        document.getElementById('statusDesc').textContent = "Click 'Roll Dice' to start your turn.";
+      } else {
+        btnRoll.disabled = true;
+        btnRoll.className = 'btn-action';
+        const oppName = remoteMgr.role === 'white' ? (remoteMgr.guestName || 'Player 2 (Red)') : (remoteMgr.hostName || 'Player 1 (White)');
+        btnRoll.textContent = `⏳ ${oppName}'s Turn...`;
+        btnCube.disabled = true;
+        document.getElementById('statusHead').textContent = `⏳ ${oppName}'s Turn`;
+        document.getElementById('statusDesc').textContent = `Waiting for ${oppName} to roll and play...`;
+      }
+    }
+
+    // Bind Remote Manager Handlers
+    remoteMgr.onEvent((action) => {
+      const { type, player, payload } = action;
+      if (type === 'roll') {
+        const { d1, d2, diceRemaining: rem } = payload;
+        renderDiceCanvases(d1, d2);
+        diceRemaining = rem ? [...rem] : (d1 === d2 ? [d1, d1, d1, d1] : [d1, d2]);
+        const isDoubles = d1 === d2;
+        const oppName = remoteMgr.role === 'white' ? (remoteMgr.guestName || 'Player 2 (Red)') : (remoteMgr.hostName || 'Player 1 (White)');
+        playClack(520);
+        if (isDoubles) {
+          logAction(`🎲 ${oppName} rolled DOUBLE ${d1}s (${diceRemaining.length} moves)!`);
+        } else {
+          logAction(`🎲 ${oppName} rolled ${d1} and ${d2}.`);
+        }
+        updateDicePills();
+        updateHUD();
+        renderBoard();
+      } else if (type === 'move') {
+        const { source, dest, dieUsed } = payload;
+        applyCheckerMove(player, source, dest, dieUsed);
+        const idx = diceRemaining.indexOf(dieUsed);
+        if (idx !== -1) diceRemaining.splice(idx, 1);
+        selectedSource = null;
+        legalMovesForSource = [];
+        updateDicePills();
+        renderBoard();
+        updateHUD();
+      } else if (type === 'pass_turn') {
+        turn = payload.nextTurn || (player === 'white' ? 'red' : 'white');
+        diceRemaining = [];
+        selectedSource = null;
+        legalMovesForSource = [];
+        updateDicePills();
+        renderBoard();
+        updateHUD();
+        updateRemoteTurnUI();
+      } else if (type === 'double_offer') {
+        const { nextVal, offering } = payload;
+        pendingCubeDouble = { offering, receiving: remoteMgr.role, nextVal };
+        const modal = document.getElementById('cubeModal');
+        const title = document.getElementById('cubeModalTitle');
+        const desc = document.getElementById('cubeModalDesc');
+        const oppName = offering === 'white' ? (remoteMgr.hostName || 'Player 1 (White)') : (remoteMgr.guestName || 'Player 2 (Red)');
+        title.textContent = `⚖️ ${oppName.toUpperCase()} OFFERS DOUBLE`;
+        desc.innerHTML = `<strong>${oppName}</strong> has offered to double stakes to <strong>${nextVal} points</strong>.<br><br>Do you accept or resign?`;
+        modal.classList.add('open');
+      } else if (type === 'double_accept') {
+        const { nextVal, owner } = payload;
+        cubeValue = nextVal;
+        cubeOwner = owner;
+        updateCubeUI();
+        showToast(`⚖️ Opponent ACCEPTED double to ${cubeValue} pts!`);
+        logAction(`⚖️ Opponent ACCEPTED the double! Stakes are now ${cubeValue} points.`);
+        playClack(680);
+      } else if (type === 'double_resign') {
+        showToast(`🏳️ Opponent declined double and resigned match!`);
+        logAction(`🏳️ Opponent declined double and resigned match.`);
+        showVictory(remoteMgr.role);
+      } else if (type === 'victory') {
+        showVictory(payload.winner);
+      } else if (type === 'restart') {
+        document.getElementById('victoryModal').classList.remove('open');
+        showToast('🔄 Opponent started a new match!');
+        setupStandardBoard();
+      } else if (type === 'player_joined') {
+        showToast(`🎮 ${action.payload.guestName || 'Player 2'} joined the match!`);
+        logAction(`🎮 <strong>${action.payload.guestName || 'Player 2'}</strong> joined the match room!`);
+        closeRemoteModal();
+        updateRemoteTurnUI();
+      }
+    });
+
+    remoteMgr.onStatus((info) => {
+      const { status, message, transport, role, roomId, hostName, guestName } = info;
+      const roleBadge = document.getElementById('remoteRoleBadge');
+      const roomPill = document.getElementById('remoteRoomIdText');
+      const transBadge = document.getElementById('remoteTransportBadge');
+      const statusNotice = document.getElementById('roomStatusNotice');
+
+      if (roleBadge && role) {
+        roleBadge.textContent = role === 'white' ? `WHITE (HOST)` : `RED (GUEST)`;
+        roleBadge.style.background = role === 'white' ? '#38bdf8' : '#ef4444';
+        roleBadge.style.color = '#fff';
+      }
+      if (roomPill && roomId) {
+        roomPill.textContent = roomId;
+      }
+      if (transBadge) {
+        if (transport === 'webrtc') {
+          transBadge.innerHTML = '⚡ P2P Direct (&lt;40ms)';
+          transBadge.style.color = '#10b981';
+        } else if (transport === 'cloud') {
+          transBadge.innerHTML = '☁ Cloud Relay';
+          transBadge.style.color = '#38bdf8';
+        }
+      }
+      if (statusNotice) {
+        statusNotice.textContent = message;
+      }
+      if (status === 'connected') {
+        showToast(`🌐 ${message}`);
+        closeRemoteModal();
+        updateRemoteTurnUI();
+      }
+    });
+
+    remoteMgr.onChat((action) => {
+      const sender = action.payload?.sender || (action.player === 'white' ? remoteMgr.hostName : remoteMgr.guestName);
+      const text = action.payload?.text || '';
+      showRemoteChatToast(sender, text);
+    });
+
+    // Remote Dialog Tabs
+    bindClick('tabHostRoom', () => openRemoteModal('host'));
+    bindClick('tabJoinRoom', () => openRemoteModal('join'));
+    bindClick('btnCloseRemoteModal', closeRemoteModal);
+
+    // Host Dice Variant Buttons inside Modal
+    const setHostDiceBtn = (variant) => {
+      remoteHostDiceVariant = variant;
+      document.getElementById('btnHostDiceStd')?.classList.toggle('active', variant === 'standard');
+      document.getElementById('btnHostDiceAxle1')?.classList.toggle('active', variant === 'axle_1_6');
+      document.getElementById('btnHostDiceAxle2')?.classList.toggle('active', variant === 'axle_3_4');
+    };
+    bindClick('btnHostDiceStd', () => setHostDiceBtn('standard'));
+    bindClick('btnHostDiceAxle1', () => setHostDiceBtn('axle_1_6'));
+    bindClick('btnHostDiceAxle2', () => setHostDiceBtn('axle_3_4'));
+
+    // Create Room Submit
+    bindClick('btnCreateRoomSubmit', async () => {
+      const btn = document.getElementById('btnCreateRoomSubmit');
+      btn.disabled = true;
+      btn.textContent = '⏳ Creating Room & Signaling Server...';
+      const hostName = document.getElementById('hostPlayerNameInput')?.value?.trim() || 'Player 1';
+      try {
+        const data = await remoteMgr.createRoom(hostName, remoteHostDiceVariant);
+        diceVariant = remoteHostDiceVariant;
+        setGameMode('remote');
+        openRemoteModal('share');
+
+        // Populate share fields
+        const roomId = data.roomId;
+        document.getElementById('shareRoomCodeDisplay').textContent = roomId;
+        const shares = remoteMgr.getShareUrls(roomId);
+        document.getElementById('shareRoomLinkInput').value = shares.url;
+
+        // Populate Social Media links
+        document.getElementById('shareTwitter').href = shares.twitter;
+        document.getElementById('shareWhatsApp').href = shares.whatsapp;
+        document.getElementById('shareFacebook').href = shares.facebook;
+        document.getElementById('shareReddit').href = shares.reddit;
+        document.getElementById('shareEmail').href = shares.email;
+
+        // Render QR Code
+        remoteMgr.renderQR('qrCanvasContainer', shares.url);
+        showToast(`🎉 Room ${roomId} created! Share invite link or QR.`);
+      } catch (err) {
+        alert('Failed to create match room: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Create Match Room & Generate Invite';
+      }
+    });
+
+    // Join Room Submit
+    bindClick('btnJoinRoomSubmit', async () => {
+      const btn = document.getElementById('btnJoinRoomSubmit');
+      let rawCode = document.getElementById('joinRoomCodeInput')?.value?.trim() || '';
+      if (!rawCode) {
+        alert('Please enter a room code (e.g. TW-8492)');
+        return;
+      }
+      // If user pasted a full URL
+      if (rawCode.includes('room=')) {
+        try {
+          const u = new URL(rawCode.startsWith('http') ? rawCode : 'http://' + rawCode);
+          rawCode = u.searchParams.get('room') || rawCode;
+        } catch (e) {}
+      }
+      btn.disabled = true;
+      btn.textContent = '⏳ Connecting to Match Room...';
+      const guestName = document.getElementById('joinPlayerNameInput')?.value?.trim() || 'Player 2';
+      try {
+        const data = await remoteMgr.joinRoom(rawCode, guestName);
+        if (data.diceVariant) {
+          diceVariant = data.diceVariant;
+        }
+        setGameMode('remote');
+        closeRemoteModal();
+        showToast(`🎮 Joined match room ${rawCode}!`);
+      } catch (err) {
+        alert('Failed to join match: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🎮 Connect & Start Playing';
+      }
+    });
+
+    // Copy Full Link Button
+    bindClick('btnCopyFullLink', async () => {
+      const input = document.getElementById('shareRoomLinkInput');
+      try {
+        await navigator.clipboard.writeText(input.value);
+        showToast('📋 Link copied to clipboard!');
+        const btn = document.getElementById('btnCopyFullLink');
+        const prev = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        setTimeout(() => { btn.textContent = prev; }, 2000);
+      } catch (e) {
+        input.select();
+        document.execCommand('copy');
+        showToast('📋 Link copied to clipboard!');
+      }
+    });
+
+    // Copy Room Code Only
+    bindClick('btnCopyRoomCodeOnly', async () => {
+      const code = document.getElementById('shareRoomCodeDisplay')?.textContent?.trim();
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code);
+        showToast(`📋 Room Code ${code} copied!`);
+      } catch (e) {}
+    });
+
+    // Native Web Share Sheet
+    bindClick('btnNativeShare', async () => {
+      if (!remoteMgr.roomId) return;
+      const res = await remoteMgr.shareNative(remoteMgr.roomId);
+      if (res.method === 'clipboard') {
+        showToast('📋 Invite link copied to clipboard!');
+      }
+    });
+
+    // Status bar controls
+    bindClick('remoteRoomPill', () => {
+      if (remoteMgr.roomId) {
+        openRemoteModal('share');
+      } else {
+        openRemoteModal('host');
+      }
+    });
+    bindClick('btnRemoteInvite', () => {
+      if (remoteMgr.roomId) {
+        openRemoteModal('share');
+      } else {
+        openRemoteModal('host');
+      }
+    });
+    bindClick('btnRemoteLeave', () => {
+      if (confirm('Leave current remote match and return to solo play?')) {
+        remoteMgr.leaveRoom();
+        setGameMode('bot');
+        showToast('Left remote match room.');
+      }
+    });
+
+    // Reaction quick chats
+    document.querySelectorAll('.btn-reaction').forEach(btn => {
+      btn.onclick = () => {
+        const text = btn.getAttribute('data-react');
+        if (text && remoteMgr.roomId) {
+          remoteMgr.sendChat(text);
+          showRemoteChatToast('You', text);
+        }
+      };
+    });
+
+    // Mode Toggle Button for Remote
+    bindClick('btnModeRemote', () => {
+      if (gameMode === 'remote' && remoteMgr.roomId) {
+        openRemoteModal('share');
+      } else {
+        openRemoteModal('host');
+      }
+    });
+
+    // Auto-detect ?room=TW-XXXX parameter on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomParam = urlParams.get('room');
+    if (roomParam) {
+      const input = document.getElementById('joinRoomCodeInput');
+      if (input) input.value = roomParam.toUpperCase().trim();
+      openRemoteModal('join');
+      showToast(`🎮 Room ${roomParam} detected! Click Connect to join.`);
+    }
 
     bindClick('btnPlayAgain', () => {
       document.getElementById('victoryModal').classList.remove('open');
