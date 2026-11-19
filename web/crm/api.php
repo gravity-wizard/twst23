@@ -131,9 +131,11 @@ function read_data(string $path): array {
             $rtSentTs = !empty($rc['sent_at']) ? (strtotime((string)$rc['sent_at']) ?: 0) : 0;
 
             $seedCopyFields = [
+                'category' => $sc['category'] ?? '',
                 'angle' => $sc['angle'] ?? '',
                 'subject_line' => $sc['subject_line'] ?? '',
                 'custom_blurb' => $sc['custom_blurb'] ?? '',
+                'custom_signature' => $sc['custom_signature'] ?? '',
                 'copy_rev' => $seedCopyRev,
             ];
             $seedRequeueFields = [
@@ -208,6 +210,7 @@ function read_data(string $path): array {
         'triage' => !empty($runtime['triage']) ? $runtime['triage'] : ($seed['triage'] ?? []),
         'bom' => !empty($runtime['bom']) ? $runtime['bom'] : ($seed['bom'] ?? []),
         'bom_ideas' => !empty($runtime['bom_ideas']) ? $runtime['bom_ideas'] : ($seed['bom_ideas'] ?? []),
+        'financials' => !empty($runtime['financials']) ? $runtime['financials'] : ($seed['financials'] ?? []),
     ];
 }
 
@@ -1074,6 +1077,60 @@ if ($action === 'bom_item' && $method === 'PATCH') {
     }
     unset($b);
     if (!$found) fail(404, 'BOM item not found');
+    write_data($DATA_FILE, $data);
+    echo json_encode($found);
+    exit;
+}
+
+if ($action === 'financials' && $method === 'POST') {
+    $body = json_body();
+    $data = read_data($DATA_FILE);
+    if (!isset($data['financials']) || !is_array($data['financials'])) {
+        $data['financials'] = [];
+    }
+    $item = [
+        'id' => 'FIN-' . str_pad((string)(count($data['financials']) + 1), 3, '0', STR_PAD_LEFT),
+        'vendor' => trim((string)($body['vendor'] ?? 'Untitled Vendor')),
+        'category' => trim((string)($body['category'] ?? 'SaaS / Subscription')),
+        'account_email' => trim((string)($body['account_email'] ?? 'gary@gravitywizards.com')),
+        'entity' => trim((string)($body['entity'] ?? 'Gravity Wizards, Inc.')),
+        'billing_cycle' => trim((string)($body['billing_cycle'] ?? 'Monthly')),
+        'monthly_usd' => max(0, round((float)($body['monthly_usd'] ?? 0), 2)),
+        'annual_risk_usd' => max(0, round((float)($body['annual_risk_usd'] ?? 0), 2)),
+        'status' => trim((string)($body['status'] ?? 'Active')),
+        'contact_email' => trim((string)($body['contact_email'] ?? '')),
+        'linked_contact_id' => trim((string)($body['linked_contact_id'] ?? '')),
+        'reference_url' => trim((string)($body['reference_url'] ?? '')),
+        'logged_date' => gmdate('Y-m-d'),
+        'notes' => trim((string)($body['notes'] ?? '')),
+    ];
+    $data['financials'][] = $item;
+    write_data($DATA_FILE, $data);
+    http_response_code(201);
+    echo json_encode($item);
+    exit;
+}
+
+if ($action === 'financial_item' && $method === 'PATCH') {
+    $id = trim((string)($_GET['id'] ?? ''));
+    if ($id === '') fail(400, 'Missing financial record id');
+    $body = json_body();
+    $data = read_data($DATA_FILE);
+    $found = null;
+    foreach ($data['financials'] as &$f) {
+        if (($f['id'] ?? '') === $id) {
+            foreach (['vendor', 'category', 'account_email', 'entity', 'billing_cycle', 'status', 'contact_email', 'linked_contact_id', 'reference_url', 'notes'] as $strField) {
+                if (array_key_exists($strField, $body)) $f[$strField] = trim((string)$body[$strField]);
+            }
+            foreach (['monthly_usd', 'annual_risk_usd'] as $numField) {
+                if (array_key_exists($numField, $body)) $f[$numField] = max(0, round((float)$body[$numField], 2));
+            }
+            $found = $f;
+            break;
+        }
+    }
+    unset($f);
+    if (!$found) fail(404, 'Financial record not found');
     write_data($DATA_FILE, $data);
     echo json_encode($found);
     exit;

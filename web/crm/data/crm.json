@@ -1,6 +1,26 @@
 {
     "contacts": [
         {
+            "id": "GW-C061",
+            "priority": 1,
+            "category": "Vendor / Billing",
+            "outlet": "Keeper Security — Business Trial Cancellation (Sales / CSM)",
+            "primary_email": "sales@keepersecurity.com",
+            "cc_email": "gary@gravitywizards.com",
+            "bcc_email": "",
+            "angle": "A785-2do Vendor Action: End Keeper Business Trial under gary@gravitywizards.com & prevent paid conversion (Ref Articles #263 & #289)",
+            "subject_line": "Cancel Keeper Security Business Trial — Gravity Wizards, Inc. (gary@gravitywizards.com)",
+            "custom_blurb": "Hello Keeper Security Sales & Account Management Team,\n\nPlease end and cancel our Keeper Security Business trial effective immediately and ensure that automatic renewal / conversion to a paid Business subscription is disabled so no charges are billed.\n\nAccount Details:\n- Organization Name: Gravity Wizards, Inc.\n- Business Trial Admin Email: gary@gravitywizards.com\n- Founder / Authorized Contact: Gary Francis Stout (+1-907-795-9515)\n- Reference: Keeper Help Articles #263 & #289 (Business trial cancellation via Sales / Account Manager; vault left intact pending your cancellation confirmation)\n\nPlease reply to gary@gravitywizards.com (and media@twisted23.com) with written confirmation once our Business trial has been terminated and $0.00 future billing is confirmed.",
+            "custom_signature": "\n\nThank you,\nGary Francis Stout\nFounder, Gravity Wizards, Inc.\ngary@gravitywizards.com\n+1 (907) 795-9515\nAnchorage, Alaska",
+            "copy_rev": 1,
+            "stage": "Queued",
+            "notes": "Queued per Gary (2026-11-18): Do NOT delete Keeper vault prior to CSM cancellation. Ready for 1-click send from Apple Mail (gary@gravitywizards.com) or GwCrm. Linked to FIN-001.",
+            "delivery_status": "Queued (Awaiting 1-Click Send)",
+            "resend_id": null,
+            "sent_at": null,
+            "step_2_sent_at": null
+        },
+        {
             "id": "GW-C005",
             "priority": 1,
             "outlet": "Carina Initiatives & Thinking Games",
@@ -1422,6 +1442,72 @@
             "title": "5. Gym-Principal Approval Pack (Sorbothane Pad + RSO Key Switch)",
             "tag": "Venue Safety",
             "body": "Combining a non-marking EPDM/Sorbothane counterweight floor pad with a 2-step Range Safety Officer (RSO) key-arm switch + cordless 12V LiFePO4 battery makes school gymnasium & APHEA venue sign-off effortless."
+        }
+    ],
+    "financials": [
+        {
+            "id": "FIN-001",
+            "vendor": "Keeper Security (Business Trial)",
+            "category": "Security / Password Vault SaaS",
+            "account_email": "gary@gravitywizards.com",
+            "entity": "Gravity Wizards, Inc.",
+            "billing_cycle": "Business Trial (Cancel Requested)",
+            "monthly_usd": 0.0,
+            "annual_risk_usd": 168.0,
+            "status": "Pending Cancellation",
+            "contact_email": "sales@keepersecurity.com",
+            "linked_contact_id": "GW-C061",
+            "reference_url": "https://help.keeper.io/article/289-sales-related-questions-for-enterprise-business-msp-customers",
+            "logged_date": "2026-11-18",
+            "notes": "Business Trial self-service cancel disabled per Keeper Articles #263 & #289 (do NOT delete account). Cancellation email queued to sales@keepersecurity.com (GW-C061) requesting immediate termination & $0 auto-renewal confirmation."
+        },
+        {
+            "id": "FIN-002",
+            "vendor": "Hostinger Cloud + Agentic hMail",
+            "category": "Core Web & Email Infrastructure",
+            "account_email": "botchee@icloud.com / gary@gravitywizards.com",
+            "entity": "Gravity Wizards, Inc. & Twisted23",
+            "billing_cycle": "Prepaid Multi-Year Plan",
+            "monthly_usd": 0.0,
+            "annual_risk_usd": 0.0,
+            "status": "Active (Prepaid)",
+            "contact_email": "",
+            "linked_contact_id": "",
+            "reference_url": "https://hpanel.hostinger.com",
+            "logged_date": "2026-11-18",
+            "notes": "Order #1010307568 | Hosting ID 62555970 | Powers gravitywizards.com, twisted23.com, GwCrm & DKIM mailboxes (gary@gravitywizards.com, media@twisted23.com)."
+        },
+        {
+            "id": "FIN-003",
+            "vendor": "Stripe Direct Checkout ($0/mo Shopify Replacement)",
+            "category": "Merchant Payment Processing",
+            "account_email": "gary@gravitywizards.com",
+            "entity": "Gravity Wizards, Inc.",
+            "billing_cycle": "Pay-Per-Order (2.9% + $0.30)",
+            "monthly_usd": 0.0,
+            "annual_risk_usd": 0.0,
+            "status": "Active ($0/mo Fixed)",
+            "contact_email": "",
+            "linked_contact_id": "",
+            "reference_url": "https://dashboard.stripe.com",
+            "logged_date": "2026-11-18",
+            "notes": "Eliminated $39/mo ($468/yr) Shopify fixed overhead. Sample order GW-ORD-1001 ($104.90 gross / $3.34 fee / $101.56 net)."
+        },
+        {
+            "id": "FIN-004",
+            "vendor": "Bluehost Legacy Hosting (TWISTFG3 / box5488)",
+            "category": "Legacy Archive / Decommission",
+            "account_email": "gary@gravitywizards.com (User: twistfg3)",
+            "entity": "Gravity Wizards, Inc.",
+            "billing_cycle": "Legacy Plan — Verify Auto-Renew OFF",
+            "monthly_usd": 0.0,
+            "annual_risk_usd": 0.0,
+            "status": "Audit Auto-Renew",
+            "contact_email": "",
+            "linked_contact_id": "",
+            "reference_url": "https://box5488.bluehost.com:2083",
+            "logged_date": "2026-11-18",
+            "notes": "DNS Receipt #1934156354 | Domain Lock OFF | One-time IMAP/cPanel migration source; confirm auto-renewal disabled once final archive check completes."
         }
     ]
 }

@@ -1,4 +1,4 @@
-let state = { contacts: [], derbies: [], triage: [], bom: [], bom_ideas: [] };
+let state = { contacts: [], derbies: [], triage: [], bom: [], bom_ideas: [], financials: [] };
 let activeContactId = null;
 let serverStatus = { resendConfigured: false };
 
@@ -496,6 +496,7 @@ async function refresh() {
     }
     renderMetrics();
     renderContacts();
+    renderFinancials();
     renderBom();
     renderDerbies();
     renderTriage();
@@ -699,7 +700,7 @@ function openSendStep1Dispatcher(contactId) {
   const baseCredits = 1 + ccCount;
   const subject = c.subject_line || 'Twisted23 & Flipping Dice';
   const blurb = c.custom_blurb || '';
-  const signature = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
+  const signature = c.custom_signature || "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
   const fullBody = blurb + signature;
 
   const mailtoParams = new URLSearchParams();
@@ -1356,6 +1357,102 @@ if (addBomBtn) {
           qty_per_fobb_kit: Number($('#nb-qk').value || 0),
           supplier_url: $('#nb-url').value,
           spec_notes: $('#nb-notes').value,
+        }),
+      });
+      $('#modal-backdrop').hidden = true;
+      await refresh();
+    });
+  });
+}
+
+// Financials & Subscriptions Controls
+const exportFinBtn = $('#btn-export-fin-csv');
+if (exportFinBtn) {
+  exportFinBtn.addEventListener('click', () => {
+    const items = Array.isArray(state.financials) ? state.financials : [];
+    const csvEscape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = [
+      'Record_ID', 'Vendor_or_Service', 'Category', 'Account_Email', 'Entity',
+      'Billing_Cycle', 'Monthly_USD', 'Annual_Exposure_USD', 'Status',
+      'Contact_Email', 'Linked_GwCrm_ID', 'Reference_URL', 'Logged_Date', 'Notes'
+    ];
+    const lines = [header.join(',')];
+    items.forEach((f) => {
+      lines.push([
+        csvEscape(f.id),
+        csvEscape(f.vendor),
+        csvEscape(f.category),
+        csvEscape(f.account_email),
+        csvEscape(f.entity),
+        csvEscape(f.billing_cycle),
+        Number(f.monthly_usd || 0).toFixed(2),
+        Number(f.annual_risk_usd || 0).toFixed(2),
+        csvEscape(f.status),
+        csvEscape(f.contact_email || ''),
+        csvEscape(f.linked_contact_id || ''),
+        csvEscape(f.reference_url || ''),
+        csvEscape(f.logged_date || ''),
+        csvEscape(f.notes || ''),
+      ].join(','));
+    });
+    const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'GwCrm-Financial-Records.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+const addFinBtn = $('#btn-add-fin');
+if (addFinBtn) {
+  addFinBtn.addEventListener('click', () => {
+    showModal(
+      'Add Financial / Subscription Record',
+      `<form id="quick-fin-form" class="drawer-body" style="padding:0;">
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:10px;">
+          <label class="field"><span>Vendor / Service</span><input id="nf-vendor" class="input" placeholder="e.g. Keeper Security" required /></label>
+          <label class="field"><span>Category</span><input id="nf-cat" class="input" value="SaaS / Subscription" /></label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label class="field"><span>Account Admin Email</span><input id="nf-acct" class="input" value="gary@gravitywizards.com" required /></label>
+          <label class="field"><span>Vendor Billing / Cancel Email</span><input id="nf-cemail" class="input" placeholder="e.g. sales@keepersecurity.com" /></label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <label class="field"><span>Monthly ($)</span><input id="nf-mo" class="input" type="number" step="0.01" min="0" value="0.00" /></label>
+          <label class="field"><span>Annual Exposure ($)</span><input id="nf-yr" class="input" type="number" step="0.01" min="0" value="0.00" /></label>
+          <label class="field"><span>Status</span>
+            <select id="nf-status" class="select">
+              <option value="Pending Cancellation">Pending Cancellation</option>
+              <option value="Cancelled ($0 Confirmed)">Cancelled ($0 Confirmed)</option>
+              <option value="Active ($0/mo Fixed)">Active ($0/mo Fixed)</option>
+              <option value="Active (Prepaid)">Active (Prepaid)</option>
+              <option value="Audit Auto-Renew">Audit Auto-Renew</option>
+            </select>
+          </label>
+        </div>
+        <label class="field"><span>Billing Terms</span><input id="nf-cycle" class="input" placeholder="e.g. Trial — Cancel Requested" /></label>
+        <label class="field"><span>Reference / Help URL</span><input id="nf-url" class="input" placeholder="https://..." /></label>
+        <label class="field"><span>Audit Notes</span><textarea id="nf-notes" class="textarea" rows="3"></textarea></label>
+        <button class="btn btn-primary" type="submit">Save Financial Record</button>
+      </form>`
+    );
+    $('#quick-fin-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await api('api.php?action=financials', {
+        method: 'POST',
+        body: JSON.stringify({
+          vendor: $('#nf-vendor').value,
+          category: $('#nf-cat').value,
+          account_email: $('#nf-acct').value,
+          contact_email: $('#nf-cemail').value,
+          monthly_usd: Number($('#nf-mo').value || 0),
+          annual_risk_usd: Number($('#nf-yr').value || 0),
+          status: $('#nf-status').value,
+          billing_cycle: $('#nf-cycle').value,
+          reference_url: $('#nf-url').value,
+          notes: $('#nf-notes').value,
         }),
       });
       $('#modal-backdrop').hidden = true;
