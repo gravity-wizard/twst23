@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=17" />
 </head>
 <body>
   <header class="topbar">
@@ -177,6 +177,64 @@
             </tr>
           </thead>
           <tbody id="contacts-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FINANCIALS & TRIALS TAB -->
+    <section id="panel-financials" class="panel" role="tabpanel" aria-labelledby="tab-financials" hidden>
+      <div class="info-card" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+          <div>
+            <span class="mono-tag">GRAVITY WIZARDS &amp; TWISTED23 — SUBSCRIPTION &amp; TRIAL LEDGER</span>
+            <h2 style="margin:6px 0 4px;font-family:var(--font-display);font-size:1.2rem;">
+              💳 Financial Records, SaaS Trials &amp; Zero-Overhead Audit
+            </h2>
+            <p style="margin:0;font-size:0.84rem;color:var(--muted);">
+              Tracks active infrastructure, retired fixed-fee platforms, and vendor trial cancellations (Zero BCC &middot; 1-click Apple Mail dispatch uses <code>0</code> Hostinger credits).
+            </p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="https://docs.google.com/spreadsheets/d/1qBhPBx-oJThRzByU1X3XGvm0W3x1R4mkH10dKquKKm4/edit#gid=1952036021" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="text-decoration:none;">📊 Google Sheet Ledger ↗</a>
+            <button id="btn-export-fin-csv" class="btn btn-secondary btn-sm" type="button">⬇ Download CSV</button>
+            <button id="btn-add-fin" class="btn btn-primary btn-sm" type="button">+ Add Record</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;">
+            <span class="metric-label">Recurring Fixed Monthly</span>
+            <strong id="fin-total-mo" style="font-family:var(--font-display);font-size:1.3rem;">$0.00/mo</strong>
+            <div style="font-size:0.74rem;color:var(--ok-text);font-weight:600;">Stripe pay-per-order + prepaid Hostinger</div>
+          </div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 12px;">
+            <span class="metric-label" style="color:#92400e;">Pending Cancellations</span>
+            <strong id="fin-pending-count" style="font-family:var(--font-display);font-size:1.3rem;color:#92400e;">1</strong>
+            <div id="fin-pending-sub" style="font-size:0.74rem;color:#92400e;font-weight:600;">Keeper Business Trial (FIN-001)</div>
+          </div>
+          <div style="background:var(--ok-bg);border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;">
+            <span class="metric-label" style="color:var(--ok-text);">Annual Trial Exposure Guarded</span>
+            <strong id="fin-risk-yr" style="font-family:var(--font-display);font-size:1.3rem;color:var(--ok-text);">$168.00/yr</strong>
+            <div style="font-size:0.74rem;color:var(--muted);">Plus $468/yr Shopify fixed fee retired</div>
+          </div>
+        </div>
+
+        <div id="fin-keeper-callout" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID / Logged</th>
+              <th>Vendor &amp; Audit Notes</th>
+              <th>Account / Entity</th>
+              <th>Monthly / Exposure</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="fin-tbody"></tbody>
         </table>
       </div>
     </section>
@@ -395,6 +453,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=16"></script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>

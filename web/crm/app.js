@@ -166,6 +166,223 @@ function fmtUsd(val) {
   return '$' + Number(val || 0).toFixed(2);
 }
 
+function buildMailtoUrl(to, { cc = '', subject = '', body = '' } = {}) {
+  const parts = [];
+  if (cc && cc.trim()) parts.push('cc=' + encodeURIComponent(cc.trim()));
+  if (subject) parts.push('subject=' + encodeURIComponent(subject));
+  if (body) parts.push('body=' + encodeURIComponent(body));
+  const query = parts.length ? '?' + parts.join('&') : '';
+  return `mailto:${encodeURIComponent((to || '').trim())}${query}`;
+}
+
+function renderFinancials() {
+  const tbody = $('#fin-tbody');
+  if (!tbody) return;
+  const items = Array.isArray(state.financials) ? state.financials : [];
+
+  let totalMo = 0;
+  let totalRiskYr = 0;
+  const pendingItems = [];
+  items.forEach((f) => {
+    totalMo += Number(f.monthly_usd || 0);
+    totalRiskYr += Number(f.annual_risk_usd || 0);
+    if ((f.status || '').toLowerCase().includes('pending')) {
+      pendingItems.push(f);
+    }
+  });
+
+  const moEl = $('#fin-total-mo');
+  if (moEl) moEl.textContent = `${fmtUsd(totalMo)}/mo`;
+  const pendEl = $('#fin-pending-count');
+  if (pendEl) pendEl.textContent = String(pendingItems.length);
+  const pendSubEl = $('#fin-pending-sub');
+  if (pendSubEl) {
+    pendSubEl.textContent = pendingItems.length > 0
+      ? pendingItems.map((p) => `${p.vendor} (${p.id})`).join(' · ')
+      : '✓ All trials & cancellations confirmed!';
+  }
+  const riskEl = $('#fin-risk-yr');
+  if (riskEl) riskEl.textContent = `${fmtUsd(totalRiskYr)}/yr`;
+
+  const calloutEl = $('#fin-keeper-callout');
+  if (calloutEl) {
+    const keeperFin = items.find((f) => f.id === 'FIN-001' || (f.vendor || '').toLowerCase().includes('keeper'));
+    const keeperContact = (state.contacts || []).find((c) => c.id === (keeperFin?.linked_contact_id || 'GW-C061'));
+    if (keeperFin && (keeperFin.status || '').toLowerCase().includes('pending') && keeperContact) {
+      const kSig = keeperContact.custom_signature || "\n\nThank you,\nGary Francis Stout\nFounder, Gravity Wizards, Inc.\ngary@gravitywizards.com\n+1 (907) 795-9515\nAnchorage, Alaska";
+      const kBody = (keeperContact.custom_blurb || '') + kSig;
+      const kMailto = buildMailtoUrl(keeperContact.primary_email || 'sales@keepersecurity.com', {
+        cc: keeperContact.cc_email || 'gary@gravitywizards.com',
+        subject: keeperContact.subject_line || 'Cancel Keeper Security Business Trial — Gravity Wizards, Inc. (gary@gravitywizards.com)',
+        body: kBody,
+      });
+      calloutEl.innerHTML = `
+        <div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:250px;">
+            <div style="font-size:0.76rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.04em;">
+              ⚡ Ready for 1-Click Send · Zero Hostinger Credits Needed
+            </div>
+            <div style="font-size:0.9rem;margin-top:3px;">
+              <strong>Keeper Security Business Trial (<code>${escapeHtml(keeperFin.account_email)}</code>)</strong> &rarr;
+              <code>${escapeHtml(keeperContact.primary_email)}</code>
+            </div>
+            <div style="font-size:0.78rem;color:#78350f;margin-top:2px;">
+              Per Keeper Help Articles #263 &amp; #289, do <strong>not</strong> delete your Keeper vault first — send from <code>gary@gravitywizards.com</code> in Apple Mail (or open <code>${escapeHtml(keeperContact.id)}</code> below).
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <a href="${escapeHtml(kMailto)}" class="btn btn-primary btn-sm" style="text-decoration:none;">✉ Send in Apple Mail ↗</a>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-keeper-cancel">📋 Copy Email</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-open-fin-contact="${escapeHtml(keeperContact.id)}">🚀 GwCrm Draft (${escapeHtml(keeperContact.id)})</button>
+          </div>
+        </div>
+      `;
+      const copyKBtn = $('#btn-copy-keeper-cancel');
+      if (copyKBtn) {
+        copyKBtn.addEventListener('click', async () => {
+          const clip = `To: ${keeperContact.primary_email}\nCC: ${keeperContact.cc_email || 'gary@gravitywizards.com'}\nSubject: ${keeperContact.subject_line}\n\n${kBody}`;
+          try {
+            await navigator.clipboard.writeText(clip);
+            copyKBtn.textContent = '✓ Copied!';
+          } catch (_) {
+            copyKBtn.textContent = 'Copy failed';
+          }
+          setTimeout(() => { copyKBtn.textContent = '📋 Copy Email'; }, 2000);
+        });
+      }
+      calloutEl.querySelectorAll('[data-open-fin-contact]').forEach((btn) => {
+        btn.addEventListener('click', () => openDrawer(btn.dataset.openFinContact));
+      });
+    } else {
+      calloutEl.innerHTML = '';
+    }
+  }
+
+  if (items.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);">No financial records logged yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = items
+    .map((f) => {
+      const statusLower = (f.status || '').toLowerCase();
+      const pillCls = statusLower.includes('pending')
+        ? 'status-warn'
+        : (statusLower.includes('audit') ? 'status-info' : 'status-ok');
+      const linked = f.linked_contact_id ? (state.contacts || []).find((c) => c.id === f.linked_contact_id) : null;
+      let mailtoBtnHtml = '';
+      if (f.contact_email) {
+        const sig = linked?.custom_signature || "\n\nThank you,\nGary Francis Stout\nFounder, Gravity Wizards, Inc.\ngary@gravitywizards.com\n+1 (907) 795-9515";
+        const mUrl = buildMailtoUrl(f.contact_email, {
+          cc: linked?.cc_email || f.account_email || '',
+          subject: linked?.subject_line || `Subscription Inquiry — ${f.vendor} (${f.account_email || ''})`,
+          body: linked ? ((linked.custom_blurb || '') + sig) : '',
+        });
+        mailtoBtnHtml = `<a href="${escapeHtml(mUrl)}" class="btn btn-primary btn-sm" style="text-decoration:none;">✉ Apple Mail</a>`;
+      }
+      return `
+        <tr>
+          <td>
+            <span class="mono-tag">${escapeHtml(f.id)}</span>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:3px;">${escapeHtml(f.logged_date || '')}</div>
+          </td>
+          <td>
+            <div style="font-size:0.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.03em;font-weight:600;">${escapeHtml(f.category || '')}</div>
+            <span class="outlet-name">
+              ${f.reference_url ? `<a href="${escapeHtml(f.reference_url)}" target="_blank" rel="noopener">${escapeHtml(f.vendor)} ↗</a>` : escapeHtml(f.vendor)}
+            </span>
+            <span class="outlet-angle">${escapeHtml(f.notes || '')}</span>
+          </td>
+          <td style="font-size:0.82rem;">
+            <div><code>${escapeHtml(f.account_email || '')}</code></div>
+            <div style="font-size:0.75rem;color:var(--muted);">${escapeHtml(f.entity || '')} &middot; ${escapeHtml(f.billing_cycle || '')}</div>
+            ${f.contact_email ? `<div style="font-size:0.75rem;margin-top:2px;">Vendor: <code>${escapeHtml(f.contact_email)}</code></div>` : ''}
+          </td>
+          <td style="font-family:var(--font-mono);font-size:0.84rem;">
+            <strong>${fmtUsd(f.monthly_usd)}/mo</strong>
+            ${Number(f.annual_risk_usd || 0) > 0 ? `<div style="font-size:0.74rem;color:#b45309;">${fmtUsd(f.annual_risk_usd)}/yr exposure</div>` : `<div style="font-size:0.74rem;color:var(--ok-text);">$0.00 exposure</div>`}
+          </td>
+          <td><span class="status-pill ${pillCls}">${escapeHtml(f.status || 'Active')}</span></td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              ${mailtoBtnHtml}
+              ${f.linked_contact_id ? `<button class="btn btn-secondary btn-sm" type="button" data-fin-contact="${escapeHtml(f.linked_contact_id)}">🚀 ${escapeHtml(f.linked_contact_id)}</button>` : ''}
+              ${statusLower.includes('pending') ? `<button class="btn btn-secondary btn-sm" type="button" data-fin-confirm="${escapeHtml(f.id)}">✓ Mark Cancelled</button>` : ''}
+              <button class="btn btn-secondary btn-sm" type="button" data-fin-edit="${escapeHtml(f.id)}">Edit</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  tbody.querySelectorAll('[data-fin-contact]').forEach((btn) => {
+    btn.addEventListener('click', () => openDrawer(btn.dataset.finContact));
+  });
+  tbody.querySelectorAll('[data-fin-confirm]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const finId = btn.dataset.finConfirm;
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      await api(`api.php?action=financial_item&id=${encodeURIComponent(finId)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: 'Cancelled ($0 Confirmed)',
+          annual_risk_usd: 0,
+          billing_cycle: 'Trial Terminated ($0.00)',
+        }),
+      });
+      await refresh();
+    });
+  });
+  tbody.querySelectorAll('[data-fin-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => openFinEditModal(btn.dataset.finEdit));
+  });
+}
+
+function openFinEditModal(finId) {
+  const item = (state.financials || []).find((x) => x.id === finId);
+  if (!item) return;
+  showModal(
+    `Edit ${item.id} — ${item.vendor}`,
+    `<form id="edit-fin-form" class="drawer-body" style="padding:0;">
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:10px;">
+        <label class="field"><span>Vendor / Service</span><input id="ef-vendor" class="input" value="${escapeHtml(item.vendor)}" required /></label>
+        <label class="field"><span>Status</span><input id="ef-status" class="input" value="${escapeHtml(item.status || '')}" required /></label>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <label class="field"><span>Account Email</span><input id="ef-acct" class="input" value="${escapeHtml(item.account_email || '')}" /></label>
+        <label class="field"><span>Vendor Billing Email</span><input id="ef-cemail" class="input" value="${escapeHtml(item.contact_email || '')}" /></label>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <label class="field"><span>Monthly ($)</span><input id="ef-mo" class="input" type="number" step="0.01" min="0" value="${Number(item.monthly_usd || 0)}" /></label>
+        <label class="field"><span>Annual Exposure ($)</span><input id="ef-yr" class="input" type="number" step="0.01" min="0" value="${Number(item.annual_risk_usd || 0)}" /></label>
+        <label class="field"><span>Billing Cycle</span><input id="ef-cycle" class="input" value="${escapeHtml(item.billing_cycle || '')}" /></label>
+      </div>
+      <label class="field"><span>Audit Notes</span><textarea id="ef-notes" class="textarea" rows="3">${escapeHtml(item.notes || '')}</textarea></label>
+      <button class="btn btn-primary" type="submit">Save Financial Record</button>
+    </form>`
+  );
+  $('#edit-fin-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await api(`api.php?action=financial_item&id=${encodeURIComponent(finId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        vendor: $('#ef-vendor').value,
+        status: $('#ef-status').value,
+        account_email: $('#ef-acct').value,
+        contact_email: $('#ef-cemail').value,
+        monthly_usd: Number($('#ef-mo').value || 0),
+        annual_risk_usd: Number($('#ef-yr').value || 0),
+        billing_cycle: $('#ef-cycle').value,
+        notes: $('#ef-notes').value,
+      }),
+    });
+    $('#modal-backdrop').hidden = true;
+    await refresh();
+  });
+}
+
 function renderBom() {
   const tbody = $('#bom-tbody');
   if (!tbody) return;
@@ -703,11 +920,7 @@ function openSendStep1Dispatcher(contactId) {
   const signature = c.custom_signature || "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
   const fullBody = blurb + signature;
 
-  const mailtoParams = new URLSearchParams();
-  if (cc) mailtoParams.set('cc', cc);
-  mailtoParams.set('subject', subject);
-  mailtoParams.set('body', fullBody);
-  const mailtoUrl = `mailto:${encodeURIComponent(to)}?${mailtoParams.toString()}`;
+  const mailtoUrl = buildMailtoUrl(to, { cc, subject, body: fullBody });
 
   const hasHostingerMail = !!serverStatus.hostingerMailConfigured;
   const hasResend = !!serverStatus.resendConfigured;
@@ -810,11 +1023,7 @@ function openSendStep2Dispatcher(contactId) {
   const signature = "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
   const followUpText = "Just a quick follow-up in case my note earlier this week got buried.\n\nIf you have 2 minutes to try it right in your browser, you can jump straight into Tophat Sudoku and the Flipping Dice 3D-in-2D Spatial Lab here:\nhttps://twisted23.com\nhttps://flippingdice.twisted23.com\n\nHappy to share a quick walkthrough or any technical notes if this fits what you're covering." + signature;
 
-  const mailtoParams = new URLSearchParams();
-  if (cc) mailtoParams.set('cc', cc);
-  mailtoParams.set('subject', subject);
-  mailtoParams.set('body', followUpText);
-  const mailtoUrl = `mailto:${encodeURIComponent(to)}?${mailtoParams.toString()}`;
+  const mailtoUrl = buildMailtoUrl(to, { cc, subject, body: followUpText });
 
   const hasHostingerMail = !!serverStatus.hostingerMailConfigured;
 

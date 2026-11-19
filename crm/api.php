@@ -412,11 +412,23 @@ if ($action === 'status' && $method === 'GET') {
         'fromAddress' => $FROM_ADDRESS,
         'replyTo' => $REPLY_TO,
         'zeroBccActive' => true,
+        'uiVersion' => 17,
         'pitchesLast24h' => $quotaStats['pitches_24h'],
         'creditsLast24hEst' => $quotaStats['credits_24h_est'],
         'dailyCreditLimit' => 100,
         'dailySummary' => gwcrm_ds_status(__DIR__),
         'authUser' => $authCtx ? tw23_sanitize_user($authCtx['user'], true) : null,
+    ]);
+    exit;
+}
+
+if ($action === 'echo_bcc' && in_array($method, ['GET', 'POST'], true)) {
+    http_response_code(409);
+    echo json_encode([
+        'ok' => false,
+        'zeroBccActive' => true,
+        'uiVersion' => 17,
+        'error' => 'Zero-BCC Policy is active (0 BCC credits used per email; 1 Daily Summary sends at 4:11 PM AK to botchee@icloud.com). Refresh this tab (Cmd+R) to load GwCrm v17.',
     ]);
     exit;
 }
@@ -576,8 +588,9 @@ if ($action === 'send' && $method === 'POST') {
         $recipientCredits = 1 + count($ccList);
 
         $subject = $step === 1 ? $c['subject_line'] : 'Re: ' . $c['subject_line'];
+        $sigToUse = (!empty($c['custom_signature']) && is_string($c['custom_signature'])) ? $c['custom_signature'] : $SIGNATURE;
         $text = $step === 1
-            ? ($c['custom_blurb'] . $SIGNATURE)
+            ? ($c['custom_blurb'] . $sigToUse)
             : ("Just a quick follow-up in case my note earlier this week got buried.\n\nIf you have 2 minutes to try it right in your browser, you can jump straight into Tophat Sudoku and the Flipping Dice 3D-in-2D Spatial Lab here:\nhttps://twisted23.com\nhttps://flippingdice.twisted23.com\n\nHappy to share a quick walkthrough or any technical notes if this fits what you're covering." . $SIGNATURE);
 
         if ($dryRun) {
