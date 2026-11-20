@@ -410,11 +410,19 @@ function extract_bare_email(string $addr): string {
 }
 
 function resolve_hostinger_mailbox_for_sender(string $desiredFromEmail, string $token, string $defaultMailboxId, string $defaultFromAddress): array {
-    static $mailboxListCache = null;
+    static $meCache = [];
     $defaultBare = extract_bare_email($defaultFromAddress);
     $desiredBare = extract_bare_email($desiredFromEmail);
     if ($desiredBare === '' || $desiredBare === $defaultBare) {
-        return ['ok' => true, 'mailbox_id' => $defaultMailboxId, 'from_email' => $defaultBare];
+        return ['ok' => true, 'mailbox_id' => $defaultMailboxId, 'token' => $token, 'from_email' => $defaultBare];
+    }
+
+    $senderToken = $token;
+    if ($desiredBare === 'gary@gravitywizards.com') {
+        $garyToken = trim((string)(getenv('HOSTINGER_MAIL_TOKEN_GARY') ?: getenv('HOSTINGER_MAIL_TOKEN_GRAVITYWIZARDS') ?: ''));
+        if ($garyToken !== '') {
+            $senderToken = $garyToken;
+        }
     }
 
     $mapRaw = trim((string)(getenv('HOSTINGER_MAILBOX_MAP') ?: ''));
@@ -423,14 +431,14 @@ function resolve_hostinger_mailbox_for_sender(string $desiredFromEmail, string $
         if (is_array($jsonMap)) {
             foreach ($jsonMap as $k => $v) {
                 if (strtolower(trim((string)$k)) === $desiredBare && trim((string)$v) !== '') {
-                    return ['ok' => true, 'mailbox_id' => trim((string)$v), 'from_email' => $desiredBare];
+                    return ['ok' => true, 'mailbox_id' => trim((string)$v), 'token' => $senderToken, 'from_email' => $desiredBare];
                 }
             }
         } else {
             foreach (explode(',', $mapRaw) as $pair) {
                 $parts = explode('=', $pair, 2);
                 if (count($parts) === 2 && strtolower(trim($parts[0])) === $desiredBare && trim($parts[1]) !== '') {
-                    return ['ok' => true, 'mailbox_id' => trim($parts[1]), 'from_email' => $desiredBare];
+                    return ['ok' => true, 'mailbox_id' => trim($parts[1]), 'token' => $senderToken, 'from_email' => $desiredBare];
                 }
             }
         }
@@ -438,40 +446,47 @@ function resolve_hostinger_mailbox_for_sender(string $desiredFromEmail, string $
     if ($desiredBare === 'gary@gravitywizards.com') {
         $garyId = trim((string)(getenv('HOSTINGER_MAILBOX_ID_GARY') ?: getenv('HOSTINGER_MAILBOX_ID_GRAVITYWIZARDS') ?: ''));
         if ($garyId !== '') {
-            return ['ok' => true, 'mailbox_id' => $garyId, 'from_email' => $desiredBare];
+            return ['ok' => true, 'mailbox_id' => $garyId, 'token' => $senderToken, 'from_email' => $desiredBare];
         }
     }
 
-    if ($token !== '') {
-        if ($mailboxListCache === null) {
-            $ch = curl_init('https://api.mail.hostinger.com/api/v1/mailboxes');
+    $discoveredAddresses = [];
+    if ($senderToken !== '') {
+        $cacheKey = md5($senderToken);
+        if (!isset($meCache[$cacheKey])) {
+            $ch = curl_init('https://api.mail.hostinger.com/api/v1/me');
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-                CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $token],
+                CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $senderToken, 'Accept: application/json'],
                 CURLOPT_TIMEOUT => 10,
             ]);
             $raw = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            $mailboxListCache = ($code >= 200 && $code < 300 && is_string($raw)) ? (json_decode($raw, true) ?: []) : [];
+            $meCache[$cacheKey] = ($code >= 200 && $code < 300 && is_string($raw)) ? (json_decode($raw, true) ?: []) : [];
         }
-        $candidates = $mailboxListCache['data'] ?? $mailboxListCache['mailboxes'] ?? (is_array($mailboxListCache) ? $mailboxListCache : []);
+        $meData = $meCache[$cacheKey];
+        $candidates = $meData['data']['mailboxes'] ?? $meData['mailboxes'] ?? $meData['data'] ?? [];
         if (is_array($candidates)) {
             foreach ($candidates as $mb) {
                 if (!is_array($mb)) continue;
-                $mbEmail = strtolower(trim((string)($mb['email'] ?? $mb['address'] ?? '')));
-                $mbId = trim((string)($mb['id'] ?? $mb['mailboxId'] ?? ''));
+                $mbEmail = strtolower(trim((string)($mb['address'] ?? $mb['email'] ?? '')));
+                $mbId = trim((string)($mb['resourceId'] ?? $mb['resource_id'] ?? $mb['id'] ?? $mb['mailboxId'] ?? ''));
+                if ($mbEmail !== '') $discoveredAddresses[] = $mbEmail;
                 if ($mbEmail === $desiredBare && $mbId !== '') {
-                    return ['ok' => true, 'mailbox_id' => $mbId, 'from_email' => $desiredBare];
+                    return ['ok' => true, 'mailbox_id' => $mbId, 'token' => $senderToken, 'from_email' => $desiredBare];
                 }
             }
         }
     }
 
+    $foundNote = count($discoveredAddresses) > 0
+        ? (' Token currently only accesses: ' . implode(', ', $discoveredAddresses) . '.')
+        : '';
     return [
         'ok' => false,
-        'error' => "No Hostinger mailbox ID mapped for {$desiredBare}. Set HOSTINGER_MAILBOX_MAP in crm/.env or dispatch in Apple Mail From: {$desiredBare}.",
+        'error' => "No Hostinger mailbox ID mapped for {$desiredBare}.{$foundNote} Set HOSTINGER_MAILBOX_ID_GARY (and HOSTINGER_MAIL_TOKEN_GARY if on a separate Hostinger order) in crm/.env, or click Apple Mail (From: {$desiredBare}).",
     ];
 }
 
@@ -705,6 +720,7 @@ if ($action === 'send' && $method === 'POST') {
                 continue;
             }
             $targetMailboxId = $resolvedMb['mailbox_id'];
+            $targetToken = $resolvedMb['token'] ?? $HOSTINGER_MAIL_TOKEN;
 
             $payload = [
                 'to' => [$c['primary_email']],
@@ -720,7 +736,7 @@ if ($action === 'send' && $method === 'POST') {
                 CURLOPT_POST => true,
                 CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
                 CURLOPT_HTTPHEADER => [
-                    'Authorization: Bearer ' . $HOSTINGER_MAIL_TOKEN,
+                    'Authorization: Bearer ' . $targetToken,
                     'Content-Type: application/json',
                 ],
                 CURLOPT_POSTFIELDS => json_encode($payload),
