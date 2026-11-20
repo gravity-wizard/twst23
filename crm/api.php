@@ -157,6 +157,18 @@ function read_data(string $path): array {
                 $sc = array_merge($sc, $rc);
                 if ($seedCopyRev > $rtCopyRev) {
                     $sc = array_merge($sc, $seedCopyFields);
+                    if (!empty($seed['contacts']) && !empty($sc['id']) && empty($rc['sent_at']) && empty($rc['requeued_at'])) {
+                        // Also restore seed's live sent status if seed explicitly recorded a manual/external send
+                        foreach ($seed['contacts'] as $origSeed) {
+                            if (($origSeed['id'] ?? '') === $sc['id'] && !empty($origSeed['sent_at'])) {
+                                $sc['stage'] = $origSeed['stage'] ?? 'Sent Step 1';
+                                $sc['delivery_status'] = $origSeed['delivery_status'] ?? 'Sent';
+                                $sc['sent_at'] = $origSeed['sent_at'];
+                                if (!empty($origSeed['notes'])) $sc['notes'] = $origSeed['notes'];
+                                break;
+                            }
+                        }
+                    }
                 }
                 // If seed explicitly re-queued a rate-limited/bounced pitch after its failed attempt, restore Queued
                 if ($seedRequeueRev > $rtRequeueRev && ($rtSentTs === 0 || ($seedRequeuedTs > 0 && $rtSentTs < $seedRequeuedTs))) {

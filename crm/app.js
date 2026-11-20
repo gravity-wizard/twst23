@@ -231,10 +231,29 @@ function renderFinancials() {
       const kMailto = buildMailtoUrl(keeperContact.primary_email || 'sales@keepersecurity.com', {
         from: kFrom,
         cc: kCc,
-        subject: keeperContact.subject_line || 'Cancel Keeper Security Business Trial — Gravity Wizards, Inc. (gary@gravitywizards.com)',
+        subject: keeperContact.subject_line || 'Cancel Keeper Security Business Trial — Gravity Wizards, Inc.',
         body: kBody,
       });
-      calloutEl.innerHTML = `
+      const kSent = keeperContact.stage && keeperContact.stage !== 'Queued';
+      calloutEl.innerHTML = kSent ? `
+        <div style="background:#eff6ff;border:1px solid #60a5fa;border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:250px;">
+            <div style="font-size:0.76rem;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:0.04em;">
+              ✓ Cancellation Sent From ${escapeHtml(kFrom)} &middot; Awaiting Keeper Written Confirmation
+            </div>
+            <div style="font-size:0.9rem;margin-top:3px;">
+              <strong>Keeper Security Business Trial (<code>${escapeHtml(kFrom)}</code>)</strong> &rarr;
+              <code>${escapeHtml(keeperContact.primary_email)}</code>
+            </div>
+            <div style="font-size:0.78rem;color:#1e3a8a;margin-top:2px;">
+              ${escapeHtml(keeperContact.delivery_status || 'Sent')} &middot; Once Keeper CSM confirms $0.00 auto-renewal, click <strong>✓ Mark Cancelled</strong> on <code>${escapeHtml(keeperFin.id)}</code>.
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <button type="button" class="btn btn-secondary btn-sm" data-open-fin-contact="${escapeHtml(keeperContact.id)}">🔍 View ${escapeHtml(keeperContact.id)}</button>
+          </div>
+        </div>
+      ` : `
         <div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
           <div style="flex:1;min-width:250px;">
             <div style="font-size:0.76rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.04em;">
