@@ -132,10 +132,15 @@ function read_data(string $path): array {
 
             $seedCopyFields = [
                 'category' => $sc['category'] ?? '',
+                'primary_email' => $sc['primary_email'] ?? '',
                 'angle' => $sc['angle'] ?? '',
                 'subject_line' => $sc['subject_line'] ?? '',
                 'custom_blurb' => $sc['custom_blurb'] ?? '',
                 'custom_signature' => $sc['custom_signature'] ?? '',
+                'from_email' => $sc['from_email'] ?? '',
+                'from_name' => $sc['from_name'] ?? '',
+                'reply_to' => $sc['reply_to'] ?? '',
+                'cc_email' => $sc['cc_email'] ?? '',
                 'copy_rev' => $seedCopyRev,
             ];
             $seedRequeueFields = [
@@ -399,6 +404,79 @@ if ($action === 'daily_summary_send_now' && $method === 'POST') {
     exit;
 }
 
+function extract_bare_email(string $addr): string {
+    if (preg_match('/<([^>]+)>/', $addr, $m)) {
+        return strtolower(trim($m[1]));
+    }
+    return strtolower(trim($addr));
+}
+
+function resolve_hostinger_mailbox_for_sender(string $desiredFromEmail, string $token, string $defaultMailboxId, string $defaultFromAddress): array {
+    static $mailboxListCache = null;
+    $defaultBare = extract_bare_email($defaultFromAddress);
+    $desiredBare = extract_bare_email($desiredFromEmail);
+    if ($desiredBare === '' || $desiredBare === $defaultBare) {
+        return ['ok' => true, 'mailbox_id' => $defaultMailboxId, 'from_email' => $defaultBare];
+    }
+
+    $mapRaw = trim((string)(getenv('HOSTINGER_MAILBOX_MAP') ?: ''));
+    if ($mapRaw !== '') {
+        $jsonMap = json_decode($mapRaw, true);
+        if (is_array($jsonMap)) {
+            foreach ($jsonMap as $k => $v) {
+                if (strtolower(trim((string)$k)) === $desiredBare && trim((string)$v) !== '') {
+                    return ['ok' => true, 'mailbox_id' => trim((string)$v), 'from_email' => $desiredBare];
+                }
+            }
+        } else {
+            foreach (explode(',', $mapRaw) as $pair) {
+                $parts = explode('=', $pair, 2);
+                if (count($parts) === 2 && strtolower(trim($parts[0])) === $desiredBare && trim($parts[1]) !== '') {
+                    return ['ok' => true, 'mailbox_id' => trim($parts[1]), 'from_email' => $desiredBare];
+                }
+            }
+        }
+    }
+    if ($desiredBare === 'gary@gravitywizards.com') {
+        $garyId = trim((string)(getenv('HOSTINGER_MAILBOX_ID_GARY') ?: getenv('HOSTINGER_MAILBOX_ID_GRAVITYWIZARDS') ?: ''));
+        if ($garyId !== '') {
+            return ['ok' => true, 'mailbox_id' => $garyId, 'from_email' => $desiredBare];
+        }
+    }
+
+    if ($token !== '') {
+        if ($mailboxListCache === null) {
+            $ch = curl_init('https://api.mail.hostinger.com/api/v1/mailboxes');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+                CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $token],
+                CURLOPT_TIMEOUT => 10,
+            ]);
+            $raw = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            $mailboxListCache = ($code >= 200 && $code < 300 && is_string($raw)) ? (json_decode($raw, true) ?: []) : [];
+        }
+        $candidates = $mailboxListCache['data'] ?? $mailboxListCache['mailboxes'] ?? (is_array($mailboxListCache) ? $mailboxListCache : []);
+        if (is_array($candidates)) {
+            foreach ($candidates as $mb) {
+                if (!is_array($mb)) continue;
+                $mbEmail = strtolower(trim((string)($mb['email'] ?? $mb['address'] ?? '')));
+                $mbId = trim((string)($mb['id'] ?? $mb['mailboxId'] ?? ''));
+                if ($mbEmail === $desiredBare && $mbId !== '') {
+                    return ['ok' => true, 'mailbox_id' => $mbId, 'from_email' => $desiredBare];
+                }
+            }
+        }
+    }
+
+    return [
+        'ok' => false,
+        'error' => "No Hostinger mailbox ID mapped for {$desiredBare}. Set HOSTINGER_MAILBOX_MAP in crm/.env or dispatch in Apple Mail From: {$desiredBare}.",
+    ];
+}
+
 if ($action === 'status' && $method === 'GET') {
     gwcrm_ds_fast_tick(__DIR__);
     $key = trim((string)(getenv('RESEND_API_KEY') ?: ''));
@@ -412,7 +490,7 @@ if ($action === 'status' && $method === 'GET') {
         'fromAddress' => $FROM_ADDRESS,
         'replyTo' => $REPLY_TO,
         'zeroBccActive' => true,
-        'uiVersion' => 17,
+        'uiVersion' => 18,
         'pitchesLast24h' => $quotaStats['pitches_24h'],
         'creditsLast24hEst' => $quotaStats['credits_24h_est'],
         'dailyCreditLimit' => 100,
@@ -427,8 +505,8 @@ if ($action === 'echo_bcc' && in_array($method, ['GET', 'POST'], true)) {
     echo json_encode([
         'ok' => false,
         'zeroBccActive' => true,
-        'uiVersion' => 17,
-        'error' => 'Zero-BCC Policy is active (0 BCC credits used per email; 1 Daily Summary sends at 4:11 PM AK to botchee@icloud.com). Refresh this tab (Cmd+R) to load GwCrm v17.',
+        'uiVersion' => 18,
+        'error' => 'Zero-BCC Policy is active (0 BCC credits used per email; 1 Daily Summary sends at 4:11 PM AK to botchee@icloud.com). Refresh this tab (Cmd+R) to load GwCrm v18.',
     ]);
     exit;
 }
@@ -444,11 +522,11 @@ if ($action === 'contact' && $method === 'PATCH') {
     $data = read_data($DATA_FILE);
     foreach ($data['contacts'] as &$c) {
         if (($c['id'] ?? '') === $id) {
-            foreach (['primary_email', 'outlet', 'stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at', 'requeued_at', 'requeue_rev'] as $f) {
+            foreach (['primary_email', 'from_email', 'from_name', 'reply_to', 'category', 'outlet', 'stage', 'notes', 'subject_line', 'custom_blurb', 'angle', 'cc_email', 'delivery_status', 'sent_at', 'step_2_sent_at', 'last_reply', 'auto_acknowledged', 'auto_acknowledged_at', 'human_replied_at', 'requeued_at', 'requeue_rev'] as $f) {
                 if (array_key_exists($f, $body)) $c[$f] = $body[$f];
             }
             $c['bcc_email'] = '';
-            if (array_key_exists('angle', $body) || array_key_exists('subject_line', $body) || array_key_exists('custom_blurb', $body)) {
+            if (array_key_exists('angle', $body) || array_key_exists('subject_line', $body) || array_key_exists('custom_blurb', $body) || array_key_exists('from_email', $body)) {
                 $c['copy_rev'] = ((int)($c['copy_rev'] ?? 0)) + 1;
             }
             // When staff resets a contact to Queued or Bounced, clear sent_at and stamp requeued_at so retry isn't blocked by sent_log.jsonl
@@ -509,8 +587,12 @@ if ($action === 'contacts' && $method === 'POST') {
     $contact = [
         'id' => 'GW-C' . str_pad((string)(count($data['contacts']) + 5), 3, '0', STR_PAD_LEFT),
         'priority' => $maxP + 1,
+        'category' => $body['category'] ?? '',
         'outlet' => $body['outlet'] ?? 'New Contact',
         'primary_email' => strtolower(trim((string)($body['primary_email'] ?? ''))),
+        'from_email' => strtolower(trim((string)($body['from_email'] ?? extract_bare_email($FROM_ADDRESS)))),
+        'from_name' => trim((string)($body['from_name'] ?? 'Gary Stout')),
+        'reply_to' => strtolower(trim((string)($body['reply_to'] ?? ''))),
         'cc_email' => strtolower(trim((string)($body['cc_email'] ?? ''))),
         'bcc_email' => '',
         'angle' => $body['angle'] ?? '',
@@ -583,7 +665,10 @@ if ($action === 'send' && $method === 'POST') {
             continue;
         }
 
-        // Zero-BCC Policy: GwCrm emails never include BCC recipients; copies are archived in media@twisted23.com Sent & sent_log.jsonl
+        // Zero-BCC Policy + Per-Contact Sender Identity (e.g., gary@gravitywizards.com vs media@twisted23.com)
+        $fromEmail = extract_bare_email((string)($c['from_email'] ?? '')) ?: extract_bare_email($FROM_ADDRESS);
+        $fromName = trim((string)($c['from_name'] ?? '')) ?: 'Gary Stout';
+        $replyToEmail = extract_bare_email((string)($c['reply_to'] ?? '')) ?: $fromEmail;
         $ccList = array_values(array_filter(array_map('trim', explode(',', (string)($c['cc_email'] ?? '')))));
         $recipientCredits = 1 + count($ccList);
 
@@ -591,12 +676,13 @@ if ($action === 'send' && $method === 'POST') {
         $sigToUse = (!empty($c['custom_signature']) && is_string($c['custom_signature'])) ? $c['custom_signature'] : $SIGNATURE;
         $text = $step === 1
             ? ($c['custom_blurb'] . $sigToUse)
-            : ("Just a quick follow-up in case my note earlier this week got buried.\n\nIf you have 2 minutes to try it right in your browser, you can jump straight into Tophat Sudoku and the Flipping Dice 3D-in-2D Spatial Lab here:\nhttps://twisted23.com\nhttps://flippingdice.twisted23.com\n\nHappy to share a quick walkthrough or any technical notes if this fits what you're covering." . $SIGNATURE);
+            : ("Just a quick follow-up in case my note earlier this week got buried.\n\nIf you have 2 minutes to try it right in your browser, you can jump straight into Tophat Sudoku and the Flipping Dice 3D-in-2D Spatial Lab here:\nhttps://twisted23.com\nhttps://flippingdice.twisted23.com\n\nHappy to share a quick walkthrough or any technical notes if this fits what you're covering." . $sigToUse);
 
         if ($dryRun) {
             $results[] = [
                 'id' => $c['id'],
                 'outlet' => $c['outlet'],
+                'from' => $fromEmail,
                 'to' => $c['primary_email'],
                 'cc' => $ccList,
                 'credits_used' => $recipientCredits,
@@ -609,15 +695,28 @@ if ($action === 'send' && $method === 'POST') {
 
         // 1. Primary Cloud Dispatch: Hostinger Agentic Mail REST API (100% DKIM Signed, Zero-BCC Single Envelope)
         if ($HOSTINGER_MAIL_TOKEN !== '' && $HOSTINGER_MAILBOX_ID !== '') {
+            $resolvedMb = resolve_hostinger_mailbox_for_sender($fromEmail, $HOSTINGER_MAIL_TOKEN, $HOSTINGER_MAILBOX_ID, $FROM_ADDRESS);
+            if (empty($resolvedMb['ok'])) {
+                $results[] = [
+                    'id' => $c['id'],
+                    'outlet' => $c['outlet'],
+                    'from' => $fromEmail,
+                    'status' => 'error',
+                    'error' => $resolvedMb['error'] ?? "Sender mailbox {$fromEmail} could not be resolved",
+                ];
+                continue;
+            }
+            $targetMailboxId = $resolvedMb['mailbox_id'];
+
             $payload = [
                 'to' => [$c['primary_email']],
-                'displayName' => 'Gary Stout',
+                'displayName' => $fromName,
                 'subject' => $subject,
                 'text' => $text,
             ];
             if (count($ccList) > 0) $payload['cc'] = $ccList;
 
-            $ch = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$HOSTINGER_MAILBOX_ID}/send");
+            $ch = curl_init("https://api.mail.hostinger.com/api/v1/mailboxes/{$targetMailboxId}/send");
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POST => true,
@@ -643,10 +742,11 @@ if ($action === 'send' && $method === 'POST') {
                     $c['stage'] = 'Sent Step 2';
                     $c['step_2_sent_at'] = $now;
                 }
-                $c['delivery_status'] = 'Sent (Hostinger Mail API)';
+                $c['delivery_status'] = "Sent ({$fromEmail})";
                 append_sent_ledger(sent_log_file_for($DATA_FILE), [
                     'id' => $c['id'],
                     'outlet' => $c['outlet'],
+                    'from' => $fromEmail,
                     'to' => $c['primary_email'],
                     'step' => $step,
                     'sent_at' => $now,
@@ -656,6 +756,7 @@ if ($action === 'send' && $method === 'POST') {
                 $results[] = [
                     'id' => $c['id'],
                     'outlet' => $c['outlet'],
+                    'from' => $fromEmail,
                     'to' => $c['primary_email'],
                     'cc' => $ccList,
                     'credits_used' => $recipientCredits,
