@@ -9,6 +9,13 @@ RewriteBase /
 # 1. HTTP Link Header pointing to agent-readable Markdown documentation
 <IfModule mod_headers.c>
   Header append Link '<https://twisted23.com/llms.txt>; rel="alternate"; type="text/markdown"'
+
+  # Forum image hotlinking: permissive CORS & immutable caching
+  <FilesMatch "\.(png|jpe?g|gif|webp|svg|ico)$">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, OPTIONS"
+    Header set Cache-Control "public, max-age=2592000, immutable"
+  </FilesMatch>
 </IfModule>
 
 # 2. Markdown Negotiation: If client requests text/markdown or ?format=md on homepage, serve llms.txt
@@ -21,9 +28,16 @@ RewriteRule ^$ /llms.txt [L]
 RewriteCond %{HTTP_REFERER} ^https?://([a-z0-9\-]+\.)*(slogbog\.com|slogfrog\.com|gravitywizards\.com|gpada\.org)(/|$) [NC]
 RewriteRule ^assets/([A-Za-z0-9_\-\.]+\.(?:gif|png|svg|webp))$ /visitors/telemetry.php?action=asset&file=$1 [L,QSA]
 
-# 3. Redirect missing legacy /is23pbHL/ to home & friendly aliases for UCP/GwCrm
-Redirect 301 /is23pbHL/ /
-Redirect 301 /is23pbHL /
+# 3. Forum Picture URLs (pxURLs) & Legacy phpBB HotLink Routing
+# Ultra-short /p/ and /pix/ rewrites to /px/
+RewriteRule ^p/(.+)$ /px/$1 [L,NC]
+RewriteRule ^pix/(.+)$ /px/$1 [L,NC]
+
+# Legacy /is23pbHL/ route: If an image is requested, rewrite to /px/
+RewriteRule ^is23pbHL/(.+\.(png|jpe?g|gif|webp|svg|ico))$ /px/$1 [L,NC]
+RewriteRule ^is23pbHL/?$ /px/ [R=301,L]
+
+# Friendly aliases for UCP/GwCrm
 Redirect 302 /forum /ucp/?mode=memberlist
 Redirect 302 /forum/ /ucp/?mode=memberlist
 Redirect 302 /gwcrm /crm/

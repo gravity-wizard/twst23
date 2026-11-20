@@ -15,6 +15,7 @@
 ## Gravity Wizards Hardware, Emojis & Swift 6 3D Lab
 - [Gravity Wizards Main Hub](https://gravitywizards.com/): FOBB STEM Flight Kits (`#761032c/b/p/g` Wizard's Basic Combo Kit, `#761082` Heavy Bone, `#761022` Bare Bone) & GPADA Gravity Powered Air Derbies in gymnasiums, high-ceiling hallways, and outdoors.
 - [FOBB & 315MHz Key-Fob Emoji Vault](https://www.twisted23.com/fobb-emoji/): Official Spy 3D transparent FOBB & MSD RP11 wireless launcher key-fob custom emojis, Apple iCloud Sticker PNGs, and phpBB3 SLogBog `.pak` smilies.
+- [Forum Picture Hub (pxURLs)](https://www.twisted23.com/px/): Permanent, high-speed image hosting & 1-click BBCode generator for phpBB forums (supports `/px/` and `/p/` shortlinks).
 - [SpatialStudio Swift 6 3D Graphics Starter](https://www.twisted23.com/swift-graphics/): Native macOS/iOS Metal + SceneKit PBR 3D Axle-Locked Dice & transparent bouncing FOBB Xcode 16 starter package.
 - [SLogBog Ideas Forum](https://slogbog.com/): Companion phpBB3 discussion forum (`https://slogbog.com/app.php/feed` Atom feed).
 - [Sitemap](https://www.twisted23.com/sitemap.xml): XML sitemap of all public routes.
