@@ -432,20 +432,20 @@
       </div>
       <div class="gen-results">
         <div class="tag-box">
-          <code>[img]https://twisted23.com/px/<span class="fname-disp">spy-pronoun.png</span>[/img]</code>
-          <button class="btn-copy" onclick="copySnippet('[img]https://twisted23.com/px/' + getCustomName() + '[/img]', this)">Copy [img]</button>
+          <code>[img]https://twisted23.com/p/<span class="fname-disp">spy-pronoun.png</span>[/img]</code>
+          <button class="btn-copy" onclick="copySnippet('[img]https://twisted23.com/p/' + getCustomName() + '[/img]', this)">Copy [img]</button>
         </div>
         <div class="tag-box">
           <code>https://twisted23.com/p/<span class="fname-disp">spy-pronoun.png</span></code>
           <button class="btn-copy" onclick="copySnippet('https://twisted23.com/p/' + getCustomName(), this)">Copy Short URL</button>
         </div>
         <div class="tag-box">
-          <code>[url=https://twisted23.com/px/<span class="fname-disp">spy-pronoun.png</span>][img]https://twisted23.com/px/<span class="fname-disp">spy-pronoun.png</span>[/img][/url]</code>
-          <button class="btn-copy" onclick="copySnippet('[url=https://twisted23.com/px/' + getCustomName() + '][img]https://twisted23.com/px/' + getCustomName() + '[/img][/url]', this)">Copy [url+img]</button>
+          <code>[url=https://twisted23.com/p/<span class="fname-disp">spy-pronoun.png</span>][img]https://twisted23.com/p/<span class="fname-disp">spy-pronoun.png</span>[/img][/url]</code>
+          <button class="btn-copy" onclick="copySnippet('[url=https://twisted23.com/p/' + getCustomName() + '][img]https://twisted23.com/p/' + getCustomName() + '[/img][/url]', this)">Copy [url+img]</button>
         </div>
         <div class="tag-box">
-          <code>![<span class="fname-disp">spy-pronoun.png</span>](https://twisted23.com/px/<span class="fname-disp">spy-pronoun.png</span>)</code>
-          <button class="btn-copy" onclick="copySnippet('![' + getCustomName() + '](https://twisted23.com/px/' + getCustomName() + ')', this)">Copy Markdown</button>
+          <code>![<span class="fname-disp">spy-pronoun.png</span>](https://twisted23.com/p/<span class="fname-disp">spy-pronoun.png</span>)</code>
+          <button class="btn-copy" onclick="copySnippet('![' + getCustomName() + '](https://twisted23.com/p/' + getCustomName() + ')', this)">Copy Markdown</button>
         </div>
       </div>
     </section>
@@ -626,9 +626,9 @@
       gallery.innerHTML = filtered.map(img => {
         const fullUrl = `https://twisted23.com/px/${img.filename}`;
         const shortUrl = `https://twisted23.com/p/${img.filename}`;
-        const bbCode = `[img]${fullUrl}[/img]`;
-        const linkedBb = `[url=${fullUrl}][img]${fullUrl}[/img][/url]`;
-        const mdCode = `![${img.filename}](${fullUrl})`;
+        const bbCode = `[img]${shortUrl}[/img]`;
+        const linkedBb = `[url=${shortUrl}][img]${shortUrl}[/img][/url]`;
+        const mdCode = `![${img.filename}](${shortUrl})`;
 
         return `
           <article class="card" data-category="${img.category}">
