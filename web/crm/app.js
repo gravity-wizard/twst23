@@ -69,11 +69,22 @@ function renderMetrics() {
   if (bounceEl) bounceEl.textContent = contacts.filter((c) => c.stage === 'Bounced' || (c.delivery_status && c.delivery_status.includes('Bounce'))).length;
 }
 
+function getContactCampaign(c) {
+  const cat = (c.category || '').toLowerCase();
+  if (cat.includes('literary agent')) return 'agents';
+  if (c.id === 'GW-C061' || cat.includes('vendor')) return 'vendor';
+  return 'press';
+}
+
 function renderContacts() {
   const q = ($('#search-contacts')?.value || '').trim().toLowerCase();
+  const campFilter = ($('#filter-campaign')?.value || 'all').trim();
   const stageFilter = ($('#filter-stage')?.value || 'all').trim();
 
   const filtered = state.contacts.filter((c) => {
+    if (campFilter !== 'all' && getContactCampaign(c) !== campFilter) {
+      return false;
+    }
     if (stageFilter !== 'all') {
       const cStage = (c.stage || '').trim().toLowerCase();
       const sFilter = stageFilter.toLowerCase();
@@ -84,7 +95,7 @@ function renderContacts() {
       }
     }
     if (!q) return true;
-    return [c.outlet, c.primary_email, c.cc_email, c.angle, c.notes]
+    return [c.id, c.outlet, c.primary_email, c.from_email, c.cc_email, c.angle, c.notes]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
@@ -98,15 +109,18 @@ function renderContacts() {
   }
 
   tbody.innerHTML = filtered
-    .map(
-      (c) => `
+    .map((c) => {
+      const fromAddr = c.from_email || serverStatus.fromAddress || 'media@twisted23.com';
+      const isCustomFrom = fromAddr.toLowerCase() !== 'media@twisted23.com';
+      return `
     <tr>
-      <td><strong>${c.priority}</strong></td>
+      <td><strong>${c.priority}</strong><div class="mono-tag" style="font-size:0.72rem;">${escapeHtml(c.id)}</div></td>
       <td>
         <span class="outlet-name">${escapeHtml(c.outlet)}</span>
         <span class="outlet-angle">${escapeHtml(c.angle)}</span>
       </td>
       <td class="email-cell">
+        <div style="margin-bottom:3px;"><span class="status-pill ${isCustomFrom ? 'status-warn' : 'status-muted'}" style="font-size:0.71rem;">From: ${escapeHtml(fromAddr)}</span></div>
         ${c.primary_email ? escapeHtml(c.primary_email) : '<span class="status-pill status-muted">Web Form</span>'}
         ${c.cc_email ? `<div class="cc-line">CC: ${escapeHtml(c.cc_email)}</div>` : ''}
       </td>
@@ -116,8 +130,8 @@ function renderContacts() {
         <button class="btn btn-secondary btn-sm" type="button" data-open="${c.id}">Inspect / Edit</button>
       </td>
     </tr>
-  `
-    )
+  `;
+    })
     .join('');
 
   tbody.querySelectorAll('[data-open]').forEach((btn) => {
@@ -166,8 +180,9 @@ function fmtUsd(val) {
   return '$' + Number(val || 0).toFixed(2);
 }
 
-function buildMailtoUrl(to, { cc = '', subject = '', body = '' } = {}) {
+function buildMailtoUrl(to, { from = '', cc = '', subject = '', body = '' } = {}) {
   const parts = [];
+  if (from && from.trim()) parts.push('from=' + encodeURIComponent(from.trim()));
   if (cc && cc.trim()) parts.push('cc=' + encodeURIComponent(cc.trim()));
   if (subject) parts.push('subject=' + encodeURIComponent(subject));
   if (body) parts.push('body=' + encodeURIComponent(body));
@@ -209,10 +224,13 @@ function renderFinancials() {
     const keeperFin = items.find((f) => f.id === 'FIN-001' || (f.vendor || '').toLowerCase().includes('keeper'));
     const keeperContact = (state.contacts || []).find((c) => c.id === (keeperFin?.linked_contact_id || 'GW-C061'));
     if (keeperFin && (keeperFin.status || '').toLowerCase().includes('pending') && keeperContact) {
+      const kFrom = keeperContact.from_email || keeperFin.account_email || 'gary@gravitywizards.com';
+      const kCc = keeperContact.cc_email || 'media@twisted23.com, botchee@icloud.com';
       const kSig = keeperContact.custom_signature || "\n\nThank you,\nGary Francis Stout\nFounder, Gravity Wizards, Inc.\ngary@gravitywizards.com\n+1 (907) 795-9515\nAnchorage, Alaska";
       const kBody = (keeperContact.custom_blurb || '') + kSig;
       const kMailto = buildMailtoUrl(keeperContact.primary_email || 'sales@keepersecurity.com', {
-        cc: keeperContact.cc_email || 'gary@gravitywizards.com',
+        from: kFrom,
+        cc: kCc,
         subject: keeperContact.subject_line || 'Cancel Keeper Security Business Trial — Gravity Wizards, Inc. (gary@gravitywizards.com)',
         body: kBody,
       });
@@ -220,18 +238,18 @@ function renderFinancials() {
         <div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
           <div style="flex:1;min-width:250px;">
             <div style="font-size:0.76rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:0.04em;">
-              ⚡ Ready for 1-Click Send · Zero Hostinger Credits Needed
+              ⚡ Send Explicitly From: ${escapeHtml(kFrom)} · Zero Hostinger Credits Needed
             </div>
             <div style="font-size:0.9rem;margin-top:3px;">
-              <strong>Keeper Security Business Trial (<code>${escapeHtml(keeperFin.account_email)}</code>)</strong> &rarr;
+              <strong>Keeper Security Business Trial (<code>From: ${escapeHtml(kFrom)}</code>)</strong> &rarr;
               <code>${escapeHtml(keeperContact.primary_email)}</code>
             </div>
             <div style="font-size:0.78rem;color:#78350f;margin-top:2px;">
-              Per Keeper Help Articles #263 &amp; #289, do <strong>not</strong> delete your Keeper vault first — send from <code>gary@gravitywizards.com</code> in Apple Mail (or open <code>${escapeHtml(keeperContact.id)}</code> below).
+              Per Keeper Help Articles #263 &amp; #289, do <strong>not</strong> delete your Keeper vault first — confirm <code>From: ${escapeHtml(kFrom)}</code> is selected in Apple Mail (or open <code>${escapeHtml(keeperContact.id)}</code> below).
             </div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <a href="${escapeHtml(kMailto)}" class="btn btn-primary btn-sm" style="text-decoration:none;">✉ Send in Apple Mail ↗</a>
+            <a href="${escapeHtml(kMailto)}" class="btn btn-primary btn-sm" style="text-decoration:none;">✉ Send From gary@ in Apple Mail ↗</a>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-keeper-cancel">📋 Copy Email</button>
             <button type="button" class="btn btn-secondary btn-sm" data-open-fin-contact="${escapeHtml(keeperContact.id)}">🚀 GwCrm Draft (${escapeHtml(keeperContact.id)})</button>
           </div>
@@ -240,7 +258,7 @@ function renderFinancials() {
       const copyKBtn = $('#btn-copy-keeper-cancel');
       if (copyKBtn) {
         copyKBtn.addEventListener('click', async () => {
-          const clip = `To: ${keeperContact.primary_email}\nCC: ${keeperContact.cc_email || 'gary@gravitywizards.com'}\nSubject: ${keeperContact.subject_line}\n\n${kBody}`;
+          const clip = `From: ${kFrom}\nTo: ${keeperContact.primary_email}\nCC: ${kCc}\nSubject: ${keeperContact.subject_line}\n\n${kBody}`;
           try {
             await navigator.clipboard.writeText(clip);
             copyKBtn.textContent = '✓ Copied!';
@@ -274,7 +292,8 @@ function renderFinancials() {
       if (f.contact_email) {
         const sig = linked?.custom_signature || "\n\nThank you,\nGary Francis Stout\nFounder, Gravity Wizards, Inc.\ngary@gravitywizards.com\n+1 (907) 795-9515";
         const mUrl = buildMailtoUrl(f.contact_email, {
-          cc: linked?.cc_email || f.account_email || '',
+          from: linked?.from_email || f.account_email || 'gary@gravitywizards.com',
+          cc: linked?.cc_email || '',
           subject: linked?.subject_line || `Subscription Inquiry — ${f.vendor} (${f.account_email || ''})`,
           body: linked ? ((linked.custom_blurb || '') + sig) : '',
         });
@@ -529,6 +548,8 @@ function openDrawer(id) {
   $('#drawer-id').textContent = `${c.id} · Priority #${c.priority}`;
   $('#drawer-title').textContent = c.outlet;
   $('#d-stage').value = c.stage;
+  const fromInput = $('#d-from');
+  if (fromInput) fromInput.value = c.from_email || serverStatus.fromAddress || 'media@twisted23.com';
   const emailInput = $('#d-email');
   if (emailInput) emailInput.value = c.primary_email || '';
   $('#d-cc').value = c.cc_email || '';
@@ -628,7 +649,7 @@ async function runSendBatch(ids, dryRun, step = 1) {
             </span>
           </div>
         </div>
-        ${r.to ? `<div><code>To: ${escapeHtml(r.to)}</code> ${r.cc?.length ? `<code>CC: ${escapeHtml(r.cc.join(', '))}</code>` : ''} <span style="font-size:0.75rem;color:var(--ok-text);font-weight:600;">⚡ Zero BCC (Saved in Sent folder)</span></div>` : ''}
+        ${r.to ? `<div>${r.from ? `<code>From: ${escapeHtml(r.from)}</code> ` : ''}<code>To: ${escapeHtml(r.to)}</code> ${r.cc?.length ? `<code>CC: ${escapeHtml(r.cc.join(', '))}</code>` : ''} <span style="font-size:0.75rem;color:var(--ok-text);font-weight:600;">⚡ Zero BCC (Saved in Sent folder)</span></div>` : ''}
         ${r.subject ? `<div><strong>Subject:</strong> ${escapeHtml(r.subject)}</div>` : ''}
         ${r.preview ? `<pre>${escapeHtml(r.preview)}</pre>` : ''}
         ${r.error ? `<div class="status-pill status-danger" style="margin-top:6px;">${escapeHtml(r.error)}</div>` : ''}
@@ -767,6 +788,8 @@ if (initialTabParam) {
 }
 
 $('#search-contacts').addEventListener('input', renderContacts);
+const campSelect = $('#filter-campaign');
+if (campSelect) campSelect.addEventListener('change', renderContacts);
 $('#filter-stage').addEventListener('change', renderContacts);
 $('#drawer-close').addEventListener('click', closeDrawer);
 $('#modal-close').addEventListener('click', () => ($('#modal-backdrop').hidden = true));
@@ -848,6 +871,11 @@ async function handleSaveContact() {
       custom_blurb: $('#d-blurb').value,
       notes: $('#d-notes').value,
     };
+    const fromInput = $('#d-from');
+    if (fromInput) {
+      payload.from_email = fromInput.value.trim().toLowerCase();
+      payload.reply_to = payload.from_email;
+    }
     const emailInput = $('#d-email');
     if (emailInput) payload.primary_email = emailInput.value.trim().toLowerCase();
 
@@ -911,6 +939,7 @@ function openSendStep1Dispatcher(contactId) {
   const c = state.contacts.find((x) => x.id === contactId);
   if (!c) return;
 
+  const fromEmail = c.from_email || serverStatus.fromAddress || 'media@twisted23.com';
   const to = c.primary_email || '';
   const cc = c.cc_email || '';
   const ccCount = cc ? cc.split(',').map((s) => s.trim()).filter(Boolean).length : 0;
@@ -920,7 +949,7 @@ function openSendStep1Dispatcher(contactId) {
   const signature = c.custom_signature || "\n\nBest,\nGary Stout\nTwisted23 & Gravity Wizards (Anchorage, AK)\nhttps://twisted23.com\nmedia@twisted23.com";
   const fullBody = blurb + signature;
 
-  const mailtoUrl = buildMailtoUrl(to, { cc, subject, body: fullBody });
+  const mailtoUrl = buildMailtoUrl(to, { from: fromEmail, cc, subject, body: fullBody });
 
   const hasHostingerMail = !!serverStatus.hostingerMailConfigured;
   const hasResend = !!serverStatus.resendConfigured;
@@ -933,6 +962,7 @@ function openSendStep1Dispatcher(contactId) {
       </div>
 
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:0.83rem;display:flex;flex-direction:column;gap:5px;">
+        <div><strong>From:</strong> <code>${escapeHtml(fromEmail)}</code></div>
         <div><strong>To:</strong> <code>${escapeHtml(to || '(No email set)')}</code></div>
         ${cc ? `<div><strong>CC:</strong> <code>${escapeHtml(cc)}</code></div>` : ''}
         <div><strong>Quota Cost:</strong> <span style="color:var(--ok-text);font-weight:600;">⚡ ${baseCredits} daily credit${baseCredits === 1 ? '' : 's'} (Zero BCC)</span></div>
@@ -943,19 +973,19 @@ function openSendStep1Dispatcher(contactId) {
         <div style="border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:8px;">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <button id="btn-dispatch-server" class="btn btn-primary" type="button">
-              ${hasHostingerMail ? '🚀 Dispatch via Hostinger Mail API (DKIM · Zero BCC)' : (hasResend ? '🚀 Dispatch via Resend Cloud API' : '🚀 Dispatch via Server Mail')}
+              ${hasHostingerMail ? `🚀 Dispatch via Hostinger Mail API (From: ${escapeHtml(fromEmail)})` : (hasResend ? '🚀 Dispatch via Resend Cloud API' : '🚀 Dispatch via Server Mail')}
             </button>
           </div>
           ${hasHostingerMail ? `
             <div style="font-size:0.76rem;color:var(--ok-text);display:flex;align-items:center;gap:6px;">
-              <span>✓ Sent copy is automatically archived in <code>media@twisted23.com</code> Sent folder &amp; GwCrm ledger with zero BCCs.</span>
+              <span>✓ Sent copy is archived in <code>${escapeHtml(fromEmail)}</code> Sent folder &amp; GwCrm ledger with zero BCCs.</span>
             </div>
           ` : ''}
         </div>
 
         <div style="display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--border);padding-top:10px;">
           <a id="btn-launch-mailto" href="${escapeHtml(mailtoUrl)}" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;">
-            ✉ Or Open in Native Mail App &amp; Mark Sent Step 1 ↗
+            ✉ Or Open in Native Mail App (From: ${escapeHtml(fromEmail)}) &amp; Mark Sent ↗
           </a>
         </div>
 
@@ -976,7 +1006,7 @@ function openSendStep1Dispatcher(contactId) {
   const launchBtn = $('#btn-launch-mailto');
   if (launchBtn) {
     launchBtn.addEventListener('click', async () => {
-      await markContactSentStep1(contactId, 'Sent (Mail App)');
+      await markContactSentStep1(contactId, `Sent (${fromEmail} Mail App)`);
       setTimeout(() => { $('#modal-backdrop').hidden = true; }, 800);
     });
   }
@@ -984,7 +1014,7 @@ function openSendStep1Dispatcher(contactId) {
   const copyBtn = $('#btn-copy-outreach');
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
-      const copyText = `To: ${to}\n${cc ? `CC: ${cc}\n` : ''}Subject: ${subject}\n\n${fullBody}`;
+      const copyText = `From: ${fromEmail}\nTo: ${to}\n${cc ? `CC: ${cc}\n` : ''}Subject: ${subject}\n\n${fullBody}`;
       try {
         await navigator.clipboard.writeText(copyText);
         copyBtn.textContent = '✓ Copied to Clipboard!';

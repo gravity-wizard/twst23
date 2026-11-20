@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=17" />
+  <link rel="stylesheet" href="styles.css?v=18" />
 </head>
 <body>
   <header class="topbar">
@@ -412,6 +412,14 @@
         </select>
       </label>
       <label class="field">
+        <span>Send From Identity</span>
+        <select id="d-from" class="select">
+          <option value="media@twisted23.com">media@twisted23.com (Hostinger DKIM)</option>
+          <option value="gary@gravitywizards.com">gary@gravitywizards.com (Gravity Wizards / Keeper Admin)</option>
+          <option value="javelin.jaaziel@gmail.com">javelin.jaaziel@gmail.com (Gmail — Army Aunts)</option>
+        </select>
+      </label>
+      <label class="field">
         <span>Primary Email</span>
         <input id="d-email" class="input" type="email" placeholder="contact@domain.com" />
       </label>
@@ -453,6 +461,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>

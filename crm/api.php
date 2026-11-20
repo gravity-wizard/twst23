@@ -221,9 +221,7 @@ function read_data(string $path): array {
 
 function write_data(string $path, array $data): bool {
     $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
-    $okRuntime = write_single_json(runtime_file_for($path), $json);
-    $okSeed = write_single_json($path, $json);
-    return $okRuntime || $okSeed;
+    return write_single_json(runtime_file_for($path), $json);
 }
 
 function json_body(): array {
