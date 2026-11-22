@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ascension Apps on the Web — Ascension Notes, Case-Sensitive Search &amp; Multi-Forum Exporter</title>
+  <meta name="description" content="Ascension Notes on the Web: Xcode-style case-sensitive dual-layer search, clean MUNSC normalization, Base-38 Acode9 provenance, and 1-click formatting for popular and niche forums—plus upcoming Beta innovations." />
+  <link rel="canonical" href="https://twisted23.com/ascension/" />
+  <meta property="og:title" content="Ascension Apps on the Web — Ascension Notes &amp; Beta Suite" />
+  <meta property="og:description" content="Write clean notes, locate subtle case-sensitive retrieval cues across messy archives, and export formatted posts for phpBB, XenForo, Reddit, Discord, Substack, and retro boards." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://twisted23.com/ascension/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/icon.png" />
+  <link rel="stylesheet" href="styles.css?v=1" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Ascension Notes Web",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "url": "https://twisted23.com/ascension/",
+    "description": "Case-sensitive dual-layer notes studio with Base-38 Acode9 provenance and multi-format output for popular and niche forums.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Gravity Wizards, Inc.",
+      "founder": "Gary Francis Stout"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-lockup">
+        <div class="brand-glyph" aria-hidden="true">A^</div>
+        <div>
+          <span class="brand-title">Ascension Apps &middot; Web Studio</span>
+          <span class="brand-sub">Gravity Wizards &middot; Twisted23 Utility Suite</span>
+        </div>
+      </div>
+
+      <nav class="header-nav" aria-label="Primary Navigation">
+        <a class="nav-link" href="#workbench-section">Notes Workbench</a>
+        <a class="nav-link" href="#forum-exporter-section">Forum Exporter</a>
+        <a class="nav-link" href="#beta-roadmap-section">Beta Suite</a>
+        <a class="nav-link" href="/">Twisted23 Home</a>
+        <a class="nav-link" href="/px/">pxURLs</a>
+        <button id="btn-run-selftest" type="button" class="btn btn-sm">Run Browser Self-Test</button>
+        <button id="btn-theme-toggle" type="button" class="btn btn-sm">Midnight Studio</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-main">
+    <!-- EDITORIAL HERO -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div>
+        <div class="eyebrow">Ascension Apps on the Web &middot; Live Interactive Preview</div>
+        <h1 id="hero-heading">Ascension Notes: Search by exact case, publish cleanly to any forum.</h1>
+        <p class="hero-lead">
+          Everyday search bars drown exact names in lookalike prefix hits—searching <em>Norma</em> returns four hundred notes containing <em>Normal</em>. Ascension Notes pairs human-readable prose with Xcode-style case-sensitive dual-layer indexing, Base-38 provenance, and one-click exporters built for both flagship networks and classic independent boards.
+        </p>
+      </div>
+
+      <aside class="parity-strip" aria-label="Architecture & Live Telemetry">
+        <div class="parity-row">
+          <span class="label">Engine Parity</span>
+          <span class="val">Web JS &middot; Python 3 &middot; Swift 6</span>
+        </div>
+        <div class="parity-row">
+          <span class="label">Live Base-38 Time0</span>
+          <span class="val" id="live-jesus-clock">loading...</span>
+        </div>
+        <div class="parity-row">
+          <span class="label">Forum Export Targets</span>
+          <span class="val">8 Popular &amp; Niche Formats</span>
+        </div>
+        <div class="parity-row">
+          <span class="label">Browser Verification</span>
+          <span class="val" id="selftest-status-badge">Ready</span>
+        </div>
+      </aside>
+    </section>
+
+    <div id="selftest-output" class="self-test-log" hidden></div>
+
+    <!-- INTERACTIVE ASCENSION NOTES WORKBENCH -->
+    <section id="workbench-section" class="workbench" aria-label="Ascension Notes Dual-Layer Workbench">
+      <div class="workbench-bar">
+        <div class="preset-group" role="group" aria-label="Sample Notes">
+          <span style="font-size:0.78rem;font-weight:700;color:var(--ink-muted);margin-right:4px;">Samples:</span>
+          <button type="button" class="btn btn-sm btn-toggle sample-btn active" data-sample="norma">Norma vs Normal</button>
+          <button type="button" class="btn btn-sm btn-toggle sample-btn" data-sample="forum">Forum &amp; Dev Log</button>
+          <button type="button" class="btn btn-sm btn-toggle sample-btn" data-sample="editorial">Agent Brief Memo</button>
+          <button type="button" class="btn btn-sm btn-toggle sample-btn" data-sample="blank">Blank Note</button>
+        </div>
+
+        <div class="acode-group">
+          <span class="acode-pill" title="9-character Time0 collision-free identifier">
+            Acode9: <span id="active-acode9">Ab2p^a40z</span>
+          </span>
+          <button id="btn-toggle-dash" type="button" class="btn btn-sm">URL Mode (^ / -)</button>
+          <button id="btn-mint-acode9" type="button" class="btn btn-sm">Mint New Acode9</button>
+        </div>
+      </div>
+
+      <!-- Xcode-Style Case-Sensitive Search Toolbar -->
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <input id="search-query" class="input" type="search" value="NormA" aria-label="Dual-layer case-sensitive search query" placeholder="Search raw cues or normalized prose (e.g. NormA, Norm[A4], Norma)..." />
+        </div>
+
+        <div class="search-flags" role="group" aria-label="Search flags">
+          <button id="flag-case" type="button" class="flag-btn active" aria-pressed="true" title="Case-Sensitive Match (Aa)">Aa Case</button>
+          <button id="flag-word" type="button" class="flag-btn" aria-pressed="false" title="Whole Word Boundary (W)">W Word</button>
+          <button id="flag-regex" type="button" class="flag-btn" aria-pressed="false" title="Regular Expression (.*)">.* Regex</button>
+        </div>
+
+        <select id="search-layer" class="layer-select" aria-label="Search Layer">
+          <option value="dual" selected>Layer: Dual (Raw + Clean)</option>
+          <option value="normalized">Layer: Clean Normalized Only</option>
+          <option value="raw">Layer: Raw MUNSC Source Only</option>
+        </select>
+      </div>
+
+      <div class="search-presets-row">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-weight:600;color:var(--ink-muted);">Quick Search Tests:</span>
+          <button type="button" class="btn btn-sm search-preset" data-q="NormA" data-cs="1" data-ww="0" data-rx="0">Exact <code>NormA</code> (Aa)</button>
+          <button type="button" class="btn btn-sm search-preset" data-q="Norm4" data-cs="1" data-ww="0" data-rx="0">Exact <code>Norm4</code> (Aa)</button>
+          <button type="button" class="btn btn-sm search-preset" data-q="Norma" data-cs="1" data-ww="1" data-rx="0">Whole-Word <code>Norma</code></button>
+          <button type="button" class="btn btn-sm search-preset" data-q="Norm[A4]" data-cs="1" data-ww="0" data-rx="1">Regex <code>Norm[A4]</code></button>
+        </div>
+        <div id="search-summary" style="font-family:var(--font-mono);font-size:0.78rem;color:var(--ink-muted);"></div>
+      </div>
+
+      <!-- Dual Panes -->
+      <div class="dual-panes">
+        <div class="pane pane-raw">
+          <div class="pane-header">
+            <span class="pane-title">1. Authoring Source (Raw Cues)</span>
+            <label class="check-label"><input id="chk-auto-detect" type="checkbox" checked /> Auto-detect MUNSC cues</label>
+          </div>
+          <input id="note-title-input" class="title-input" type="text" value="Friday Luncheon & Prefix Rescue" aria-label="Note title" placeholder="Note title..." />
+          <textarea id="raw-editor" class="raw-textarea" aria-label="Raw note source editor"></textarea>
+
+          <div class="pane-header">
+            <span class="pane-title" style="font-size:0.74rem;">Source Highlight Mirror</span>
+            <span id="raw-sha-badge" class="mono" style="font-size:0.72rem;color:var(--ink-soft);"></span>
+          </div>
+          <div id="raw-highlight-view" class="rendered-sheet raw-mirror" aria-live="polite"></div>
+
+          <div class="pane-title" style="font-size:0.74rem;margin-top:4px;">Attach Custom Cue Rule</div>
+          <div class="rule-builder">
+            <input id="rule-pattern" class="mini-input" type="text" placeholder="Cue (e.g. G4ry)" aria-label="Custom cue pattern" />
+            <input id="rule-replacement" class="mini-input" type="text" placeholder="Clean form (Gary)" aria-label="Custom normalized replacement" />
+            <label class="check-label"><input id="rule-regex" type="checkbox" /> Regex</label>
+            <button id="btn-add-rule" type="button" class="btn btn-sm">Add Rule</button>
+          </div>
+          <div id="custom-rules-list" style="display:flex;gap:6px;flex-wrap:wrap;font-size:0.75rem;"></div>
+        </div>
+
+        <div class="pane">
+          <div class="pane-header">
+            <span class="pane-title">2. Normalized Output (Spotless Reader View)</span>
+            <button id="btn-balance-preview" type="button" class="btn btn-sm btn-toggle active">Line Balance: ON</button>
+          </div>
+          <div id="normalized-highlight-view" class="rendered-sheet" aria-live="polite"></div>
+
+          <div class="pane-header">
+            <span class="pane-title" style="font-size:0.74rem;">AXIF/1.0 Span Index (<span id="axif-count-label">0</span> cues)</span>
+            <span id="norm-sha-badge" class="mono" style="font-size:0.72rem;color:var(--ink-soft);"></span>
+          </div>
+          <div id="axif-table-wrap" class="rendered-sheet raw-mirror" style="min-height:110px;max-height:200px;overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <div class="match-strip">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-muted);">Matched Span Locations</span>
+          <span style="font-size:0.76rem;color:var(--ink-soft);">Dual-layer search highlights raw cues even inside spotless normalized text</span>
+        </div>
+        <div id="match-chips" class="match-chips"></div>
+      </div>
+    </section>
+
+    <!-- MULTI-FORMAT POPULAR & NICHE FORUM EXPORTER -->
+    <section id="forum-exporter-section" class="exporter-panel" aria-labelledby="exporter-heading">
+      <div class="exporter-controls">
+        <div>
+          <h2 id="exporter-heading" style="margin:0;font-family:var(--font-serif);font-size:1.38rem;">Publish Anywhere: Popular &amp; Niche Forum Formatter</h2>
+          <p style="margin:2px 0 0;font-size:0.84rem;color:var(--ink-muted);">Convert clean or raw-cued notes directly into copy-ready syntax for modern platforms and classic hobbyist boards.</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button id="btn-copy-export" type="button" class="btn btn-primary">Copy Forum Output</button>
+          <button id="btn-download-export" type="button" class="btn">Download File</button>
+          <span id="copy-feedback" class="mono" style="font-size:0.78rem;color:var(--ok);"></span>
+        </div>
+      </div>
+
+      <div id="format-tabs" class="format-tabs" role="tablist" aria-label="Forum Export Formats"></div>
+
+      <div class="exporter-controls" style="background:var(--surface);">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+          <label class="check-label">
+            Export Source:
+            <select id="export-layer" class="layer-select" style="padding:4px 8px;margin-left:4px;">
+              <option value="normalized" selected>Clean Normalized Text (Recommended)</option>
+              <option value="raw">Raw Source (Preserve Case Cues)</option>
+            </select>
+          </label>
+          <label class="check-label"><input id="chk-export-footer" type="checkbox" checked /> Append Acode9 &amp; Time0 Signature</label>
+          <label class="check-label"><input id="chk-export-balance" type="checkbox" checked /> Balance Line Lengths (Botchee4x4 ~68ch)</label>
+        </div>
+        <span id="export-char-count" class="mono" style="font-size:0.76rem;color:var(--ink-muted);"></span>
+      </div>
+
+      <pre id="export-preview" class="export-pre" aria-live="polite"></pre>
+    </section>
+
+    <!-- UPCOMING ASCENSION SUITE INNOVATIONS (TUNED FOR LITERARY AGENTS & PUBLISHERS) -->
+    <section id="beta-roadmap-section" aria-labelledby="roadmap-heading">
+      <div class="section-head">
+        <div>
+          <h2 id="roadmap-heading">More Ascension Innovations Entering Beta Testing Soon</h2>
+          <p>
+            Ascension Notes is the flagship working tool behind a wider publishing and productivity ecosystem—designed for readers overwhelmed by messy digital archives, built across Web, Python 3, and native Swift 6.
+          </p>
+        </div>
+      </div>
+
+      <div class="innovations-grid" style="margin-top:16px;">
+        <article class="innovation-card">
+          <span class="innovation-stage">Entering Private Beta</span>
+          <h3>End-to-End Encrypted Dual-Layer Vaults</h3>
+          <p>Offline-first Apple Notes &amp; Web synchronization with collision-free 9-character Base-38 identifiers, zero cloud lock-in, and verifiable SHA-256 tamper checks across both text layers.</p>
+        </article>
+
+        <article class="innovation-card">
+          <span class="innovation-stage">Entering Private Beta</span>
+          <h3>Cross-Community One-Click Dispatch</h3>
+          <p>Publish polished notes cleanly from desktop or mobile directly to phpBB, XenForo, Discourse, Reddit, Discord, and Substack without breaking quotes, tables, or case-sensitive tags.</p>
+        </article>
+
+        <article class="innovation-card">
+          <span class="innovation-stage">Beta Testing Queue</span>
+          <h3>Instant Web Clipper &amp; iOS Share Action</h3>
+          <p>Capture articles, receipts, and luncheon reminders while keeping invisible-to-the-reader search hooks intact—ending the lookalike prefix flood inside personal libraries.</p>
+        </article>
+
+        <article class="innovation-card">
+          <span class="innovation-stage">Live Web Prototype</span>
+          <h3>Adaptive Rhythm &amp; Typography Equalizer</h3>
+          <p>Automatic line-length balancing tuned for zero eye fatigue across phone screens, wide monitors, forum threads, and companion illustrated gift-book layouts.</p>
+        </article>
+      </div>
+
+      <div class="agent-callout" style="margin-top:18px;">
+        <div style="max-width:68ch;">
+          <h3 style="margin:0 0 6px;font-family:var(--font-serif);font-size:1.32rem;">For Literary Agents, Acquisitions Editors &amp; Media Partners</h3>
+          <p style="margin:0;font-size:0.9rem;color:var(--ink-muted);">
+            The companion non-fiction manuscript—written with humor and everyday clarity for general readers—translates these search frustrations into a lively illustrated guide, anchored by live working software across Web, iOS, and macOS. Pre-publication trial access and audience engagement metrics are available upon inquiry.
+          </p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="btn btn-primary" href="/contact">Request Agent / Press Beta Invite</a>
+          <a class="btn" href="/norma4/" rel="nofollow">Editorial NDA Preview Login</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Ascension Apps &middot; Gravity Wizards, Inc. &middot; Gary Francis Stout</span>
+    <span>Engine: Base-38 Time0 (1584540571) &middot; AXIF/1.0 &middot; <a href="/about">About</a> &middot; <a href="/terms">Terms</a></span>
+  </footer>
+
+  <script src="ascension-engine.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
