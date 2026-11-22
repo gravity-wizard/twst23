@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <title>Where's Norma? — Confidential Editorial Trial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=1" />
+</head>
+<body class="balanced-prose">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">N4</div>
+        <div>
+          <h1 class="balanced-text">Where's Norma? &middot; Editorial Trial</h1>
+          <p class="balanced-text">Confidential Pre-Publication Review &middot; NDA Required</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span id="session-badge" class="badge badge-warn">🔒 NDA + AAid Required</span>
+        <button id="btn-equalize" type="button" class="btn btn-secondary btn-sm" title="Toggle Botchee4x4 balanced line-length wrapping">⚖️ Balanced Lines: ON</button>
+        <button id="btn-lock" type="button" class="btn btn-secondary btn-sm" hidden>Lock Session</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- PUBLIC NON-DISCLOSING HOOK + GATE (NO SECRET SYSTEM DETAILS SHOWN BEFORE AUTH+NDA) -->
+    <section id="gate-view">
+      <article class="card hook-hero">
+        <span class="badge">☕ 60-Second Everyday Question · Pre-Publication Preview</span>
+        <h2 class="balanced-text" style="margin:12px 0 8px;">Ever search your notes for <code>Norma</code>—and get buried under four hundred <code>Normal</code> hits?</h2>
+        <p class="balanced-text" style="color:var(--muted);margin:0;">
+          Every phone and notes app matches prefixes eagerly. Type <code>Norma</code> after a quick luncheon, and <em>"normal settings"</em>, <em>"normally open"</em>, and <em>"normalize"</em> flood your screen. Even adding one deliberate cue—like <code>NormA</code> or <code>"Norma "</code> (with a trailing space inside quotes)—stops the flood in plain sight.
+        </p>
+
+        <div class="compare-strip">
+          <div class="compare-box">
+            <strong>❌ Search: <code>Norma</code></strong>
+            <span style="color:var(--muted);">Swamped by 400+ hits for <em>Normal, Normally, Normalize</em>.</span>
+          </div>
+          <div class="compare-box">
+            <strong>✂️ Quoted Space: <code>"Norma "</code></strong>
+            <span style="color:var(--muted);">Trailing space cuts out longer prefix words immediately.</span>
+          </div>
+          <div class="compare-box">
+            <strong>✨ Deliberate Cue: <code>NormA</code></strong>
+            <span style="color:var(--muted);">One tiny intentional twist locks right onto your luncheon note.</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="tabs" role="tablist">
+        <button id="tab-aaid" type="button" class="tab-btn active" role="tab" aria-selected="true">🔑 Enter AAid Password (Editors &amp; Invited Readers)</button>
+        <button id="tab-presurvey" type="button" class="tab-btn" role="tab" aria-selected="false">📋 Get a Reader AAid (60-Sec Survey + NDA)</button>
+      </div>
+
+      <!-- TAB 1: PASSWORD-ONLY AAid + NDA -->
+      <section id="panel-aaid" class="card form-stack">
+        <div>
+          <h3 class="balanced-text" style="margin:0 0 4px;">Password-Only Editorial &amp; Beta Login</h3>
+          <p class="balanced-text" style="margin:0;font-size:0.85rem;color:var(--muted);">No email or username required. Paste your 9-character <code>AAid</code> password (editorial invites end with a 4-character suffix starting with <code>e</code>).</p>
+        </div>
+
+        <form id="form-unlock" class="form-stack">
+          <label class="field">
+            <span>9-Character <code>AAid</code> Password</span>
+            <input id="input-aaid" class="input input-mono" type="password" autocomplete="off" placeholder="e.g. Ab2p-e..." required />
+          </label>
+
+          <label class="field">
+            <span>Optional Initials or Agency Note (for Audit Log)</span>
+            <input id="input-note" class="input" type="text" maxlength="100" placeholder="Optional initials or agency name" />
+          </label>
+
+          <div class="nda-box">
+            <div class="nda-scroll">
+              <strong>Pre-Publication Confidentiality &amp; Non-Disclosure Agreement (NDA):</strong> By unlocking this Editorial Trial, you acknowledge that the manuscript, shorthand structures, interactive demonstrations, and expansion concepts hosted at <code>/norma4/</code> are unpublished, confidential intellectual property of Gravity Wizards, Inc. / Spy. You agree to review them solely for private editorial, literary agency, or beta-testing evaluation, and not to copy, scrape, publish, train external models on, or redistribute any undisclosed material without written authorization.
+            </div>
+            <label class="nda-check">
+              <input id="check-nda-aaid" type="checkbox" required />
+              <span>I accept this Pre-Publication Confidentiality &amp; NDA Agreement.</span>
+            </label>
+          </div>
+
+          <div id="unlock-feedback" class="feedback"></div>
+          <button type="submit" class="btn btn-primary">🔓 Accept NDA &amp; Unlock Editorial Trial</button>
+        </form>
+      </section>
+
+      <!-- TAB 2: PRE-TRIAL SURVEY -> MINTS READER AAid + NDA -->
+      <section id="panel-presurvey" class="card form-stack" hidden>
+        <div>
+          <h3 class="balanced-text" style="margin:0 0 4px;">3-Question Pre-Trial Survey &rarr; Instant Reader <code>AAid</code></h3>
+          <p class="balanced-text" style="margin:0;font-size:0.85rem;color:var(--muted);">Don't have a password yet? Answer 3 quick questions and accept the NDA below to mint your own Reader <code>AAid</code> password on the spot.</p>
+        </div>
+
+        <form id="form-presurvey" class="form-stack">
+          <div class="field">
+            <span>1. How often does a phone or notes search bury what you wanted under lookalike words?</span>
+            <div class="radio-row">
+              <label class="chip-choice"><input type="radio" name="ps_freq" value="Daily" required /> Daily</label>
+              <label class="chip-choice"><input type="radio" name="ps_freq" value="Weekly" /> Weekly</label>
+              <label class="chip-choice"><input type="radio" name="ps_freq" value="Occasionally" /> Occasionally</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <span>2. Have you ever used <code>NormA</code> or <code>"Norma "</code> (quoted trailing space) to narrow a messy search?</span>
+            <div class="radio-row">
+              <label class="chip-choice"><input type="radio" name="ps_trick" value="Never tried" required /> Never tried that</label>
+              <label class="chip-choice"><input type="radio" name="ps_trick" value="Sometimes" /> Sometimes</label>
+              <label class="chip-choice"><input type="radio" name="ps_trick" value="Yes regularly" /> Yes, regularly</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <span>3. What brings you here?</span>
+            <div class="radio-row">
+              <label class="chip-choice"><input type="radio" name="ps_role" value="Everyday Reader" required /> Everyday Reader</label>
+              <label class="chip-choice"><input type="radio" name="ps_role" value="Editor / Agent / Publisher" /> Editor / Agent / Publisher</label>
+              <label class="chip-choice"><input type="radio" name="ps_role" value="Maker / Developer" /> Maker / Developer</label>
+            </div>
+          </div>
+
+          <div class="nda-box">
+            <div class="nda-scroll">
+              <strong>Pre-Publication Confidentiality &amp; Non-Disclosure Agreement (NDA):</strong> This web preview contains unpublished book text and proprietary shorthand methods shared strictly for confidential beta reading and evaluation. Do not republish, scrape, or share undisclosed contents externally without permission from Gravity Wizards, Inc. / Spy.
+            </div>
+            <label class="nda-check">
+              <input id="check-nda-survey" type="checkbox" required />
+              <span>I accept the NDA and want my Reader <code>AAid</code> password.</span>
+            </label>
+          </div>
+
+          <div id="survey-unlock-feedback" class="feedback"></div>
+          <button type="submit" class="btn btn-primary">🎫 Mint My Reader AAid &amp; Enter Trial</button>
+        </form>
+      </section>
+    </section>
+
+    <!-- UNLOCKED EDITORIAL TRIAL (HYDRATED DYNAMICALLY ONLY AFTER AUTH+NDA) -->
+    <section id="trial-view" hidden style="display:flex;flex-direction:column;gap:20px;">
+      <div id="minted-aaid-banner" class="card" style="border-color:var(--ok-text);background:var(--ok-bg);" hidden></div>
+
+      <!-- INTERACTIVE DEMO LAB -->
+      <article class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div>
+            <span class="badge badge-ok">Interactive Search-Flood Lab</span>
+            <h2 style="margin:8px 0 4px;">Try Typing <code>Norma</code> vs. <code>"Norma "</code> vs. <code>N0rma</code></h2>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q="Norma">Try: Norma</button>
+            <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q='"Norma "'>Try: "Norma "</button>
+            <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q="N0rma">Try: N0rma</button>
+          </div>
+        </div>
+        <input id="demo-search-input" class="input input-mono" type="search" placeholder='Type Norma, "Norma ", or N0rma...' style="margin-top:10px;" />
+        <div id="demo-search-stats" style="font-size:0.8rem;color:var(--muted);margin-top:8px;"></div>
+        <div id="demo-search-results" class="demo-results"></div>
+      </article>
+
+      <!-- CHAPTER READER -->
+      <div class="reader-grid">
+        <nav id="chapter-nav" class="chapter-nav" aria-label="Chapters"></nav>
+        <article class="card prose">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+            <span id="active-chapter-tag" class="badge">Chapter</span>
+            <div style="display:flex;gap:6px;">
+              <button id="btn-prev-ch" type="button" class="btn btn-secondary btn-sm">&larr; Prev</button>
+              <button id="btn-next-ch" type="button" class="btn btn-secondary btn-sm">Next &rarr;</button>
+            </div>
+          </div>
+          <h2 id="active-chapter-title" class="balanced-text" style="margin-top:0;">Loading...</h2>
+          <div id="active-chapter-body"></div>
+        </article>
+      </div>
+
+      <!-- POST-READ 3-TAP PULSE SURVEY -->
+      <article class="card">
+        <span class="badge badge-warn">📝 Quick Post-Trial Survey</span>
+        <h3 style="margin:10px 0 4px;">30-Second Editorial &amp; Reader Pulse</h3>
+        <p style="margin:0 0 14px;font-size:0.85rem;color:var(--muted);">Tell Spy &amp; A17si what clicked (anonymous or tagged to your Editorial <code>AAid</code> tier).</p>
+
+        <form id="form-postsurvey" class="form-stack">
+          <div class="field">
+            <span>1. Would you actually use <code>NormA</code>, <code>"Norma "</code>, or a <code>N0rma</code> code in your own notes?</span>
+            <div class="radio-row">
+              <label class="chip-choice"><input type="radio" name="post_use" value="Yes, today" required /> Yes, starting today</label>
+              <label class="chip-choice"><input type="radio" name="post_use" value="Maybe" /> Maybe</label>
+              <label class="chip-choice"><input type="radio" name="post_use" value="No" /> Probably not</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <span>2. Which hook landed best?</span>
+            <div class="radio-row">
+              <label class="chip-choice"><input type="radio" name="post_fav" value="Norma vs Normal rescue" required /> Norma vs. Normal rescue</label>
+              <label class="chip-choice"><input type="radio" name="post_fav" value="Directional Dittos & Rabbits" /> Directional Dittos &amp; Multiplying Rabbits</label>
+              <label class="chip-choice"><input type="radio" name="post_fav" value="4-Tier A3odex" /> 4-Tier A3odex / Short Codes</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <span>3. Best commercial fit in your opinion?</span>
+            <div class="radio-row">
+              <label class="chip-choice"><input type="radio" name="post_fit" value="Illustrated Gift Book (25k-35k)" required /> Illustrated Gift Book (25k–35k)</label>
+              <label class="chip-choice"><input type="radio" name="post_fit" value="Pocket Series (3-5 volumes)" /> 3–5 Pocket Volumes</label>
+              <label class="chip-choice"><input type="radio" name="post_fit" value="Short Digital / Audio" /> Short Digital / Audio</label>
+            </div>
+          </div>
+
+          <label class="field">
+            <span>Optional 1-Line Editorial Note / Bug / Suggestion</span>
+            <textarea id="post-note" class="textarea" rows="2" maxlength="600" placeholder="What felt sharpest, unclear, or worth expanding?"></textarea>
+          </label>
+
+          <div id="post-feedback" class="feedback"></div>
+          <button type="submit" class="btn btn-primary" style="align-self:flex-start;">✓ Submit Survey Feedback</button>
+        </form>
+      </article>
+    </section>
+  </main>
+
+  <button id="btn-bug-fab" type="button" class="btn btn-secondary btn-sm bug-fab">🐞 Report Bug / Feedback</button>
+
+  <div id="bug-modal" class="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bug-title">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 id="bug-title" style="margin:0;">Report Bug or Improvement</h3>
+        <button id="bug-close" type="button" class="btn btn-secondary btn-sm">&times;</button>
+      </div>
+      <form id="form-bug" class="form-stack">
+        <label class="field">
+          <span>What happened or could be clearer?</span>
+          <textarea id="bug-text" class="textarea" rows="3" maxlength="500" required placeholder="Describe any display issue, typo, or suggestion..."></textarea>
+        </label>
+        <div id="bug-feedback" class="feedback"></div>
+        <button type="submit" class="btn btn-primary">Send Telemetry Report</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js?v=1"></script>
+</body>
+</html>
