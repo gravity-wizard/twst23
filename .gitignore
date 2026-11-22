@@ -17,8 +17,10 @@ norma4/data/sessions.json
 norma4/data/telemetry.jsonl
 norma4/data/surveys.jsonl
 norma4/data/nda_log.jsonl
+norma4/data/.vault.key
 web/norma4/data/aaids_runtime.json
 web/norma4/data/sessions.json
 web/norma4/data/telemetry.jsonl
 web/norma4/data/surveys.jsonl
 web/norma4/data/nda_log.jsonl
+web/norma4/data/.vault.key

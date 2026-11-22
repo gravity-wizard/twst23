@@ -4,7 +4,7 @@
   RewriteRule ^data/ - [F,L]
 </IfModule>
 
-<FilesMatch "\.(json|jsonl|log|md|env|py|sh)$">
+<FilesMatch "\.(json|jsonl|log|md|env|py|sh|enc|key)$">
   Require all denied
 </FilesMatch>
 

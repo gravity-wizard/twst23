@@ -3,6 +3,16 @@
   let trialData = null;
   let currentChIdx = 0;
 
+  // Safe non-disclosing public Apple Notes demo data (zero manuscript or system secrets)
+  const PUBLIC_NOTES = [
+    { title: 'Normal Settings — Router Backup', preview: 'Check normal settings before travel mode kicks in...', cue: 'normal' },
+    { title: 'Normally Open Valve Spec', preview: 'Valve stays normally open when power is disconnected...', cue: 'normally' },
+    { title: 'Normalize Monthly Grocery Sheet', preview: 'Normalize column widths and round totals...', cue: 'normalize' },
+    { title: 'Norma — Friday Luncheon at 12:30', preview: 'Corner booth by the window · NormA likes extra lemon...', cue: 'target', target: true },
+    { title: 'Norman Rockwell Museum Gift Idea', preview: 'Pocket hardcover catalog & postcard set...', cue: 'norman' },
+    { title: 'Normalcy Bias Reading Excerpt', preview: 'Why busy brains overlook obvious anomalies...', cue: 'normalcy' },
+  ];
+
   function escapeHtml(s) {
     return String(s || '')
       .replace(/&/g, '&amp;')
@@ -46,7 +56,6 @@
     } catch (_) {}
   }
 
-  // Automatic JS & promise error telemetry
   window.addEventListener('error', (ev) => {
     sendTelemetry('client_error', { msg: ev.message || 'error', line: ev.lineno || 0 });
   });
@@ -54,13 +63,78 @@
     sendTelemetry('client_error', { msg: String(ev.reason || 'rejection') });
   });
 
-  // Minimal safe markdown renderer for unlocked manuscript chapters
+  // Render pre-gate mini Apple Notes search comparison
+  function renderPublicPreview(q) {
+    const statsEl = $('#public-preview-stats');
+    const listEl = $('#public-preview-results');
+    if (!statsEl || !listEl) return;
+
+    let hits = [];
+    if (q === '"Norma "') {
+      hits = PUBLIC_NOTES.filter((n) => `${n.title} ${n.preview}`.toLowerCase().includes('norma '));
+      statsEl.textContent = `1 hit for "Norma " — trailing space inside quotes filters out 5 "Normal..." notes immediately.`;
+    } else if (q === 'NormA') {
+      hits = PUBLIC_NOTES.filter((n) => `${n.title} ${n.preview}`.includes('NormA'));
+      statsEl.textContent = `1 hit for NormA — one deliberate mid-word cue locks straight onto your luncheon note.`;
+    } else {
+      hits = PUBLIC_NOTES.filter((n) => `${n.title} ${n.preview}`.toLowerCase().includes('norma'));
+      statsEl.textContent = `${hits.length} hits for "Norma" — buried at #4 under Normal, Normally, Normalize.`;
+    }
+
+    listEl.innerHTML = hits.map((n) => `
+      <div class="anote-card-row ${n.target ? 'target-hit' : 'flood-noise'}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <strong>${escapeHtml(n.title)}</strong>
+          <span style="font-size:0.72rem;color:var(--muted);">${n.target ? '🎯 Target Note' : 'Prefix Noise'}</span>
+        </div>
+        <div style="color:var(--muted);font-size:0.8rem;margin-top:2px;">${escapeHtml(n.preview)}</div>
+      </div>
+    `).join('');
+  }
+
+  document.querySelectorAll('.public-preset').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.public-preset').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPublicPreview(btn.dataset.pq);
+      sendTelemetry('public_preview_preset', { query: btn.dataset.pq });
+    });
+  });
+  renderPublicPreview('Norma');
+
+  // Theme Toggle (Default Light Ivory Apple Notes -> Optional Dark Notes)
+  const themeBtn = $('#btn-theme');
+  function applyTheme(dark) {
+    document.body.classList.toggle('theme-dark', dark);
+    themeBtn.textContent = dark ? '☀️ Light Paper' : '🌙 Dark Notes';
+  }
+  try {
+    applyTheme(localStorage.getItem('n4_theme') === 'dark');
+  } catch (_) {
+    applyTheme(false);
+  }
+  themeBtn.addEventListener('click', () => {
+    const nextDark = !document.body.classList.contains('theme-dark');
+    applyTheme(nextDark);
+    try { localStorage.setItem('n4_theme', nextDark ? 'dark' : 'light'); } catch (_) {}
+    sendTelemetry('theme_toggle', { dark: nextDark });
+  });
+
+  // Balanced Line-Length Equalizer Toggle (Botchee4x4)
+  let balancedOn = true;
+  $('#btn-equalize').addEventListener('click', () => {
+    balancedOn = !balancedOn;
+    document.body.classList.toggle('balanced-prose', balancedOn);
+    $('#btn-equalize').textContent = balancedOn ? '⚖️ Balanced: ON' : '⚖️ Balanced: OFF';
+    sendTelemetry('equalizer_toggle', { enabled: balancedOn });
+  });
+
+  // Safe Markdown Renderer for Decrypted Notes
   function renderMarkdown(md) {
     const lines = String(md || '').split('\n');
     const html = [];
     let inList = false;
     let inTable = false;
-    let tableHeaderDone = false;
 
     function inlineFmt(text) {
       let out = escapeHtml(text);
@@ -72,12 +146,11 @@
 
     function closeBlocks() {
       if (inList) { html.push('</ul>'); inList = false; }
-      if (inTable) { html.push('</tbody></table>'); inTable = false; tableHeaderDone = false; }
+      if (inTable) { html.push('</tbody></table>'); inTable = false; }
     }
 
     for (const rawLine of lines) {
-      const line = rawLine.trimEnd();
-      const trimmed = line.trim();
+      const trimmed = rawLine.trimEnd().trim();
 
       if (trimmed === '') {
         closeBlocks();
@@ -91,10 +164,7 @@
       if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
         if (inList) { html.push('</ul>'); inList = false; }
         const cells = trimmed.slice(1, -1).split('|').map((c) => c.trim());
-        if (cells.every((c) => /^[:\-\s]+$/.test(c))) {
-          tableHeaderDone = true;
-          continue;
-        }
+        if (cells.every((c) => /^[:\-\s]+$/.test(c))) continue;
         if (!inTable) {
           inTable = true;
           html.push('<table><thead><tr>' + cells.map((c) => `<th>${inlineFmt(c)}</th>`).join('') + '</tr></thead><tbody>');
@@ -103,7 +173,7 @@
         html.push('<tr>' + cells.map((c) => `<td>${inlineFmt(c)}</td>`).join('') + '</tr>');
         continue;
       }
-      if (inTable) { html.push('</tbody></table>'); inTable = false; tableHeaderDone = false; }
+      if (inTable) { html.push('</tbody></table>'); inTable = false; }
 
       if (trimmed.startsWith('#### ')) {
         closeBlocks();
@@ -159,16 +229,44 @@
       : '<div class="demo-note">No matches.</div>';
   }
 
+  function renderChapterNav(filterTerm = '') {
+    if (!trialData || !trialData.chapters) return;
+    const nav = $('#chapter-nav');
+    const q = filterTerm.trim().toLowerCase();
+    const items = trialData.chapters.map((ch, idx) => ({ ch, idx })).filter(({ ch }) => {
+      if (!q) return true;
+      return ch.title.toLowerCase().includes(q) || (ch.markdown || '').toLowerCase().includes(q);
+    });
+
+    nav.innerHTML = items.length
+      ? items.map(({ ch, idx }) => {
+          const snippet = (ch.markdown || '').replace(/[#*`>|_]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 62);
+          return `
+            <button type="button" class="anotes-list-item chapter-link ${idx === currentChIdx ? 'active' : ''}" data-ch-idx="${idx}">
+              <span class="note-title">${escapeHtml(ch.title)}</span>
+              <span class="note-sub">${escapeHtml(snippet)}...</span>
+            </button>
+          `;
+        }).join('')
+      : '<div style="font-size:0.8rem;color:var(--muted);padding:8px;">No matching notes.</div>';
+
+    nav.querySelectorAll('.chapter-link').forEach((b) => {
+      b.addEventListener('click', () => renderChapter(Number(b.dataset.chIdx)));
+    });
+  }
+
   function renderChapter(idx) {
     if (!trialData || !trialData.chapters || !trialData.chapters.length) return;
     currentChIdx = Math.max(0, Math.min(idx, trialData.chapters.length - 1));
     const ch = trialData.chapters[currentChIdx];
-    $('#active-chapter-tag').textContent = `Section ${currentChIdx + 1} of ${trialData.chapters.length}`;
+    const wc = String(ch.markdown || '').trim().split(/\s+/).filter(Boolean).length;
+    $('#active-chapter-tag').textContent = `Note ${currentChIdx + 1} of ${trialData.chapters.length}`;
+    $('#active-chapter-words').textContent = `~${wc.toLocaleString()} words`;
     $('#active-chapter-title').textContent = ch.title;
     $('#active-chapter-body').innerHTML = renderMarkdown(ch.markdown);
 
-    document.querySelectorAll('.chapter-link').forEach((btn, i) => {
-      btn.classList.toggle('active', i === currentChIdx);
+    document.querySelectorAll('.chapter-link').forEach((btn) => {
+      btn.classList.toggle('active', Number(btn.dataset.chIdx) === currentChIdx);
     });
     $('#btn-prev-ch').disabled = currentChIdx === 0;
     $('#btn-next-ch').disabled = currentChIdx === trialData.chapters.length - 1;
@@ -185,7 +283,7 @@
     const isEd = payload.tier === 'editorial';
     badge.className = 'badge badge-ok';
     badge.textContent = isEd
-      ? `🛡️ Editorial Trial (${payload.prefix_hint || 'e-tier'}) · NDA ✓`
+      ? `🛡️ Editorial Vault (${payload.prefix_hint || 'e-tier'}) · NDA ✓`
       : `📖 Reader Trial (${payload.prefix_hint || 'r-tier'}) · NDA ✓`;
 
     const banner = $('#minted-aaid-banner');
@@ -200,16 +298,7 @@
       banner.hidden = true;
     }
 
-    const nav = $('#chapter-nav');
-    nav.innerHTML = (trialData.chapters || []).map((ch, i) => `
-      <button type="button" class="chapter-link ${i === 0 ? 'active' : ''}" data-ch-idx="${i}">
-        ${escapeHtml(ch.title)}
-      </button>
-    `).join('');
-    nav.querySelectorAll('.chapter-link').forEach((b) => {
-      b.addEventListener('click', () => renderChapter(Number(b.dataset.chIdx)));
-    });
-
+    renderChapterNav();
     renderChapter(0);
     runDemoSearch('Norma');
   }
@@ -221,24 +310,24 @@
     const isAaid = which === 'aaid';
     tabAaid.classList.toggle('active', isAaid);
     tabPre.classList.toggle('active', !isAaid);
+    tabAaid.setAttribute('aria-selected', String(isAaid));
+    tabPre.setAttribute('aria-selected', String(!isAaid));
     $('#panel-aaid').hidden = !isAaid;
     $('#panel-presurvey').hidden = isAaid;
   }
   tabAaid.addEventListener('click', () => switchGateTab('aaid'));
   tabPre.addEventListener('click', () => switchGateTab('presurvey'));
 
-  // Auto-fill AAid if passed via ?aaid= link (still requires user to check NDA!)
   const urlAaid = new URLSearchParams(window.location.search).get('aaid');
   if (urlAaid) {
     $('#input-aaid').value = urlAaid.trim();
   }
 
-  // Form 1: AAid Password + NDA Unlock
   $('#form-unlock').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fb = $('#unlock-feedback');
     fb.style.color = 'var(--muted)';
-    fb.textContent = 'Verifying AAid & NDA...';
+    fb.textContent = 'Verifying AAid, unwrapping key & checking NDA...';
     try {
       const data = await api('api.php?action=unlock', {
         method: 'POST',
@@ -256,12 +345,11 @@
     }
   });
 
-  // Form 2: Pre-Trial Survey -> Mints Reader AAid + Unlocks
   $('#form-presurvey').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fb = $('#survey-unlock-feedback');
     fb.style.color = 'var(--muted)';
-    fb.textContent = 'Minting your Reader AAid & logging NDA...';
+    fb.textContent = 'Minting your Reader AAid & decrypting notes...';
     const freq = document.querySelector('input[name="ps_freq"]:checked')?.value || '';
     const trick = document.querySelector('input[name="ps_trick"]:checked')?.value || '';
     const role = document.querySelector('input[name="ps_role"]:checked')?.value || '';
@@ -281,29 +369,20 @@
     }
   });
 
-  // Balanced Line-Length Equalizer Toggle (Botchee4x4)
-  let balancedOn = true;
-  $('#btn-equalize').addEventListener('click', () => {
-    balancedOn = !balancedOn;
-    document.body.classList.toggle('balanced-prose', balancedOn);
-    $('#btn-equalize').textContent = balancedOn ? '⚖️ Balanced Lines: ON' : '⚖️ Balanced Lines: OFF';
-    sendTelemetry('equalizer_toggle', { enabled: balancedOn });
-  });
-
-  // Lock Session
   $('#btn-lock').addEventListener('click', async () => {
     await api('api.php?action=logout', { method: 'POST' }).catch(() => {});
     window.location.reload();
   });
 
-  // Chapter Prev / Next
   $('#btn-prev-ch').addEventListener('click', () => renderChapter(currentChIdx - 1));
   $('#btn-next-ch').addEventListener('click', () => renderChapter(currentChIdx + 1));
-
-  // Demo Search Listeners
-  $('#demo-search-input').addEventListener('input', (e) => {
-    runDemoSearch(e.target.value);
+  $('#notes-filter').addEventListener('input', (e) => renderChapterNav(e.target.value));
+  $('#btn-toggle-lab').addEventListener('click', () => {
+    const drawer = $('#demo-lab-drawer');
+    drawer.hidden = !drawer.hidden;
   });
+
+  $('#demo-search-input').addEventListener('input', (e) => runDemoSearch(e.target.value));
   document.querySelectorAll('.demo-preset').forEach((btn) => {
     btn.addEventListener('click', () => {
       const q = btn.dataset.q;
@@ -313,34 +392,33 @@
     });
   });
 
-  // Post-Read Pulse Survey
+  // Agent & Editorial Acquisition Pulse Survey
   $('#form-postsurvey').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fb = $('#post-feedback');
     fb.style.color = 'var(--muted)';
-    fb.textContent = 'Saving feedback...';
-    const wouldUse = document.querySelector('input[name="post_use"]:checked')?.value || '';
-    const fav = document.querySelector('input[name="post_fav"]:checked')?.value || '';
-    const fit = document.querySelector('input[name="post_fit"]:checked')?.value || '';
+    fb.textContent = 'Saving editorial pulse...';
+    const hookScore = document.querySelector('input[name="post_hook"]:checked')?.value || '';
+    const formatFit = document.querySelector('input[name="post_fit"]:checked')?.value || '';
+    const nextStep = document.querySelector('input[name="post_next"]:checked')?.value || '';
     try {
       await api('api.php?action=post_survey', {
         method: 'POST',
         body: JSON.stringify({
-          would_use: wouldUse,
-          favorite_hook: fav,
-          format_fit: fit,
+          hook_score: hookScore,
+          format_fit: formatFit,
+          next_step: nextStep,
           note: $('#post-note').value.trim(),
         }),
       });
       fb.style.color = 'var(--ok-text)';
-      fb.textContent = '✓ Feedback saved! Thank you for reviewing this pre-publication trial.';
+      fb.textContent = '✓ Acquisition & reader pulse saved. Thank you for reviewing Where\'s Norma?';
     } catch (err) {
       fb.style.color = 'var(--danger-text)';
       fb.textContent = err.message;
     }
   });
 
-  // Bug / Improvement Telemetry Modal
   $('#btn-bug-fab').addEventListener('click', () => { $('#bug-modal').hidden = false; });
   $('#bug-close').addEventListener('click', () => { $('#bug-modal').hidden = true; });
   $('#form-bug').addEventListener('submit', async (e) => {
@@ -365,7 +443,6 @@
     }
   });
 
-  // Check existing unlocked session on load
   api('api.php?action=session')
     .then((res) => {
       if (res.unlocked && res.trial) {

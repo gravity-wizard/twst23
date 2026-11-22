@@ -1,13 +1,18 @@
 {
-  "salt": "tw23_norma4_aaid_v1",
-  "editorial": [
-    {
-      "hash": "d4559e9269221bf0f67517ec63ee1df1d787211c5dec2a2ddbeae353aa49247e",
-      "prefix_hint": "Ab2p-e...",
-      "label": "Spy Master Editorial Preview (Internal QA)",
-      "tier": "editorial",
-      "created_at": "2026-11-22T02:15:00Z",
-      "active": true
-    }
-  ]
+    "salt": "tw23_norma4_aaid_v1",
+    "editorial": [
+        {
+            "hash": "d4559e9269221bf0f67517ec63ee1df1d787211c5dec2a2ddbeae353aa49247e",
+            "prefix_hint": "Ab2p-e...",
+            "label": "Spy Master Editorial Preview (Internal QA)",
+            "tier": "editorial",
+            "created_at": "2026-11-22T02:15:00Z",
+            "active": true,
+            "wrapped_key": {
+                "iv": "QTGZoEUPugIMZ1gX",
+                "tag": "pxffCEShIyu5fZvuPBolVA==",
+                "ct": "Db7+Risjh/niY9nSKpIPdy1TtZo07XUWBVih6yoQTmQ="
+            }
+        }
+    ]
 }

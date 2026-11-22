@@ -4,11 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
-  <title>Where's Norma? — Confidential Editorial Trial</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=1" />
+  <title>Where's Norma? — Confidential Editorial Notes Preview</title>
+  <link rel="stylesheet" href="styles.css?v=2" />
 </head>
 <body class="balanced-prose">
   <header class="topbar">
@@ -16,70 +13,85 @@
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">N4</div>
         <div>
-          <h1 class="balanced-text">Where's Norma? &middot; Editorial Trial</h1>
-          <p class="balanced-text">Confidential Pre-Publication Review &middot; NDA Required</p>
+          <h1 class="balanced-text">Where's Norma? &middot; Editorial Preview</h1>
+          <p class="balanced-text">Confidential Pre-Publication Notes Edition &middot; NDA Protected</p>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span id="session-badge" class="badge badge-warn">🔒 NDA + AAid Required</span>
-        <button id="btn-equalize" type="button" class="btn btn-secondary btn-sm" title="Toggle Botchee4x4 balanced line-length wrapping">⚖️ Balanced Lines: ON</button>
+        <button id="btn-theme" type="button" class="btn btn-secondary btn-sm" title="Switch Light Paper / Dark Notes">🌙 Dark Notes</button>
+        <button id="btn-equalize" type="button" class="btn btn-secondary btn-sm" title="Toggle Botchee4x4 balanced line-length wrapping">⚖️ Balanced: ON</button>
         <button id="btn-lock" type="button" class="btn btn-secondary btn-sm" hidden>Lock Session</button>
       </div>
     </div>
   </header>
 
   <main class="container">
-    <!-- PUBLIC NON-DISCLOSING HOOK + GATE (NO SECRET SYSTEM DETAILS SHOWN BEFORE AUTH+NDA) -->
-    <section id="gate-view">
-      <article class="card hook-hero">
-        <span class="badge">☕ 60-Second Everyday Question · Pre-Publication Preview</span>
-        <h2 class="balanced-text" style="margin:12px 0 8px;">Ever search your notes for <code>Norma</code>—and get buried under four hundred <code>Normal</code> hits?</h2>
-        <p class="balanced-text" style="color:var(--muted);margin:0;">
-          Every phone and notes app matches prefixes eagerly. Type <code>Norma</code> after a quick luncheon, and <em>"normal settings"</em>, <em>"normally open"</em>, and <em>"normalize"</em> flood your screen. Even adding one deliberate cue—like <code>NormA</code> or <code>"Norma "</code> (with a trailing space inside quotes)—stops the flood in plain sight.
-        </p>
+    <!-- PUBLIC NON-DISCLOSING APPLE NOTES WEB PREVIEW + GATE -->
+    <section id="gate-view" class="hero-stack">
+      <article class="anotes-window">
+        <div class="anotes-toolbar">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="anotes-dots" aria-hidden="true">
+              <span class="anotes-dot red"></span>
+              <span class="anotes-dot amber"></span>
+              <span class="anotes-dot green"></span>
+            </div>
+            <span style="font-size:0.84rem;font-weight:650;color:var(--muted);">Notes &middot; Everyday Search Flood Demo (Safe Public Preview)</span>
+          </div>
+          <div class="preview-presets">
+            <button type="button" class="btn btn-secondary btn-sm public-preset active" data-pq="Norma">Search: <code>Norma</code></button>
+            <button type="button" class="btn btn-secondary btn-sm public-preset" data-pq='"Norma "'>Search: <code>"Norma "</code></button>
+            <button type="button" class="btn btn-secondary btn-sm public-preset" data-pq="NormA">Search: <code>NormA</code></button>
+          </div>
+        </div>
 
-        <div class="compare-strip">
-          <div class="compare-box">
-            <strong>❌ Search: <code>Norma</code></strong>
-            <span style="color:var(--muted);">Swamped by 400+ hits for <em>Normal, Normally, Normalize</em>.</span>
-          </div>
-          <div class="compare-box">
-            <strong>✂️ Quoted Space: <code>"Norma "</code></strong>
-            <span style="color:var(--muted);">Trailing space cuts out longer prefix words immediately.</span>
-          </div>
-          <div class="compare-box">
-            <strong>✨ Deliberate Cue: <code>NormA</code></strong>
-            <span style="color:var(--muted);">One tiny intentional twist locks right onto your luncheon note.</span>
+        <div class="anotes-grid" style="min-height:280px;">
+          <aside class="anotes-sidebar">
+            <span class="badge">☕ 15-Second Hook</span>
+            <h2 class="balanced-text" style="margin:4px 0;font-size:1.15rem;line-height:1.3;">Why does searching <code>Norma</code> bury your friend under 400 <code>Normal</code> hits?</h2>
+            <p class="balanced-text" style="margin:0;font-size:0.83rem;color:var(--muted);">
+              Notes apps match prefixes eagerly. Click the three search tabs above to watch how one trailing space (<code>"Norma "</code>) or one intentional cue (<code>NormA</code>) rescues the needle from the haystack—before you ever open the full book draft.
+            </p>
+            <div id="public-preview-stats" style="font-size:0.78rem;font-weight:600;color:var(--accent-strong);margin-top:auto;padding-top:8px;"></div>
+          </aside>
+          <div class="anotes-pane">
+            <div id="public-preview-results" style="display:grid;gap:8px;"></div>
           </div>
         </div>
       </article>
 
-      <div class="tabs" role="tablist">
-        <button id="tab-aaid" type="button" class="tab-btn active" role="tab" aria-selected="true">🔑 Enter AAid Password (Editors &amp; Invited Readers)</button>
-        <button id="tab-presurvey" type="button" class="tab-btn" role="tab" aria-selected="false">📋 Get a Reader AAid (60-Sec Survey + NDA)</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div class="tabs" role="tablist">
+          <button id="tab-aaid" type="button" class="tab-btn active" role="tab" aria-selected="true">🔑 Enter AAid Password (Agents &amp; Editors)</button>
+          <button id="tab-presurvey" type="button" class="tab-btn" role="tab" aria-selected="false">📋 Request Reader AAid (Quick Survey + NDA)</button>
+        </div>
+        <span style="font-size:0.78rem;color:var(--muted);">Encrypted AES-256-GCM vault &middot; Unindexed</span>
       </div>
 
       <!-- TAB 1: PASSWORD-ONLY AAid + NDA -->
       <section id="panel-aaid" class="card form-stack">
         <div>
-          <h3 class="balanced-text" style="margin:0 0 4px;">Password-Only Editorial &amp; Beta Login</h3>
-          <p class="balanced-text" style="margin:0;font-size:0.85rem;color:var(--muted);">No email or username required. Paste your 9-character <code>AAid</code> password (editorial invites end with a 4-character suffix starting with <code>e</code>).</p>
+          <h3 class="balanced-text" style="margin:0 0 4px;">Password-Only Literary Agent &amp; Editorial Login</h3>
+          <p class="balanced-text" style="margin:0;font-size:0.86rem;color:var(--muted);">No account or email login needed. Enter your 9-character <code>AAid</code> password (editorial invites end with <code>-e...</code>) to decrypt and open the full Apple Notes manuscript edition.</p>
         </div>
 
         <form id="form-unlock" class="form-stack">
-          <label class="field">
-            <span>9-Character <code>AAid</code> Password</span>
-            <input id="input-aaid" class="input input-mono" type="password" autocomplete="off" placeholder="e.g. Ab2p-e..." required />
-          </label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+            <label class="field">
+              <span>9-Character <code>AAid</code> Password</span>
+              <input id="input-aaid" class="input input-mono" type="password" autocomplete="off" placeholder="e.g. Ab2p-e..." required />
+            </label>
 
-          <label class="field">
-            <span>Optional Initials or Agency Note (for Audit Log)</span>
-            <input id="input-note" class="input" type="text" maxlength="100" placeholder="Optional initials or agency name" />
-          </label>
+            <label class="field">
+              <span>Agency / Initials (Optional Audit Tag)</span>
+              <input id="input-note" class="input" type="text" maxlength="100" placeholder="Optional initials or agency name" />
+            </label>
+          </div>
 
           <div class="nda-box">
             <div class="nda-scroll">
-              <strong>Pre-Publication Confidentiality &amp; Non-Disclosure Agreement (NDA):</strong> By unlocking this Editorial Trial, you acknowledge that the manuscript, shorthand structures, interactive demonstrations, and expansion concepts hosted at <code>/norma4/</code> are unpublished, confidential intellectual property of Gravity Wizards, Inc. / Spy. You agree to review them solely for private editorial, literary agency, or beta-testing evaluation, and not to copy, scrape, publish, train external models on, or redistribute any undisclosed material without written authorization.
+              <strong>Pre-Publication Confidentiality &amp; Non-Disclosure Agreement (NDA):</strong> By unlocking this Editorial Trial, you acknowledge that the manuscript, naming structures, interactive demonstrations, and expansion concepts hosted at <code>/norma4/</code> are unpublished, confidential intellectual property of Gravity Wizards, Inc. / Spy. You agree to review them solely for private editorial, literary agency, or beta-testing evaluation, and not to copy, scrape, publish, train external AI models on, or redistribute undisclosed material without written permission.
             </div>
             <label class="nda-check">
               <input id="check-nda-aaid" type="checkbox" required />
@@ -88,20 +100,20 @@
           </div>
 
           <div id="unlock-feedback" class="feedback"></div>
-          <button type="submit" class="btn btn-primary">🔓 Accept NDA &amp; Unlock Editorial Trial</button>
+          <button type="submit" class="btn btn-primary" style="align-self:flex-start;">🔓 Accept NDA &amp; Decrypt Editorial Notes</button>
         </form>
       </section>
 
       <!-- TAB 2: PRE-TRIAL SURVEY -> MINTS READER AAid + NDA -->
       <section id="panel-presurvey" class="card form-stack" hidden>
         <div>
-          <h3 class="balanced-text" style="margin:0 0 4px;">3-Question Pre-Trial Survey &rarr; Instant Reader <code>AAid</code></h3>
-          <p class="balanced-text" style="margin:0;font-size:0.85rem;color:var(--muted);">Don't have a password yet? Answer 3 quick questions and accept the NDA below to mint your own Reader <code>AAid</code> password on the spot.</p>
+          <h3 class="balanced-text" style="margin:0 0 4px;">60-Second Reader Survey &rarr; Instant Trial Password</h3>
+          <p class="balanced-text" style="margin:0;font-size:0.86rem;color:var(--muted);">Evaluating as a reader or guest without an invite code? Answer 3 fast questions and accept the NDA to generate your own 9-character Reader <code>AAid</code>.</p>
         </div>
 
         <form id="form-presurvey" class="form-stack">
           <div class="field">
-            <span>1. How often does a phone or notes search bury what you wanted under lookalike words?</span>
+            <span>1. How often does a notes or phone search bury what you wanted under lookalike words?</span>
             <div class="radio-row">
               <label class="chip-choice"><input type="radio" name="ps_freq" value="Daily" required /> Daily</label>
               <label class="chip-choice"><input type="radio" name="ps_freq" value="Weekly" /> Weekly</label>
@@ -110,7 +122,7 @@
           </div>
 
           <div class="field">
-            <span>2. Have you ever used <code>NormA</code> or <code>"Norma "</code> (quoted trailing space) to narrow a messy search?</span>
+            <span>2. Have you ever used <code>NormA</code> or <code>"Norma "</code> (quoted trailing space) to rescue a messy search?</span>
             <div class="radio-row">
               <label class="chip-choice"><input type="radio" name="ps_trick" value="Never tried" required /> Never tried that</label>
               <label class="chip-choice"><input type="radio" name="ps_trick" value="Sometimes" /> Sometimes</label>
@@ -119,17 +131,17 @@
           </div>
 
           <div class="field">
-            <span>3. What brings you here?</span>
+            <span>3. Your primary lens today?</span>
             <div class="radio-row">
-              <label class="chip-choice"><input type="radio" name="ps_role" value="Everyday Reader" required /> Everyday Reader</label>
-              <label class="chip-choice"><input type="radio" name="ps_role" value="Editor / Agent / Publisher" /> Editor / Agent / Publisher</label>
-              <label class="chip-choice"><input type="radio" name="ps_role" value="Maker / Developer" /> Maker / Developer</label>
+              <label class="chip-choice"><input type="radio" name="ps_role" value="Literary Agent / Editor" required /> Literary Agent / Editor</label>
+              <label class="chip-choice"><input type="radio" name="ps_role" value="Everyday Reader" /> Everyday Reader</label>
+              <label class="chip-choice"><input type="radio" name="ps_role" value="Maker / Press" /> Maker / Press</label>
             </div>
           </div>
 
           <div class="nda-box">
             <div class="nda-scroll">
-              <strong>Pre-Publication Confidentiality &amp; Non-Disclosure Agreement (NDA):</strong> This web preview contains unpublished book text and proprietary shorthand methods shared strictly for confidential beta reading and evaluation. Do not republish, scrape, or share undisclosed contents externally without permission from Gravity Wizards, Inc. / Spy.
+              <strong>Pre-Publication Confidentiality &amp; Non-Disclosure Agreement (NDA):</strong> This web preview contains unpublished book text and proprietary naming methods shared strictly for confidential beta reading and agency evaluation. Do not republish, scrape, or share undisclosed contents externally without permission from Gravity Wizards, Inc. / Spy.
             </div>
             <label class="nda-check">
               <input id="check-nda-survey" type="checkbox" required />
@@ -138,96 +150,143 @@
           </div>
 
           <div id="survey-unlock-feedback" class="feedback"></div>
-          <button type="submit" class="btn btn-primary">🎫 Mint My Reader AAid &amp; Enter Trial</button>
+          <button type="submit" class="btn btn-primary" style="align-self:flex-start;">🎫 Mint My Reader AAid &amp; Enter</button>
         </form>
       </section>
     </section>
 
-    <!-- UNLOCKED EDITORIAL TRIAL (HYDRATED DYNAMICALLY ONLY AFTER AUTH+NDA) -->
+    <!-- UNLOCKED EDITORIAL TRIAL -->
     <section id="trial-view" hidden style="display:flex;flex-direction:column;gap:20px;">
-      <div id="minted-aaid-banner" class="card" style="border-color:var(--ok-text);background:var(--ok-bg);" hidden></div>
+      <div id="minted-aaid-banner" class="card" style="border-color:var(--ok-border);background:var(--ok-bg);" hidden></div>
 
-      <!-- INTERACTIVE DEMO LAB -->
+      <!-- EXECUTIVE LITERARY AGENT BRIEF -->
       <article class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
           <div>
-            <span class="badge badge-ok">Interactive Search-Flood Lab</span>
-            <h2 style="margin:8px 0 4px;">Try Typing <code>Norma</code> vs. <code>"Norma "</code> vs. <code>N0rma</code></h2>
-          </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q="Norma">Try: Norma</button>
-            <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q='"Norma "'>Try: "Norma "</button>
-            <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q="N0rma">Try: N0rma</button>
+            <span class="badge badge-ok">📚 Agent &amp; Acquisition Overview</span>
+            <h2 class="balanced-text" style="margin:8px 0 4px;font-size:1.3rem;">Where's Norma? — Proof-of-Concept Manuscript + Live Companion Web Trial</h2>
+            <p class="balanced-text" style="margin:0;font-size:0.88rem;color:var(--muted);">
+              A punchy, playful practical guide to finding anything inside everyday Apple Notes, phones, and folders without buying another app—paired with this interactive search-flood web sandbox.
+            </p>
           </div>
         </div>
-        <input id="demo-search-input" class="input input-mono" type="search" placeholder='Type Norma, "Norma ", or N0rma...' style="margin-top:10px;" />
-        <div id="demo-search-stats" style="font-size:0.8rem;color:var(--muted);margin-top:8px;"></div>
-        <div id="demo-search-results" class="demo-results"></div>
+        <div class="agent-brief-grid">
+          <div class="brief-stat">
+            <div class="k">Proof Draft</div>
+            <div class="v">5,296 words (8 notes)</div>
+          </div>
+          <div class="brief-stat">
+            <div class="k">Full Expansion</div>
+            <div class="v">25k–35k Illustrated Gift</div>
+          </div>
+          <div class="brief-stat">
+            <div class="k">Series Option</div>
+            <div class="v">3–5 Pocket Volumes</div>
+          </div>
+          <div class="brief-stat">
+            <div class="k">Shelf Comps</div>
+            <div class="v">xkcd &times; Elements of Style</div>
+          </div>
+        </div>
       </article>
 
-      <!-- CHAPTER READER -->
-      <div class="reader-grid">
-        <nav id="chapter-nav" class="chapter-nav" aria-label="Chapters"></nav>
-        <article class="card prose">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-            <span id="active-chapter-tag" class="badge">Chapter</span>
-            <div style="display:flex;gap:6px;">
-              <button id="btn-prev-ch" type="button" class="btn btn-secondary btn-sm">&larr; Prev</button>
-              <button id="btn-next-ch" type="button" class="btn btn-secondary btn-sm">Next &rarr;</button>
+      <!-- APPLE NOTES TWO-PANE MANUSCRIPT READER -->
+      <article class="anotes-window">
+        <div class="anotes-toolbar">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="anotes-dots" aria-hidden="true">
+              <span class="anotes-dot red"></span>
+              <span class="anotes-dot amber"></span>
+              <span class="anotes-dot green"></span>
+            </div>
+            <span style="font-size:0.84rem;font-weight:650;color:var(--muted);">iCloud Notes &rsaquo; Where's Norma? (Editorial Vault)</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button id="btn-toggle-lab" type="button" class="btn btn-secondary btn-sm">🔬 Search Sandbox</button>
+            <button id="btn-prev-ch" type="button" class="btn btn-secondary btn-sm">&larr; Prev Note</button>
+            <button id="btn-next-ch" type="button" class="btn btn-secondary btn-sm">Next Note &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Collapsible Live Search-Flood Lab -->
+        <div id="demo-lab-drawer" style="padding:16px 20px;background:var(--surface-2);border-bottom:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+            <strong style="font-size:0.9rem;">Interactive Search-Flood Sandbox (from decrypted draft):</strong>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q="Norma">Norma</button>
+              <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q='"Norma "'>"Norma "</button>
+              <button type="button" class="btn btn-secondary btn-sm demo-preset" data-q="N0rma">N0rma</button>
             </div>
           </div>
-          <h2 id="active-chapter-title" class="balanced-text" style="margin-top:0;">Loading...</h2>
-          <div id="active-chapter-body"></div>
-        </article>
-      </div>
+          <input id="demo-search-input" class="input input-mono" type="search" placeholder='Type Norma, "Norma ", or N0rma...' style="margin-top:10px;" />
+          <div id="demo-search-stats" style="font-size:0.8rem;color:var(--muted);margin-top:8px;"></div>
+          <div id="demo-search-results" class="demo-results"></div>
+        </div>
 
-      <!-- POST-READ 3-TAP PULSE SURVEY -->
+        <div class="anotes-grid">
+          <aside class="anotes-sidebar">
+            <input id="notes-filter" class="input" type="search" placeholder="Filter draft notes..." style="padding:7px 10px;font-size:0.82rem;" />
+            <nav id="chapter-nav" style="display:flex;flex-direction:column;gap:4px;" aria-label="Manuscript Notes"></nav>
+          </aside>
+
+          <div class="anotes-pane prose">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <span id="active-chapter-tag" class="badge">Note 1 of 8</span>
+              <span id="active-chapter-words" style="font-size:0.78rem;color:var(--muted);"></span>
+            </div>
+            <h2 id="active-chapter-title" class="balanced-text">Loading decrypted note...</h2>
+            <div id="active-chapter-body"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- AGENT & READER ACQUISITION PULSE SURVEY -->
       <article class="card">
-        <span class="badge badge-warn">📝 Quick Post-Trial Survey</span>
-        <h3 style="margin:10px 0 4px;">30-Second Editorial &amp; Reader Pulse</h3>
-        <p style="margin:0 0 14px;font-size:0.85rem;color:var(--muted);">Tell Spy &amp; A17si what clicked (anonymous or tagged to your Editorial <code>AAid</code> tier).</p>
+        <span class="badge badge-warn">📝 30-Second Agent &amp; Editorial Pulse Survey</span>
+        <h3 class="balanced-text" style="margin:10px 0 4px;">Does <em>Where's Norma?</em> click on first skim—and where should Spy take it next?</h3>
+        <p class="balanced-text" style="margin:0 0 14px;font-size:0.86rem;color:var(--muted);">Your 3 quick taps go straight to the editorial log for Phase 2 revisions (no follow-up spam unless requested).</p>
 
         <form id="form-postsurvey" class="form-stack">
           <div class="field">
-            <span>1. Would you actually use <code>NormA</code>, <code>"Norma "</code>, or a <code>N0rma</code> code in your own notes?</span>
+            <span>1. Immediate Lightbulb: Did the search-flood hook &amp; naming rescue click right away?</span>
             <div class="radio-row">
-              <label class="chip-choice"><input type="radio" name="post_use" value="Yes, today" required /> Yes, starting today</label>
-              <label class="chip-choice"><input type="radio" name="post_use" value="Maybe" /> Maybe</label>
-              <label class="chip-choice"><input type="radio" name="post_use" value="No" /> Probably not</label>
+              <label class="chip-choice"><input type="radio" name="post_hook" value="Instant lightbulb" required /> Instant lightbulb — super relatable</label>
+              <label class="chip-choice"><input type="radio" name="post_hook" value="Clear after demo" /> Clear once I tried the demo</label>
+              <label class="chip-choice"><input type="radio" name="post_hook" value="Needs sharper opener" /> Needs a sharper opening page</label>
             </div>
           </div>
 
           <div class="field">
-            <span>2. Which hook landed best?</span>
+            <span>2. Strongest Commercial Angle &amp; Acquisition Format?</span>
             <div class="radio-row">
-              <label class="chip-choice"><input type="radio" name="post_fav" value="Norma vs Normal rescue" required /> Norma vs. Normal rescue</label>
-              <label class="chip-choice"><input type="radio" name="post_fav" value="Directional Dittos & Rabbits" /> Directional Dittos &amp; Multiplying Rabbits</label>
-              <label class="chip-choice"><input type="radio" name="post_fav" value="4-Tier A3odex" /> 4-Tier A3odex / Short Codes</label>
+              <label class="chip-choice"><input type="radio" name="post_fit" value="Illustrated Gift Book (25k-35k)" required /> Illustrated Gift Hardcover (25k–35k)</label>
+              <label class="chip-choice"><input type="radio" name="post_fit" value="3-5 Pocket Volume Series" /> 3–5 Pocket Volume Series</label>
+              <label class="chip-choice"><input type="radio" name="post_fit" value="Short Digital + Companion Tool" /> Digital Book + Web Companion</label>
             </div>
           </div>
 
           <div class="field">
-            <span>3. Best commercial fit in your opinion?</span>
+            <span>3. Preferred Next Step?</span>
             <div class="radio-row">
-              <label class="chip-choice"><input type="radio" name="post_fit" value="Illustrated Gift Book (25k-35k)" required /> Illustrated Gift Book (25k–35k)</label>
-              <label class="chip-choice"><input type="radio" name="post_fit" value="Pocket Series (3-5 volumes)" /> 3–5 Pocket Volumes</label>
-              <label class="chip-choice"><input type="radio" name="post_fit" value="Short Digital / Audio" /> Short Digital / Audio</label>
+              <label class="chip-choice"><input type="radio" name="post_next" value="Send expansion outline & metrics" required /> Send full 30k outline &amp; survey metrics</label>
+              <label class="chip-choice"><input type="radio" name="post_next" value="Open to revised pitch" /> Open to reviewing expanded sample</label>
+              <label class="chip-choice"><input type="radio" name="post_next" value="Feedback only" /> Editorial feedback only</label>
             </div>
           </div>
 
           <label class="field">
-            <span>Optional 1-Line Editorial Note / Bug / Suggestion</span>
-            <textarea id="post-note" class="textarea" rows="2" maxlength="600" placeholder="What felt sharpest, unclear, or worth expanding?"></textarea>
+            <span>Optional 1-Line Note (What would make this an instant acquisition yes?)</span>
+            <textarea id="post-note" class="textarea" rows="2" maxlength="600" placeholder="Comps, tone notes, favorite example, or what to tighten..."></textarea>
           </label>
 
           <div id="post-feedback" class="feedback"></div>
-          <button type="submit" class="btn btn-primary" style="align-self:flex-start;">✓ Submit Survey Feedback</button>
+          <button type="submit" class="btn btn-primary" style="align-self:flex-start;">✓ Submit Acquisition &amp; Reader Pulse</button>
         </form>
       </article>
     </section>
   </main>
 
-  <button id="btn-bug-fab" type="button" class="btn btn-secondary btn-sm bug-fab">🐞 Report Bug / Feedback</button>
+  <button id="btn-bug-fab" type="button" class="btn btn-secondary btn-sm bug-fab">🐞 Report Bug / Note</button>
 
   <div id="bug-modal" class="modal-backdrop" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bug-title">
@@ -246,6 +305,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=1"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

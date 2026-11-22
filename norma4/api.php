@@ -190,6 +190,62 @@ function n4_lookup_aaid(string $rawAaid): ?array {
     return null;
 }
 
+function n4_unwrap_key(array $entry, string $canonAaid): ?string {
+    $wk = $entry['wrapped_key'] ?? null;
+    if (!is_array($wk) || empty($wk['iv']) || empty($wk['tag']) || empty($wk['ct'])) {
+        return null;
+    }
+    $iv = base64_decode((string)$wk['iv'], true);
+    $tag = base64_decode((string)$wk['tag'], true);
+    $ct = base64_decode((string)$wk['ct'], true);
+    if ($iv === false || $tag === false || $ct === false) {
+        return null;
+    }
+    $wrapKey = hash('sha256', 'tw23_n4_wrap_v1:' . n4_canonical_aaid($canonAaid), true);
+    $plain = openssl_decrypt($ct, 'aes-256-gcm', $wrapKey, OPENSSL_RAW_DATA, $iv, $tag);
+    return ($plain !== false && strlen($plain) === 32) ? $plain : null;
+}
+
+function n4_wrap_key(string $masterKey, string $canonAaid): array {
+    $wrapKey = hash('sha256', 'tw23_n4_wrap_v1:' . n4_canonical_aaid($canonAaid), true);
+    $iv = random_bytes(12);
+    $tag = '';
+    $ct = openssl_encrypt($masterKey, 'aes-256-gcm', $wrapKey, OPENSSL_RAW_DATA, $iv, $tag);
+    return [
+        'iv' => base64_encode($iv),
+        'tag' => base64_encode($tag),
+        'ct' => base64_encode($ct),
+    ];
+}
+
+function n4_cached_master_key(?string $setKey = null): ?string {
+    $vaultFile = n4_data_dir() . '/.vault.key';
+    if ($setKey !== null && strlen($setKey) === 32) {
+        @file_put_contents($vaultFile, base64_encode($setKey) . "\n", LOCK_EX);
+        @chmod($vaultFile, 0600);
+        return $setKey;
+    }
+    if (!is_file($vaultFile)) return null;
+    $raw = trim((string)@file_get_contents($vaultFile));
+    if ($raw === '') return null;
+    $dec = base64_decode($raw, true);
+    return ($dec !== false && strlen($dec) === 32) ? $dec : null;
+}
+
+function n4_read_encrypted_trial(?string $masterKey): ?array {
+    if ($masterKey === null || strlen($masterKey) !== 32) return null;
+    $enc = n4_read_json(n4_data_dir() . '/editorial_trial.enc', []);
+    if (empty($enc['iv']) || empty($enc['tag']) || empty($enc['ct'])) return null;
+    $iv = base64_decode((string)$enc['iv'], true);
+    $tag = base64_decode((string)$enc['tag'], true);
+    $ct = base64_decode((string)$enc['ct'], true);
+    if ($iv === false || $tag === false || $ct === false) return null;
+    $plain = openssl_decrypt($ct, 'aes-256-gcm', $masterKey, OPENSSL_RAW_DATA, $iv, $tag);
+    if ($plain === false) return null;
+    $data = json_decode($plain, true);
+    return is_array($data) ? $data : null;
+}
+
 function n4_log_telemetry(string $event, array $meta = [], ?array $sess = null): void {
     n4_append_jsonl(n4_data_dir() . '/telemetry.jsonl', [
         'ts' => gmdate('c'),
@@ -237,7 +293,11 @@ if ($action === 'session' && $method === 'GET') {
         echo json_encode(['ok' => true, 'unlocked' => false]);
         exit;
     }
-    $trial = n4_read_json(n4_data_dir() . '/editorial_trial.json', []);
+    $trial = n4_read_encrypted_trial(n4_cached_master_key());
+    if (!$trial) {
+        echo json_encode(['ok' => true, 'unlocked' => false]);
+        exit;
+    }
     echo json_encode([
         'ok' => true,
         'unlocked' => true,
@@ -265,6 +325,19 @@ if ($action === 'unlock' && $method === 'POST') {
     if (!$match) {
         n4_log_telemetry('unlock_denied_invalid_aaid', ['aaid_hint' => substr($aaid, 0, 6)]);
         n4_fail(401, 'Invalid or inactive AAid password. Use your pre-issued e-tier AAid or complete the quick Pre-Trial Survey to generate a Reader AAid.');
+    }
+
+    $masterKey = n4_unwrap_key($match, $aaid);
+    if ($masterKey !== null) {
+        n4_cached_master_key($masterKey);
+    } else {
+        $masterKey = n4_cached_master_key();
+    }
+
+    $trial = n4_read_encrypted_trial($masterKey);
+    if (!$trial) {
+        n4_log_telemetry('unlock_vault_unavailable', ['aaid_hint' => substr($aaid, 0, 6)]);
+        n4_fail(503, 'Encrypted editorial vault could not be decrypted yet. If using a Reader AAid, wait for initial Editorial unlock.');
     }
 
     $ndaAt = gmdate('c');
@@ -298,7 +371,6 @@ if ($action === 'unlock' && $method === 'POST') {
         );
     }
 
-    $trial = n4_read_json(n4_data_dir() . '/editorial_trial.json', []);
     echo json_encode([
         'ok' => true,
         'unlocked' => true,
@@ -325,6 +397,11 @@ if ($action === 'survey_unlock' && $method === 'POST') {
     }
     if ($freq === '' || $trick === '' || $role === '') {
         n4_fail(400, 'Please answer all 3 quick survey questions to mint your Reader AAid.');
+    }
+
+    $trial = n4_read_encrypted_trial(n4_cached_master_key());
+    if (!$trial) {
+        n4_fail(503, 'Editorial vault is awaiting initial Editorial unlock before Reader self-enrollment opens.');
     }
 
     $minted = n4_generate_acode9('r');
@@ -369,7 +446,6 @@ if ($action === 'survey_unlock' && $method === 'POST') {
     ]);
     n4_log_telemetry('pre_survey_complete', ['role' => $role], $sess);
 
-    $trial = n4_read_json(n4_data_dir() . '/editorial_trial.json', []);
     echo json_encode([
         'ok' => true,
         'unlocked' => true,
@@ -402,12 +478,12 @@ if ($action === 'post_survey' && $method === 'POST') {
         n4_fail(401, 'Session locked. Please unlock with your AAid + NDA first.');
     }
     $body = n4_json_body();
-    $wouldUse = substr(trim((string)($body['would_use'] ?? '')), 0, 80);
-    $favorite = substr(trim((string)($body['favorite_hook'] ?? '')), 0, 80);
+    $hookScore = substr(trim((string)($body['hook_score'] ?? $body['would_use'] ?? '')), 0, 80);
     $formatFit = substr(trim((string)($body['format_fit'] ?? '')), 0, 80);
+    $nextStep = substr(trim((string)($body['next_step'] ?? $body['favorite_hook'] ?? '')), 0, 80);
     $note = substr(trim((string)($body['note'] ?? '')), 0, 600);
 
-    if ($wouldUse === '' || $favorite === '' || $formatFit === '') {
+    if ($hookScore === '' || $formatFit === '' || $nextStep === '') {
         n4_fail(400, 'Please pick all 3 quick options before submitting feedback.');
     }
 
@@ -418,19 +494,19 @@ if ($action === 'post_survey' && $method === 'POST') {
         'label' => $sess['label'] ?? '',
         'prefix_hint' => $sess['prefix_hint'] ?? '',
         'answers' => [
-            'would_use' => $wouldUse,
-            'favorite_hook' => $favorite,
+            'hook_score' => $hookScore,
             'format_fit' => $formatFit,
+            'next_step' => $nextStep,
             'note' => $note,
         ],
     ];
     n4_append_jsonl(n4_data_dir() . '/surveys.jsonl', $entry);
-    n4_log_telemetry('post_survey_submit', ['format_fit' => $formatFit], $sess);
+    n4_log_telemetry('post_survey_submit', ['format_fit' => $formatFit, 'next_step' => $nextStep], $sess);
 
     if (($sess['tier'] ?? '') === 'editorial') {
         n4_notify_editorial_event(
             "[Norma4] Editorial Survey Feedback: {$sess['label']}",
-            "Reviewer: {$sess['label']} ({$sess['prefix_hint']})\nWould Use: {$wouldUse}\nFavorite Hook: {$favorite}\nFormat Fit: {$formatFit}\nNote: {$note}"
+            "Reviewer: {$sess['label']} ({$sess['prefix_hint']})\nHook / Lightbulb: {$hookScore}\nFormat Fit: {$formatFit}\nNext Step: {$nextStep}\nNote: {$note}"
         );
     }
     echo json_encode(['ok' => true, 'saved' => true]);
@@ -459,12 +535,22 @@ if ($action === 'mint_editorial_aaid' && $method === 'POST') {
     $authCtx = tw23_require_admin_json();
     $body = n4_json_body();
     $label = substr(trim((string)($body['label'] ?? 'Invited Editorial Reviewer')), 0, 120);
+    $masterAaid = n4_canonical_aaid((string)($body['master_aaid'] ?? ''));
     $aaid = n4_generate_acode9('e');
 
     $edFile = n4_data_dir() . '/aaids_editorial.json';
     $edDb = n4_read_json($edFile, ['salt' => NORMA4_DEFAULT_SALT, 'editorial' => []]);
     $salt = (string)($edDb['salt'] ?? NORMA4_DEFAULT_SALT);
-    $edDb['editorial'][] = [
+
+    $masterKey = n4_cached_master_key();
+    if ($masterKey === null && $masterAaid !== '') {
+        $mMatch = n4_lookup_aaid($masterAaid);
+        if ($mMatch) {
+            $masterKey = n4_unwrap_key($mMatch, $masterAaid);
+        }
+    }
+
+    $entry = [
         'hash' => n4_hash_aaid($aaid, $salt),
         'prefix_hint' => substr($aaid, 0, 6) . '...',
         'label' => $label,
@@ -473,8 +559,19 @@ if ($action === 'mint_editorial_aaid' && $method === 'POST') {
         'created_at' => gmdate('c'),
         'active' => true,
     ];
+    if ($masterKey !== null) {
+        $entry['wrapped_key'] = n4_wrap_key($masterKey, $aaid);
+    }
+
+    $edDb['editorial'][] = $entry;
     n4_write_json($edFile, $edDb);
-    echo json_encode(['ok' => true, 'aaid' => $aaid, 'label' => $label, 'prefix_hint' => substr($aaid, 0, 6) . '...']);
+    echo json_encode([
+        'ok' => true,
+        'aaid' => $aaid,
+        'label' => $label,
+        'prefix_hint' => substr($aaid, 0, 6) . '...',
+        'has_wrapped_key' => isset($entry['wrapped_key']),
+    ]);
     exit;
 }
 
