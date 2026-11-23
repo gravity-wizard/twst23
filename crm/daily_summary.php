@@ -272,15 +272,26 @@ function gwcrm_ds_build_digest(string $crmDir): array {
 
     // Optional local Universe Visitor 24h snapshot (reads local JSON file only, 0 network calls)
     $visitorLine = '';
-    $visitorEventsFile = dirname(rtrim($crmDir, '/')) . '/visitors/data/events.json';
-    if (is_file($visitorEventsFile)) {
+    $visitorCandidates = [
+        dirname(rtrim($crmDir, '/')) . '/visitors/data/visitors_log.json',
+        rtrim(sys_get_temp_dir(), '/') . '/twst23_visitors/visitors_log.json',
+        dirname(rtrim($crmDir, '/')) . '/visitors/data/events.json',
+    ];
+    $visitorEventsFile = '';
+    foreach ($visitorCandidates as $cand) {
+        if (is_file($cand)) {
+            $visitorEventsFile = $cand;
+            break;
+        }
+    }
+    if ($visitorEventsFile !== '') {
         $vEvents = json_decode((string)@file_get_contents($visitorEventsFile), true);
         if (is_array($vEvents)) {
             $uAll = [];
             $uBySite = ['twisted23' => [], 'slogbog' => [], 'gravity-wizards' => []];
             foreach ($vEvents as $ev) {
                 if (!is_array($ev) || ((int)($ev['ts'] ?? 0)) < $cutoff24h) continue;
-                $vid = (string)($ev['vid'] ?? '');
+                $vid = (string)($ev['visitorHash'] ?? $ev['vid'] ?? '');
                 $site = (string)($ev['site'] ?? 'twisted23');
                 if ($vid !== '') {
                     $uAll[$vid] = true;

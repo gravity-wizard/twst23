@@ -538,6 +538,7 @@ if ($action === 'asset') {
         $mime = match ($ext) {
             'gif' => 'image/gif',
             'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
             'svg' => 'image/svg+xml',
             'webp' => 'image/webp',
             default => 'application/octet-stream',
