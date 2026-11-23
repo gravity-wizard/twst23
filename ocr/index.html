@@ -3,8 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Text++ — Twisted23 Screenshot OCR</title>
+  <title>Live Text++ — Free Private Screenshot OCR &amp; Image-to-Text Tool | Twisted23</title>
+  <meta name="description" content="Paste (Cmd+V) or drop any screenshot to extract and copy text 100% locally in your browser. Zero uploads, instant OCR, and Cmd+A always selects only the text—never the image." />
+  <meta name="keywords" content="extract text from screenshot, image to text online free, browser OCR no upload, paste screenshot copy text, Mac Preview Live Text alternative, copy text from unselectable popup" />
+  <link rel="canonical" href="https://twisted23.com/ocr/" />
+  <meta property="og:title" content="Live Text++ — Free Private Screenshot OCR (Zero Uploads)" />
+  <meta property="og:description" content="Paste any screenshot (Cmd+V), extract text locally in your browser, and press Cmd+A to select only the text—never the image." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://twisted23.com/ocr/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Live Text++ — Private Browser Screenshot OCR" />
+  <meta name="twitter:description" content="Paste (Cmd+V) or drop a screenshot to copy text locally with zero server uploads." />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Live Text++ Screenshot OCR",
+        "url": "https://twisted23.com/ocr/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "macOS, Windows, Linux, iOS, Android",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Free, 100% client-side browser OCR tool to paste (Cmd+V) or drop screenshots and copy text locally without uploading images to any server.",
+        "publisher": { "@type": "Organization", "name": "Gravity Wizards, Inc." }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I extract text from a screenshot without uploading it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Open twisted23.com/ocr/, press Cmd+V (or Ctrl+V) to paste your screenshot, and Tesseract.js runs 100% locally inside your browser tab with zero server uploads."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why does Cmd+A in Mac Preview select the image instead of text?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mac Preview switches to Rectangular Selection when Cmd+A is pressed. Live Text++ places extracted text in a dedicated text box so Cmd+A always selects only the text."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -75,10 +123,15 @@
       padding: 18px;
       box-shadow: 0 6px 20px rgba(25, 23, 20, 0.06);
     }
+    h1 {
+      font-size: 16px;
+      margin: 0 0 10px;
+      letter-spacing: -0.01em;
+    }
     .dropzone {
       border: 2px dashed #c8bfa9;
       border-radius: 8px;
-      padding: 28px 16px;
+      padding: 26px 16px;
       text-align: center;
       cursor: pointer;
       background: #faf8f3;
@@ -157,6 +210,17 @@
       color: #5f594f;
       margin-top: 8px;
     }
+    .seo-faq {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #5f594f;
+    }
+    .seo-faq summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #857e71;
+    }
+    .seo-faq p { margin: 6px 0; line-height: 1.45; }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -176,10 +240,11 @@
 
   <main class="container" id="container">
     <section class="card">
+      <h1>Extract Text from Any Screenshot — 100% Local in Browser</h1>
       <div class="dropzone" id="dropzone" tabindex="0">
         <input type="file" id="file-input" accept="image/*" class="hidden" />
         <div class="dropzone-title">Paste (Cmd+V), drop, or click a screenshot</div>
-        <div class="dropzone-sub">100% local in-browser OCR · Cmd+A always selects text, never the image</div>
+        <div class="dropzone-sub">Zero server uploads · Cmd+A always selects text, never the image</div>
       </div>
 
       <div class="workspace hidden" id="workspace">
@@ -196,6 +261,12 @@
           <div class="status" id="status">Ready.</div>
         </div>
       </div>
+
+      <details class="seo-faq">
+        <summary>How Private Browser OCR Works &amp; FAQ</summary>
+        <p><strong>No Server Uploads:</strong> Your screenshots never leave your device. Text recognition runs locally in your browser tab.</p>
+        <p><strong>Mac Preview Live Text Alternative:</strong> Unlike Preview—where <code>Cmd+A</code> selects the image box—Live Text++ outputs straight to an editable text box so <code>Cmd+A</code> always selects only the text.</p>
+      </details>
     </section>
   </main>
 
