@@ -127,15 +127,33 @@
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://twisted23.com/ascension/</loc>
-    <lastmod>2026-11-22T03:00:00.000Z</lastmod>
+    <loc>https://twisted23.com/ascenders/</loc>
+    <lastmod>2026-11-24T13:15:00.000Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://twisted23.com/ascenders/notes/</loc>
+    <lastmod>2026-11-24T13:15:00.000Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://twisted23.com/ocr/</loc>
-    <lastmod>2026-11-23T21:56:00.000Z</lastmod>
+    <loc>https://twisted23.com/ascenders/wish/</loc>
+    <lastmod>2026-11-24T13:15:00.000Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://twisted23.com/ascenders/ocr/</loc>
+    <lastmod>2026-11-24T13:15:00.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://twisted23.com/ascenders/clock/</loc>
+    <lastmod>2026-11-24T13:15:00.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.88</priority>
   </url>
 </urlset>

@@ -519,6 +519,68 @@ function build_snippets(string $root, array $rec): array {
     ];
 }
 
+function resolve_ascender_passport_perks(array $config): array {
+    $baseMax = (int)$config['max_image_bytes'];
+    $baseQuota = (int)(getenv('TWISTED23_IP_DAILY_QUOTA') ?: 60);
+    $rawHeader = trim((string)($_SERVER['HTTP_X_ASCENDER_PASSPORT'] ?? ''));
+    if ($rawHeader === '' || !str_contains($rawHeader, '.')) {
+        return ['rank' => 0, 'maxBytes' => $baseMax, 'dailyQuota' => $baseQuota, 'acode9' => null];
+    }
+
+    [$b64, $sig] = explode('.', $rawHeader, 2);
+    $candidates = [
+        dirname(__DIR__, 2) . '/auth/data/.ascender_secret.key',
+        dirname(__DIR__) . '/auth/data/.ascender_secret.key',
+    ];
+    $secret = '';
+    foreach ($candidates as $sf) {
+        if (is_file($sf)) {
+            $s = trim((string)@file_get_contents($sf));
+            if ($s !== '') {
+                $secret = $s;
+                break;
+            }
+        }
+    }
+    if ($secret === '') {
+        $secret = (string)($config['auth_secret'] ?? '');
+    }
+    if ($secret === '') {
+        return ['rank' => 0, 'maxBytes' => $baseMax, 'dailyQuota' => $baseQuota, 'acode9' => null];
+    }
+
+    $expected = hash_hmac('sha256', $b64, $secret);
+    if (!hash_equals($expected, strtolower($sig))) {
+        return ['rank' => 0, 'maxBytes' => $baseMax, 'dailyQuota' => $baseQuota, 'acode9' => null];
+    }
+
+    $json = base64_decode(strtr($b64, '-_', '+/'), true);
+    $payload = $json ? json_decode($json, true) : null;
+    if (!is_array($payload)) {
+        return ['rank' => 0, 'maxBytes' => $baseMax, 'dailyQuota' => $baseQuota, 'acode9' => null];
+    }
+
+    $rank = max(0, min(37, (int)($payload['rank'] ?? 0)));
+    $maxBytes = $baseMax;
+    $quota = $baseQuota;
+    if ($rank >= 5) {
+        $maxBytes = max($baseMax, 1024 * 1024);
+        $quota = max($baseQuota, 180);
+    } elseif ($rank >= 3) {
+        $maxBytes = max($baseMax, 750 * 1024);
+        $quota = max($baseQuota, 120);
+    } elseif ($rank >= 2) {
+        $quota = max($baseQuota, 80);
+    }
+
+    return [
+        'rank' => $rank,
+        'maxBytes' => $maxBytes,
+        'dailyQuota' => $quota,
+        'acode9' => isset($payload['acode9']) ? (string)$payload['acode9'] : null,
+    ];
+}
+
 if (defined('TW23_API_LIB_ONLY') && TW23_API_LIB_ONLY === true) {
     return;
 }
@@ -531,6 +593,8 @@ if ($route === '' && isset($_SERVER['REQUEST_URI'])) {
     }
 }
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$perks = resolve_ascender_passport_perks($config);
+$config['max_image_bytes'] = $perks['maxBytes'];
 
 if ($route === 'health') {
     $maxAll = (int)$config['max_image_bytes'];
@@ -541,6 +605,8 @@ if ($route === 'health') {
         'runtime' => 'hostinger-php',
         'maxImageBytes' => $maxAll,
         'nonConformingMaxImageBytes' => $nonConfMax,
+        'dailyIpQuota' => (int)$perks['dailyQuota'],
+        'ascenderRank' => (int)$perks['rank'],
     ]);
 }
 
@@ -582,7 +648,7 @@ if ($route === 'images/upload' && $method === 'POST') {
         ]);
     }
 
-    $dailyQuota = (int)(getenv('TWISTED23_IP_DAILY_QUOTA') ?: 60);
+    $dailyQuota = (int)$perks['dailyQuota'];
     $ipHash = substr(hash('sha256', client_ip()), 0, 12);
     $dayKey = 'ip:' . $ipHash . ':' . gmdate('Y-m-d');
     $rootUrl = base_url_prefix();

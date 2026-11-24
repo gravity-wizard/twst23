@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>base^38 |^ ascension line • Twisted23.com/ascenders/clock</title>
+  <meta name="description" content="Live Base-38 Time0 Ascension Line clock (now38), bi-directional 3-peaks & aURL timestamp decoder, and the 2020-2057 38-Level Epoch Calendar." />
+  <link rel="canonical" href="https://twisted23.com/ascenders/clock/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/ascenders/">
+        <span class="brand-glyph">|^</span>
+        <span>`base^38 |^` ascension line</span>
+      </a>
+      <nav class="suite-nav">
+        <a class="nav-pill" href="/ascenders/">38 LeveLs Hub</a>
+        <a class="nav-pill" href="/ascenders/notes/">Ascension Notes</a>
+        <a class="nav-pill" href="/ascenders/wish/">Wish-Window (`p1b^f5n`)</a>
+        <a class="nav-pill" href="/ascenders/ocr/">Live Text++ OCR</a>
+        <a class="nav-pill active" href="/ascenders/clock/">`base^38 |^` Clock</a>
+        <button type="button" class="nav-pill" id="btn-fs">⛶ `p1b^f5n` Full5screen</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card" style="text-align:center;padding:32px 20px;">
+      <div class="eyebrow">Time0 Anchor: 2020-03-18T14:09:31Z (Unix 1584540571)</div>
+      <h1 style="font-size:2.1rem;margin-bottom:6px;">🕓 `base^38 |^` ascension line</h1>
+      <div style="color:var(--muted);font-size:0.9rem;margin-bottom:14px;">now38 (elapsed Base-38 seconds) &amp; live `p1b^f5n` 3-peaks mint:</div>
+      <div id="big-now38" style="font-family:var(--font-mono);font-size:3rem;font-weight:900;color:var(--amber);letter-spacing:0.04em;">------</div>
+      <div id="big-3peaks" style="font-family:var(--font-mono);font-size:1.15rem;color:var(--cyan);margin-top:6px;">---</div>
+      <div id="big-utc" style="font-family:var(--font-mono);font-size:0.86rem;color:var(--muted);margin-top:6px;">---</div>
+    </section>
+
+    <section class="hero-grid">
+      <div class="card">
+        <h2 style="margin-top:0;font-size:1.2rem;">Decode Any `now38`, `3peaks` (`p1b^f5n`), or `aURL` Slug</h2>
+        <div class="field">
+          <label for="dec-in">Paste `2p7-p1b-f5n-xb6`, `2p9ck1-kit`, or raw Base-38 clock</label>
+          <input id="dec-in" placeholder="2p7-p1b-f5n-xb6" />
+        </div>
+        <div id="dec-out" class="stat-box" style="font-family:var(--font-mono);font-size:0.88rem;color:var(--emerald);">Enter a code above to recover its exact UTC Deity Date.</div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0;font-size:1.2rem;">Epoch Horizon (`2020 L0` → `2027 L7` → `2057 L37 '^'`)</h2>
+        <div style="max-height:190px;overflow:auto;border:1px solid var(--border);border-radius:8px;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+            <thead>
+              <tr style="background:var(--panel-alt);text-align:left;">
+                <th style="padding:6px 10px;">LeveL</th>
+                <th style="padding:6px 10px;">Glyph</th>
+                <th style="padding:6px 10px;">Opens (UTC)</th>
+                <th style="padding:6px 10px;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="epoch-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const B38 = "0123456789abcdefghijklmnopqrstuvwxyz|^";
+    const T0 = 1584540571;
+    const TRIAD = 54872;
+
+    function enc(n) {
+      let v = Math.max(0, Math.trunc(n));
+      if (v === 0) return "0";
+      let s = "";
+      while (v > 0) { s = B38[v % 38] + s; v = Math.floor(v / 38); }
+      return s;
+    }
+    function decMsd(s) {
+      let t = 0;
+      for (const c of s) {
+        const i = B38.indexOf(c === "_" ? "0" : c === "-" ? "^" : c);
+        if (i < 0) return null;
+        t = t * 38 + i;
+      }
+      return t;
+    }
+    function decPeak(s) {
+      let t = 0;
+      for (const c of s) {
+        const i = B38.indexOf(c === "_" ? "|" : c === "-" ? "^" : c);
+        if (i < 0) return null;
+        t = t * 38 + i;
+      }
+      return t;
+    }
+    function decodeAny(raw) {
+      const s = String(raw || "").trim().replace(/^.*\/a\//, "").replace(/\.[a-z0-9]+$/i, "").toLowerCase();
+      if (!s) return null;
+      const isSep = c => c === "-" || c === "^";
+      if (s.length === 7 && isSep(s[3]) && /^[a-z][1-57-9][a-z]$/.test(s.slice(4, 7))) {
+        const m = decMsd(s.slice(0, 3)), l = decPeak(s.slice(4, 7));
+        if (m !== null && l !== null) return { mode: "Single-Peak", unix: T0 + m * TRIAD + l };
+      }
+      if (s.length === 15 && isSep(s[3]) && isSep(s[7]) && isSep(s[11]) && /^[a-z][1-57-9][a-z]$/.test(s.slice(4, 7)) && /^[a-z][1-57-9][a-z]$/.test(s.slice(8, 11))) {
+        const m = decMsd(s.slice(0, 3)), v1 = decPeak(s.slice(4, 7)), v2 = decPeak(s.slice(8, 11)), v3 = decPeak(s.slice(12, 15));
+        if (m !== null && v1 !== null && v2 !== null && v3 !== null) {
+          return { mode: `3-Peaks (${s.slice(4, 7)}^${s.slice(8, 11)})`, unix: T0 + m * TRIAD + ((v1 + v2 + v3 + m) % TRIAD) };
+        }
+      }
+      const dash = s.lastIndexOf("-");
+      if (dash > 0 && /^[0-9a-z]{2,5}$/.test(s.slice(dash + 1))) {
+        const lhs = decPeak(s.slice(0, dash).padStart(3, "0").length === 3 ? s.slice(0, dash) : "");
+        let lFull = 0, ok = true;
+        for (const c of s.slice(0, dash)) {
+          const idx = B38.indexOf(c === "_" ? "|" : c === "-" ? "^" : c);
+          if (idx < 0) { ok = false; break; }
+          lFull = lFull * 38 + idx;
+        }
+        let rFull = 0;
+        for (const c of s.slice(dash + 1)) rFull = rFull * 38 + B38.indexOf(c);
+        if (ok && lFull >= rFull) return { mode: `aURL (-${s.slice(dash + 1)})`, unix: T0 + (lFull - rFull) };
+      }
+      let plain = 0;
+      for (const c of s) {
+        const idx = B38.indexOf(c === "_" ? "|" : c === "-" ? "^" : c);
+        if (idx < 0) return null;
+        plain = plain * 38 + idx;
+      }
+      return { mode: "Raw Base-38 Clock", unix: T0 + plain };
+    }
+
+    function tick() {
+      const sec = Math.floor(Date.now() / 1000);
+      const el = Math.max(0, sec - T0);
+      const mVal = Math.floor(el / TRIAD), lVal = el % TRIAD;
+      const msd = enc(mVal).padStart(3, "0").slice(-3).replace(/0|\|/g, "_").replace(/\^/g, "-");
+      const nd = (((lVal - mVal - decPeak("p1b") - decPeak("f5n")) % TRIAD) + TRIAD) % TRIAD;
+      const s3 = enc(nd).padStart(3, "0").slice(-3).replace(/\|/g, "_").replace(/\^/g, "-");
+      const sample = `${msd}-p1b-f5n-${s3}`;
+      document.getElementById("big-now38").textContent = enc(el);
+      document.getElementById("big-3peaks").textContent = `3peaks (p1b^f5n): ${sample}`;
+      document.getElementById("big-utc").textContent = new Date(sec * 1000).toISOString().replace(".000Z", "Z");
+      if (!document.getElementById("dec-in").value) {
+        document.getElementById("dec-in").placeholder = sample;
+        const d = decodeAny(sample);
+        document.getElementById("dec-out").textContent = `${d.mode} -> ${new Date(d.unix * 1000).toISOString().replace(".000Z", "Z")} (Unix ${d.unix})`;
+      }
+    }
+
+    document.getElementById("dec-in").addEventListener("input", (e) => {
+      const d = decodeAny(e.target.value);
+      document.getElementById("dec-out").textContent = d
+        ? `${d.mode} -> ${new Date(d.unix * 1000).toISOString().replace(".000Z", "Z")} (Unix ${d.unix})`
+        : "Unrecognized Base-38 / 3-peaks / aURL sequence.";
+    });
+
+    const nowY = new Date().getUTCFullYear();
+    const tbody = document.getElementById("epoch-tbody");
+    for (let l = 0; l <= 37; l++) {
+      const yr = 2020 + l;
+      const openTs = Math.floor(Date.UTC(yr, 2, 18, 14, 9, 31) / 1000);
+      const isOpen = Math.floor(Date.now() / 1000) >= openTs;
+      const tr = document.createElement("tr");
+      tr.style.borderTop = "1px solid var(--border)";
+      if (l === 7) tr.style.background = "rgba(245,158,11,0.12)";
+      tr.innerHTML =
+        `<td style="padding:5px 10px;font-family:var(--font-mono);">L${l}</td>` +
+        `<td style="padding:5px 10px;font-family:var(--font-mono);font-weight:700;">${B38[l]}</td>` +
+        `<td style="padding:5px 10px;font-family:var(--font-mono);">${yr}-03-18 14:09:31Z</td>` +
+        `<td style="padding:5px 10px;">${isOpen ? "✓ Open" : l === 7 ? "★ 2027 Ceiling" : "Shrouded"}</td>`;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("btn-fs").addEventListener("click", () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+      else document.exitFullscreen?.().catch(() => {});
+    });
+
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>

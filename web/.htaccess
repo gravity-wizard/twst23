@@ -37,11 +37,16 @@ RewriteRule ^pix/(.+)$ /px/$1 [L,NC]
 RewriteRule ^is23pbHL/(.+\.(png|jpe?g|gif|webp|svg|ico))$ /px/$1 [L,NC]
 RewriteRule ^is23pbHL/?$ /px/ [R=301,L]
 
-# Friendly aliases for UCP/GwCrm
+# Friendly aliases for UCP/GwCrm & Unified /ascenders/ Base Directory
 Redirect 302 /forum /ucp/?mode=memberlist
 Redirect 302 /forum/ /ucp/?mode=memberlist
 Redirect 302 /gwcrm /crm/
 Redirect 302 /GwCrm /crm/
+Redirect 302 /ascender /ascenders/
+Redirect 302 /ascension /ascenders/notes/
+Redirect 302 /ascension/ /ascenders/notes/
+Redirect 302 /ocr /ascenders/ocr/
+Redirect 302 /ocr/ /ascenders/ocr/
 
 # 4. Standard UTF-8 charset
 AddDefaultCharset UTF-8

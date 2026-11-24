@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Text++ — Free Private Screenshot OCR &amp; Image-to-Text Tool | Twisted23</title>
+  <meta name="description" content="Paste (Cmd+V) or drop any screenshot to extract and copy text 100% locally in your browser. Zero uploads, instant OCR, and Cmd+A always selects only the text—never the image." />
+  <meta name="keywords" content="extract text from screenshot, image to text online free, browser OCR no upload, paste screenshot copy text, Mac Preview Live Text alternative, copy text from unselectable popup" />
+  <link rel="canonical" href="https://twisted23.com/ascenders/ocr/" />
+  <meta property="og:title" content="Live Text++ — Free Private Screenshot OCR (Zero Uploads)" />
+  <meta property="og:description" content="Paste any screenshot (Cmd+V), extract text locally in your browser, and press Cmd+A to select only the text—never the image." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://twisted23.com/ascenders/ocr/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Live Text++ — Private Browser Screenshot OCR" />
+  <meta name="twitter:description" content="Paste (Cmd+V) or drop a screenshot to copy text locally with zero server uploads." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Live Text++ Screenshot OCR",
+        "url": "https://twisted23.com/ascenders/ocr/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "macOS, Windows, Linux, iOS, Android",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "description": "Free, 100% client-side browser OCR tool to paste (Cmd+V) or drop screenshots and copy text locally without uploading images to any server.",
+        "publisher": { "@type": "Organization", "name": "Gravity Wizards, Inc." }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I extract text from a screenshot without uploading it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Open twisted23.com/ocr/, press Cmd+V (or Ctrl+V) to paste your screenshot, and Tesseract.js runs 100% locally inside your browser tab with zero server uploads."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why does Cmd+A in Mac Preview select the image instead of text?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Mac Preview switches to Rectangular Selection when Cmd+A is pressed. Live Text++ places extracted text in a dedicated text box so Cmd+A always selects only the text."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f6f3eb;
+      color: #191714;
+    }
+    .topbar {
+      background: #ffffff;
+      border-bottom: 1px solid #ddd6c6;
+      padding: 10px 18px;
+    }
+    .topbar-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      color: #191714;
+      text-decoration: none;
+    }
+    .brand-badge {
+      background: #191714;
+      color: #f6f3eb;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 12px;
+      padding: 4px 7px;
+      border-radius: 6px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .nav-links a {
+      color: #b45309;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .container {
+      flex: 1;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: max-width 0.2s ease;
+    }
+    .container.is-expanded { max-width: 760px; }
+    .card {
+      background: #ffffff;
+      border: 1px solid #ddd6c6;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 6px 20px rgba(25, 23, 20, 0.06);
+    }
+    h1 {
+      font-size: 16px;
+      margin: 0 0 10px;
+      letter-spacing: -0.01em;
+    }
+    .dropzone {
+      border: 2px dashed #c8bfa9;
+      border-radius: 8px;
+      padding: 26px 16px;
+      text-align: center;
+      cursor: pointer;
+      background: #faf8f3;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: #b45309;
+      background: #fef3c7;
+    }
+    .dropzone-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+    .dropzone-sub { font-size: 12px; color: #5f594f; }
+    .workspace {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 640px) { .workspace { grid-template-columns: 1fr; } }
+    .thumb {
+      border: 1px solid #ddd6c6;
+      border-radius: 8px;
+      background: #faf8f3;
+      overflow: hidden;
+    }
+    .thumb img {
+      width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+      display: block;
+    }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 10px;
+      border: 1px solid #c8bfa9;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #191714;
+      background: #ffffff;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #b45309;
+      box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.16);
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    button {
+      appearance: none;
+      border: 1px solid #c8bfa9;
+      background: #ffffff;
+      color: #191714;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) { background: #efebe0; }
+    button.primary {
+      background: #b45309;
+      border-color: #b45309;
+      color: #ffffff;
+    }
+    button.primary:hover:not(:disabled) { background: #92400e; }
+    .status {
+      font-size: 12px;
+      color: #5f594f;
+      margin-top: 8px;
+    }
+    .seo-faq {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #5f594f;
+    }
+    .seo-faq summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: #857e71;
+    }
+    .seo-faq p { margin: 6px 0; line-height: 1.45; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-badge">OCR</span>
+        <span>Live Text++</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/ascenders/">Ascenders Hub</a>
+        <a href="/ascenders/notes/">Ascension Notes</a>
+        <a href="/ascenders/wish/">Wish-Window</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" id="container">
+    <section class="card">
+      <h1>Extract Text from Any Screenshot — 100% Local in Browser</h1>
+      <div class="dropzone" id="dropzone" tabindex="0">
+        <input type="file" id="file-input" accept="image/*" class="hidden" />
+        <div class="dropzone-title">Paste (Cmd+V), drop, or click a screenshot</div>
+        <div class="dropzone-sub">Zero server uploads · Cmd+A always selects text, never the image</div>
+      </div>
+
+      <div class="workspace hidden" id="workspace">
+        <div class="thumb">
+          <img id="preview-img" alt="Screenshot preview" />
+        </div>
+        <div>
+          <textarea id="ocr-text" placeholder="Extracting text..."></textarea>
+          <div class="btn-row">
+            <button type="button" class="primary" id="btn-copy">Copy All Text</button>
+            <button type="button" id="btn-select">Select All (Cmd+A)</button>
+            <button type="button" id="btn-to-notes">Send to Ascension Notes</button>
+            <button type="button" id="btn-clear">Clear</button>
+          </div>
+          <div class="status" id="status">Ready.</div>
+        </div>
+      </div>
+
+      <details class="seo-faq">
+        <summary>How Private Browser OCR Works &amp; FAQ</summary>
+        <p><strong>No Server Uploads:</strong> Your screenshots never leave your device. Text recognition runs locally in your browser tab.</p>
+        <p><strong>Mac Preview Live Text Alternative:</strong> Unlike Preview—where <code>Cmd+A</code> selects the image box—Live Text++ outputs straight to an editable text box so <code>Cmd+A</code> always selects only the text.</p>
+      </details>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script>
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("file-input");
+    const container = document.getElementById("container");
+    const workspace = document.getElementById("workspace");
+    const previewImg = document.getElementById("preview-img");
+    const ocrText = document.getElementById("ocr-text");
+    const statusEl = document.getElementById("status");
+
+    async function runOcr(file) {
+      if (!file || !file.type.startsWith("image/")) return;
+      const url = URL.createObjectURL(file);
+      previewImg.src = url;
+      container.classList.add("is-expanded");
+      workspace.classList.remove("hidden");
+      ocrText.value = "";
+      statusEl.textContent = "Loading local OCR engine...";
+
+      try {
+        const result = await Tesseract.recognize(url, "eng", {
+          logger: (m) => {
+            if (m.status === "recognizing text") {
+              statusEl.textContent = `Recognizing text... ${Math.round((m.progress || 0) * 100)}%`;
+            }
+          },
+        });
+        ocrText.value = (result?.data?.text || "").trim();
+        ocrText.focus();
+        statusEl.textContent = ocrText.value
+          ? `Done (${ocrText.value.length} chars). Cmd+A selects only text.`
+          : "No readable text found.";
+      } catch (err) {
+        statusEl.textContent = `OCR error: ${err?.message || err}`;
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      const f = e.dataTransfer?.files?.[0];
+      if (f) runOcr(f);
+    });
+    fileInput.addEventListener("change", (e) => {
+      const f = e.target.files?.[0];
+      if (f) runOcr(f);
+    });
+    window.addEventListener("paste", (e) => {
+      const items = Array.from(e.clipboardData?.items || []);
+      const imgItem = items.find((it) => it.type.startsWith("image/"));
+      if (imgItem) {
+        const f = imgItem.getAsFile();
+        if (f) runOcr(f);
+      }
+    });
+
+    document.getElementById("btn-copy").addEventListener("click", async () => {
+      await navigator.clipboard?.writeText(ocrText.value).catch(() => {});
+      statusEl.textContent = "Copied all extracted text to clipboard.";
+    });
+    document.getElementById("btn-select").addEventListener("click", () => {
+      ocrText.focus();
+      ocrText.select();
+    });
+    document.getElementById("btn-clear").addEventListener("click", () => {
+      fileInput.value = "";
+      ocrText.value = "";
+      workspace.classList.add("hidden");
+      container.classList.remove("is-expanded");
+      statusEl.textContent = "Ready.";
+    });
+  document.getElementById("btn-to-notes")?.addEventListener("click", () => {
+      try { localStorage.setItem("tw23_ocr_handoff", ocrText.value || ""); } catch {}
+      window.location.href = "/ascenders/notes/";
+    });
+  </script>
+</body>
+</html>

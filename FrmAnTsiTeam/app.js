@@ -270,12 +270,22 @@ function updateWishHint() {
   }
 }
 
+function passportHeaders(extra = {}) {
+  let token = "";
+  try {
+    token = window.localStorage?.getItem("tw23_ascender_passport") || "";
+  } catch {
+    token = "";
+  }
+  return token ? { ...extra, "X-Ascender-Passport": token } : { ...extra };
+}
+
 async function fetchConfig() {
   for (const usePhp of [false, true]) {
     usePhpRouteFallback = usePhp;
     const url = apiEndpoint("health");
     try {
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, { cache: "no-store", headers: passportHeaders() });
       if (!res.ok) continue;
       const data = await res.json();
       if (data?.ok) {
@@ -283,6 +293,12 @@ async function fetchConfig() {
           maxImageBytes = Number(data.maxImageBytes) || maxImageBytes;
           document.getElementById("limit-note").textContent =
             `JPG, PNG, WebP, GIF · ${Math.round(maxImageBytes / 1024)} KB max`;
+          const opt575 = document.getElementById("size-preset")?.querySelector('option[value="575"]');
+          if (opt575 && maxImageBytes > 575 * 1024) {
+            const unlockedKb = Math.round(maxImageBytes / 1024);
+            opt575.value = String(unlockedKb);
+            opt575.textContent = `${unlockedKb} KB (Ascender Perk)`;
+          }
         }
         if (data.nonConformingMaxImageBytes) {
           nonConformingMaxBytes = Number(data.nonConformingMaxImageBytes) || nonConformingMaxBytes;
@@ -449,12 +465,14 @@ btnUpload.addEventListener("click", async () => {
     const prepared = await prepareBytesForUpload();
     uploadStatus.textContent = `Uploading ${formatKb(prepared.bytes)}...`;
 
+    const reqHeaders = passportHeaders({
+      "Content-Type": "application/octet-stream",
+      "X-Custom-Name": encodeURIComponent(customNameInput.value.trim()),
+    });
+
     let res = await fetch(targetUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/octet-stream",
-        "X-Custom-Name": encodeURIComponent(customNameInput.value.trim()),
-      },
+      headers: reqHeaders,
       body: prepared.blob,
     });
     if ((res.status === 404 || res.status === 405) && !usePhpRouteFallback) {
@@ -462,10 +480,7 @@ btnUpload.addEventListener("click", async () => {
       targetUrl = apiEndpoint("images/upload");
       res = await fetch(targetUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "X-Custom-Name": encodeURIComponent(customNameInput.value.trim()),
-        },
+        headers: reqHeaders,
         body: prepared.blob,
       });
     }

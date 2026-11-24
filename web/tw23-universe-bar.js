@@ -107,11 +107,17 @@
     if (!user) {
       existing.className = '';
       existing.innerHTML =
+        '<a href="/ascenders/" title="38 LeveLs of Ascension Hub">A^ Ascenders</a>' +
+        '<span class="ub-sep">•</span>' +
         '<a href="/ucp/?mode=login&amp;redirect=' + redir + '" title="Sign in to Twisted23 UniversaL Universe">🔑 Login</a>' +
         '<span class="ub-sep">•</span>' +
         '<a href="/ucp/?mode=memberlist" title="Browse MemberList">👥 Roster</a>';
       return;
     }
+
+    var ascBadge = (user.ascender_level && user.ascender_level > 0)
+      ? '<a href="/ascenders/" class="ub-id" style="color:#fbbf24;background:rgba(251,191,36,0.16);" title="Ascender LeveL ' + esc(user.ascender_level) + '">A^' + esc(user.ascender_glyph || user.ascender_level) + '</a>'
+      : '<a href="/ascenders/" title="Ascenders Hub">A^</a>';
 
     existing.className = user.is_admin ? 'is-admin' : '';
     var html =
@@ -120,6 +126,8 @@
       '<span style="color:' + esc(user.group_color || '#f8fafc') + ';">' + esc(user.username) + '</span>' +
       (user.base38_id ? '<span class="ub-id">' + esc(user.base38_id) + '</span>' : '') +
       '</a>' +
+      '<span class="ub-sep">•</span>' +
+      ascBadge +
       '<span class="ub-sep">•</span>' +
       '<a href="/ucp/" title="User ControL PaneL">UCP</a>';
 
