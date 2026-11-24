@@ -309,6 +309,168 @@
       background: rgba(125, 211, 252, 0.2);
     }
 
+    .ctrl-btn.saver-btn {
+      background: rgba(229, 169, 50, 0.14);
+      color: var(--kapton);
+      border-color: rgba(229, 169, 50, 0.45);
+    }
+
+    .ctrl-btn.saver-btn:hover {
+      background: rgba(229, 169, 50, 0.26);
+      color: #fef3c7;
+      border-color: var(--kapton);
+    }
+
+    .ctrl-btn.saver-btn.active {
+      background: var(--kapton);
+      color: #080b11;
+      border-color: var(--kapton);
+    }
+
+    /* OLED-Safe Drifting Screen Saver Watermark */
+    .saver-watermark {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100000;
+      pointer-events: none;
+      user-select: none;
+      flex-direction: column;
+      gap: 0.22rem;
+      padding: 0.55rem 0.85rem;
+      border-radius: 10px;
+      background: rgba(3, 5, 8, 0.34);
+      border: 1px solid rgba(229, 169, 50, 0.14);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      will-change: transform, opacity;
+      max-width: min(90vw, 460px);
+    }
+
+    .saver-watermark .wm-detour {
+      font-size: clamp(0.76rem, 1.4vw, 0.92rem);
+      font-weight: 700;
+      color: rgba(125, 211, 252, 0.88);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .saver-watermark .wm-clock {
+      font-size: clamp(0.8rem, 1.5vw, 0.98rem);
+      color: rgba(244, 241, 234, 0.84);
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .saver-watermark .wm-kicker {
+      color: rgba(229, 169, 50, 0.78);
+      font-weight: 700;
+    }
+
+    .saver-watermark .wm-now38 {
+      color: #fbbf24;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    .saver-watermark .wm-sep {
+      color: rgba(158, 166, 181, 0.55);
+    }
+
+    .saver-watermark .wm-3peaks {
+      color: rgba(158, 166, 181, 0.78);
+      font-size: 0.82em;
+    }
+
+    .saver-watermark .wm-sub {
+      font-size: 0.66rem;
+      color: rgba(158, 166, 181, 0.62);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    /* Fill-Screen Lunar Screen Saver Mode */
+    body.screensaver-mode {
+      overflow: hidden;
+      padding: 0;
+      background: #020306;
+    }
+
+    body.screensaver-mode header,
+    body.screensaver-mode .hero-lockup,
+    body.screensaver-mode .parlour-escape {
+      display: none !important;
+    }
+
+    body.screensaver-mode main {
+      max-width: none;
+      width: 100vw;
+      height: 100vh;
+      padding: 0;
+    }
+
+    body.screensaver-mode .lunar-viewport {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+      z-index: 99999;
+      background: #020306;
+    }
+
+    body.screensaver-mode #lunarCanvas {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-height: none;
+    }
+
+    body.screensaver-mode .saver-watermark {
+      display: flex;
+    }
+
+    body.screensaver-mode .telemetry-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100001;
+      background: rgba(3, 5, 8, 0.72);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(236, 232, 223, 0.1);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    body.screensaver-mode .rover-controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100001;
+      background: rgba(12, 17, 27, 0.78);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(236, 232, 223, 0.1);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease;
+    }
+
+    body.screensaver-mode.saver-hud-awake .telemetry-bar,
+    body.screensaver-mode.saver-hud-awake .rover-controls {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     /* Parlour Escape Links */
     .parlour-escape {
       width: 100%;
@@ -462,17 +624,29 @@
     <section class="lunar-viewport" aria-label="Lunar South Pole Dice-Wheeled Moon Buggy Simulation">
       <div class="telemetry-bar">
         <div class="telemetry-left">
-          <span class="tele-gold" id="teleDetour" style="display:none;"></span>
+          <span class="tele-gold" id="teleDetour">📡 SL0GB0G u=377 =~ detour</span>
           <span>LOC <strong class="tele-tag" id="teleLandmark">80.1&deg;S &middot; MALAPERT APPROACH</strong></span>
           <span class="tele-ice" id="teleIce">H&#8322;O COLD TRAP: 40 K</span>
         </div>
         <div class="telemetry-right">
           <span>SIDE HUB <strong class="tele-gold" id="teleHub">FACE 4 (4 PIPS ROTATING)</strong></span>
           <span>TREADS <strong class="tele-tag" id="teleTreads">{1 &rarr; 2 &rarr; 6 &rarr; 5}</strong></span>
+          <span class="tele-gold" id="teleNow38">base^38 now38: ------</span>
         </div>
       </div>
 
       <canvas id="lunarCanvas" width="1060" height="400"></canvas>
+
+      <div class="saver-watermark" id="saverWatermark" aria-live="off">
+        <div class="wm-detour" id="saverDetour">SL0GB0G u=377 =~ detour</div>
+        <div class="wm-clock">
+          <span class="wm-kicker">base^38 now38</span>
+          <strong class="wm-now38" id="saverNow38">------</strong>
+          <span class="wm-sep">&middot;</span>
+          <span class="wm-3peaks" id="saver3Peaks">---</span>
+        </div>
+        <div class="wm-sub" id="saverSub">89.9&deg;S LUNAR SCREEN SAVER &middot; OLED DRIFT &middot; ESC / F TO EXIT</div>
+      </div>
 
       <div class="rover-controls">
         <div class="ctrl-group">
@@ -488,6 +662,7 @@
           <button type="button" class="ctrl-btn" id="btnPaceSnail" data-pace="snail">🐌 SnaiL</button>
           <button type="button" class="ctrl-btn active" id="btnPaceTurtle" data-pace="turtle">🐢 TurtLe</button>
           <button type="button" class="ctrl-btn" id="btnPaceRabbit" data-pace="rabbit">🐇 Rabbit</button>
+          <button type="button" class="ctrl-btn saver-btn" id="btnScreenSaver" aria-pressed="false" title="Toggle Fill-Screen Lunar Screen Saver (F)">&#x26F6; Fill-Screen Saver</button>
         </div>
       </div>
     </section>
@@ -512,17 +687,65 @@
     (() => {
       'use strict';
 
-      // Echo custom detour slug (e.g. /M00N_BUGGY from SlogBog #p6430!) on HUD & rover plate
+      // Echo SL0GB0G u=377 =~ detour & optional custom detour slug (e.g. /M00N_BUGGY from SlogBog #p6430!) on HUD & rover plate
       const rawDetourSlug = decodeURIComponent(window.location.pathname || '').replace(/^\/+|\/+$/g, '');
-      const hasCustomSlug = rawDetourSlug && !/^(z404(\/index\.html)?|404(\.html)?)$/i.test(rawDetourSlug);
+      const hasCustomSlug = rawDetourSlug && !/^(z404(\/index\.html)?|404(\.html)?|web\/(z404(\/index\.html)?|404(\.html)?))$/i.test(rawDetourSlug);
       const roverPlateCode = /m00n/i.test(rawDetourSlug) ? 'M00N' : 'z404';
-      if (hasCustomSlug) {
-        const detEl = document.getElementById('teleDetour');
-        if (detEl) {
-          detEl.textContent = '📡 /' + rawDetourSlug.slice(0, 22);
-          detEl.style.display = 'inline';
+      const detourReadout = hasCustomSlug
+        ? `SL0GB0G u=377 =~ detour · /${rawDetourSlug.slice(0, 22)}`
+        : 'SL0GB0G u=377 =~ detour';
+      const detEl = document.getElementById('teleDetour');
+      if (detEl) detEl.textContent = '📡 ' + detourReadout;
+      const saverDetourEl = document.getElementById('saverDetour');
+      if (saverDetourEl) saverDetourEl.textContent = detourReadout;
+
+      // Base-38 Time0 Ascension Line clock (matches Twisted23.com/ascenders/clock/)
+      const B38_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz|^';
+      const B38_T0 = 1584540571;
+      const B38_TRIAD = 54872;
+      function encodeBase38(n) {
+        let v = Math.max(0, Math.trunc(n));
+        if (v === 0) return '0';
+        let out = '';
+        while (v > 0) {
+          out = B38_ALPHABET[v % 38] + out;
+          v = Math.floor(v / 38);
         }
+        return out;
       }
+      function decodePeak38(str) {
+        let total = 0;
+        for (const ch of str) {
+          const idx = B38_ALPHABET.indexOf(ch === '_' ? '|' : (ch === '-' ? '^' : ch));
+          if (idx < 0) return 0;
+          total = total * 38 + idx;
+        }
+        return total;
+      }
+      const P1B_VAL = decodePeak38('p1b');
+      const F5N_VAL = decodePeak38('f5n');
+      const teleNow38El = document.getElementById('teleNow38');
+      const saverNow38El = document.getElementById('saverNow38');
+      const saver3PeaksEl = document.getElementById('saver3Peaks');
+      const saverWatermarkEl = document.getElementById('saverWatermark');
+      let lastClockSec = -1;
+      function refreshBase38Clock(force = false) {
+        const sec = Math.floor(Date.now() / 1000);
+        if (!force && sec === lastClockSec) return;
+        lastClockSec = sec;
+        const el = Math.max(0, sec - B38_T0);
+        const now38 = encodeBase38(el);
+        const mVal = Math.floor(el / B38_TRIAD);
+        const lVal = el % B38_TRIAD;
+        const msd = encodeBase38(mVal).padStart(3, '0').slice(-3).replace(/0|\|/g, '_').replace(/\^/g, '-');
+        const nd = (((lVal - mVal - P1B_VAL - F5N_VAL) % B38_TRIAD) + B38_TRIAD) % B38_TRIAD;
+        const s3 = encodeBase38(nd).padStart(3, '0').slice(-3).replace(/\|/g, '_').replace(/\^/g, '-');
+        const sample3Peaks = `${msd}-p1b-f5n-${s3}`;
+        if (teleNow38El) teleNow38El.textContent = `base^38 now38: ${now38}`;
+        if (saverNow38El) saverNow38El.textContent = now38;
+        if (saver3PeaksEl) saver3PeaksEl.textContent = sample3Peaks;
+      }
+      refreshBase38Clock(true);
 
       // =========================================================
       // 1. INTERLOCKING z + 4 TOPOLOGICAL TOGGLE (💡)
@@ -853,9 +1076,103 @@
         });
       });
 
+      // =========================================================
+      // 4b. FILL-SCREEN LUNAR SCREEN SAVER MODE (F / ESC)
+      //     OLED-safe drifting base^38 now38 watermark + auto-hide HUD
+      // =========================================================
+      let screensaverActive = false;
+      let saverHudTimer = null;
+      const btnScreenSaver = document.getElementById('btnScreenSaver');
+
+      function wakeSaverHud() {
+        if (!screensaverActive) return;
+        document.body.classList.add('saver-hud-awake');
+        if (saverHudTimer) clearTimeout(saverHudTimer);
+        saverHudTimer = setTimeout(() => {
+          if (screensaverActive) {
+            document.body.classList.remove('saver-hud-awake');
+          }
+        }, 2600);
+      }
+
+      function setScreenSaver(active, opts = {}) {
+        const next = Boolean(active);
+        if (screensaverActive === next) return;
+        screensaverActive = next;
+        document.body.classList.toggle('screensaver-mode', next);
+        if (btnScreenSaver) {
+          btnScreenSaver.classList.toggle('active', next);
+          btnScreenSaver.setAttribute('aria-pressed', next ? 'true' : 'false');
+          btnScreenSaver.textContent = next ? '✕ Exit Saver' : '⛶ Fill-Screen Saver';
+        }
+        if (next) {
+          playTone(640, 0.08);
+          refreshBase38Clock(true);
+          // Start clean with HUD briefly visible, then fade out for OLED-safe full-screen canvas
+          wakeSaverHud();
+          if (!opts.skipFullscreen && !document.fullscreenElement && document.documentElement.requestFullscreen) {
+            try {
+              const p = document.documentElement.requestFullscreen();
+              if (p && typeof p.catch === 'function') p.catch(() => {});
+            } catch (_) {}
+          }
+        } else {
+          playTone(430, 0.07);
+          document.body.classList.remove('saver-hud-awake');
+          if (saverHudTimer) {
+            clearTimeout(saverHudTimer);
+            saverHudTimer = null;
+          }
+          if (!opts.skipFullscreenExit && document.fullscreenElement && document.exitFullscreen) {
+            try {
+              const p = document.exitFullscreen();
+              if (p && typeof p.catch === 'function') p.catch(() => {});
+            } catch (_) {}
+          }
+        }
+      }
+
+      if (btnScreenSaver) {
+        btnScreenSaver.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setScreenSaver(!screensaverActive);
+        });
+      }
+
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && screensaverActive) {
+          setScreenSaver(false, { skipFullscreenExit: true });
+        }
+      });
+
+      window.addEventListener('mousemove', () => {
+        if (screensaverActive) wakeSaverHud();
+      }, { passive: true });
+      window.addEventListener('touchstart', () => {
+        if (screensaverActive) wakeSaverHud();
+      }, { passive: true });
+
+      // Optional URL launch (?saver=1 or #saver) for direct Lunar Screen Saver bookmarking
+      try {
+        const qp = new URLSearchParams(window.location.search);
+        if (qp.get('saver') === '1' || window.location.hash.toLowerCase() === '#saver') {
+          setScreenSaver(true, { skipFullscreen: true });
+        }
+      } catch (_) {}
+
       window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && screensaverActive) {
+          e.preventDefault();
+          setScreenSaver(false);
+          return;
+        }
+        if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          e.preventDefault();
+          setScreenSaver(!screensaverActive);
+          return;
+        }
         if (e.code === 'Space' || e.code === 'ArrowUp') {
-          if (document.activeElement === document.body) {
+          if (document.activeElement === document.body || screensaverActive) {
             e.preventDefault();
             triggerHop(-185);
           }
@@ -1520,9 +1837,10 @@
         }
 
         // 2. Low-Horizon Crescent Blue Earth (hovering at ~9 deg elevation, Lunar South Pole view!)
+        refreshBase38Clock();
         const earthX = cssW * 0.16;
         const earthY = cssH * 0.24;
-        const earthR = 22;
+        const earthR = Math.max(22, Math.min(34, cssH * 0.045));
         // Subtle atmospheric earthshine halo
         const earthGlow = ctx.createRadialGradient(earthX, earthY, earthR * 0.4, earthX, earthY, earthR * 2.1);
         earthGlow.addColorStop(0, 'rgba(56, 189, 248, 0.26)');
@@ -1838,15 +2156,17 @@
           ctx.fillRect(psx, psy, p.size, p.size);
         }
 
-        // 11. Subtle Apollo Hasselblad Réseau Crosshair Fiducials (+) on lens
-        ctx.strokeStyle = 'rgba(244, 241, 234, 0.16)';
+        // 11. Subtle Apollo Hasselblad Réseau Crosshair Fiducials (+) on lens (OLED-safe pixel shift in saver mode)
+        const oledShiftX = screensaverActive ? Math.sin(timeSec * 0.13) * 4.5 : 0;
+        const oledShiftY = screensaverActive ? Math.cos(timeSec * 0.09) * 4.5 : 0;
+        ctx.strokeStyle = screensaverActive ? 'rgba(244, 241, 234, 0.10)' : 'rgba(244, 241, 234, 0.16)';
         ctx.lineWidth = 1;
         const crossPts = [
-          [cssW * 0.2, cssH * 0.25],
-          [cssW * 0.5, cssH * 0.5],
-          [cssW * 0.8, cssH * 0.25],
-          [cssW * 0.2, cssH * 0.78],
-          [cssW * 0.8, cssH * 0.78]
+          [cssW * 0.2 + oledShiftX, cssH * 0.25 + oledShiftY],
+          [cssW * 0.5 + oledShiftX, cssH * 0.5 + oledShiftY],
+          [cssW * 0.8 + oledShiftX, cssH * 0.25 + oledShiftY],
+          [cssW * 0.2 + oledShiftX, cssH * 0.78 + oledShiftY],
+          [cssW * 0.8 + oledShiftX, cssH * 0.78 + oledShiftY]
         ];
         for (const [cx, cy] of crossPts) {
           ctx.beginPath();
@@ -1857,8 +2177,8 @@
 
         // 12. 90°S Polar Azimuthal Mini-Radar (shows the winding polar rim circuit & flag pins!)
         if (cssW >= 520) {
-          const rcx = cssW - 58;
-          const rcy = 54;
+          const rcx = cssW - 58 + oledShiftX;
+          const rcy = (screensaverActive ? 68 : 54) + oledShiftY;
           const rOuter = 38;
           const polarPt = (frac) => {
             const ang = frac * Math.PI * 2 - Math.PI * 0.5;
@@ -1868,6 +2188,7 @@
           };
 
           ctx.save();
+          if (screensaverActive) ctx.globalAlpha = 0.72;
           // Translucent carbon glass radar disc
           ctx.fillStyle = 'rgba(7, 11, 19, 0.72)';
           ctx.strokeStyle = 'rgba(148, 163, 184, 0.28)';
@@ -1931,6 +2252,24 @@
           ctx.textAlign = 'center';
           ctx.fillText('90°S', rcx, rcy + 2.5);
           ctx.restore();
+        }
+
+        // 13. OLED-Safe Continuously Drifting base^38 now38 + SL0GB0G u=377 =~ detour Watermark
+        if (screensaverActive && saverWatermarkEl) {
+          const wmRect = saverWatermarkEl.getBoundingClientRect();
+          const wmW = wmRect.width || 340;
+          const wmH = wmRect.height || 72;
+          const padX = Math.max(20, cssW * 0.05);
+          const minY = Math.max(54, cssH * 0.08);
+          const maxX = Math.max(padX, cssW - wmW - Math.max(120, padX));
+          const maxY = Math.max(minY, cssH * 0.44 - wmH);
+          const normX = 0.5 + 0.48 * Math.sin(timeSec * 0.17 + 0.4);
+          const normY = 0.5 + 0.48 * Math.sin(timeSec * 0.113 + 1.2);
+          const tx = padX + (maxX - padX) * normX;
+          const ty = minY + (maxY - minY) * normY;
+          const oledAlpha = 0.46 + 0.18 * Math.sin(timeSec * 0.29);
+          saverWatermarkEl.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0)`;
+          saverWatermarkEl.style.opacity = oledAlpha.toFixed(3);
         }
 
         ctx.restore();
