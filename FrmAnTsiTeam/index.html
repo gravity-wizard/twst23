@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twisted23 — Fast Image Hosting</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="./">
+        <span class="brand-icon">↑</span>
+        <span>Twisted23</span>
+      </a>
+      <span class="limit-note" id="limit-note">JPG, PNG, WebP, GIF · 575 KB max</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Upload Card -->
+    <section class="card" id="upload-card">
+      <div class="dropzone" id="dropzone" tabindex="0">
+        <input type="file" id="file-input" accept="image/*" class="hidden" />
+        <div class="dropzone-title">Drag and drop or click to upload an image</div>
+        <div class="dropzone-sub">You can also paste from clipboard (Ctrl+V / Cmd+V) · auto-sized under 575 KB</div>
+      </div>
+
+      <div class="preview-area hidden" id="staging-area">
+        <div class="thumb-box">
+          <img id="staged-img" alt="Preview" />
+        </div>
+        <div>
+          <div class="field">
+            <label for="custom-name">Wish-window (optional link tag)</label>
+            <input
+              type="text"
+              id="custom-name"
+              maxlength="48"
+              placeholder="p1b^f5n (or leave blank — Uncle Norman costs more)"
+            />
+            <div class="wish-hint" id="wish-hint">3-peaks short link · 575 KB max · 1× quota</div>
+          </div>
+          <div class="field-row">
+            <div class="field" style="margin-bottom: 0;">
+              <label for="size-preset">Size cap</label>
+              <select id="size-preset">
+                <option value="575" selected>575 KB (Default)</option>
+                <option value="385">385 KB (Medium)</option>
+                <option value="57">57 KB (Avatar)</option>
+              </select>
+            </div>
+            <label class="check-inline" for="retina-1x">
+              <input type="checkbox" id="retina-1x" />
+              <span>1× size (½ px for Apple Notes)</span>
+            </label>
+          </div>
+          <div class="status-line" id="staging-meta"></div>
+          <div class="btn-row">
+            <button type="button" class="primary" id="btn-upload">Upload</button>
+            <button type="button" id="btn-save-local">Download copy</button>
+            <button type="button" id="btn-clear">Clear</button>
+          </div>
+          <div class="status-line" id="upload-status"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Card (ImgBB-style links) -->
+    <section class="card results-card hidden" id="results-card">
+      <div class="results-header">
+        <div>
+          <strong id="result-title">Uploaded image</strong>
+          <div class="limit-note" id="result-size"></div>
+        </div>
+        <button type="button" id="btn-upload-another">Upload another image</button>
+      </div>
+
+      <img class="results-preview" id="result-img" alt="Hosted image" />
+
+      <div class="code-row">
+        <label for="out-direct">Direct link</label>
+        <div class="copy-group">
+          <input type="text" readonly id="out-direct" />
+          <button type="button" class="copy-btn" data-target="out-direct">Copy</button>
+        </div>
+      </div>
+
+      <div class="code-row">
+        <label for="out-viewer">Viewer link</label>
+        <div class="copy-group">
+          <input type="text" readonly id="out-viewer" />
+          <button type="button" class="copy-btn" data-target="out-viewer">Copy</button>
+        </div>
+      </div>
+
+      <div class="code-row">
+        <label for="out-slogbog">SLogBog sup×2 centered BBCode</label>
+        <div class="copy-group">
+          <textarea readonly rows="2" id="out-slogbog"></textarea>
+          <button type="button" class="copy-btn" data-target="out-slogbog">Copy</button>
+        </div>
+      </div>
+
+      <div class="code-row">
+        <label for="out-html">HTML image</label>
+        <div class="copy-group">
+          <input type="text" readonly id="out-html" />
+          <button type="button" class="copy-btn" data-target="out-html">Copy</button>
+        </div>
+      </div>
+
+      <div class="code-row">
+        <label for="out-html-linked">HTML full linked</label>
+        <div class="copy-group">
+          <input type="text" readonly id="out-html-linked" />
+          <button type="button" class="copy-btn" data-target="out-html-linked">Copy</button>
+        </div>
+      </div>
+
+      <div class="code-row">
+        <label for="out-bbcode">BBCode</label>
+        <div class="copy-group">
+          <input type="text" readonly id="out-bbcode" />
+          <button type="button" class="copy-btn" data-target="out-bbcode">Copy</button>
+        </div>
+      </div>
+
+      <div class="code-row" style="margin-bottom: 0;">
+        <label for="out-markdown">Markdown</label>
+        <div class="copy-group">
+          <input type="text" readonly id="out-markdown" />
+          <button type="button" class="copy-btn" data-target="out-markdown">Copy</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
