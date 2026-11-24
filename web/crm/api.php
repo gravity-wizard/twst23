@@ -157,16 +157,24 @@ function read_data(string $path): array {
                 $sc = array_merge($sc, $rc);
                 if ($seedCopyRev > $rtCopyRev) {
                     $sc = array_merge($sc, $seedCopyFields);
-                    if (!empty($seed['contacts']) && !empty($sc['id']) && empty($rc['sent_at']) && empty($rc['requeued_at'])) {
-                        // Also restore seed's live sent status if seed explicitly recorded a manual/external send
+                    if (!empty($seed['contacts']) && !empty($sc['id'])) {
                         foreach ($seed['contacts'] as $origSeed) {
-                            if (($origSeed['id'] ?? '') === $sc['id'] && !empty($origSeed['sent_at'])) {
+                            if (($origSeed['id'] ?? '') !== $sc['id']) continue;
+                            if (empty($rc['sent_at']) && empty($rc['requeued_at']) && !empty($origSeed['sent_at'])) {
+                                // Also restore seed's live sent status if seed explicitly recorded a manual/external send
                                 $sc['stage'] = $origSeed['stage'] ?? 'Sent Step 1';
                                 $sc['delivery_status'] = $origSeed['delivery_status'] ?? 'Sent';
                                 $sc['sent_at'] = $origSeed['sent_at'];
                                 if (!empty($origSeed['notes'])) $sc['notes'] = $origSeed['notes'];
-                                break;
+                            } elseif (($origSeed['stage'] ?? '') === 'Dropped' || (!empty($origSeed['last_reply']) && empty($rc['last_reply']))) {
+                                // Propagate externally logged pass / reply disposition from newer seed copy_rev
+                                if (!empty($origSeed['stage'])) $sc['stage'] = $origSeed['stage'];
+                                if (!empty($origSeed['delivery_status'])) $sc['delivery_status'] = $origSeed['delivery_status'];
+                                if (!empty($origSeed['notes'])) $sc['notes'] = $origSeed['notes'];
+                                if (!empty($origSeed['last_reply'])) $sc['last_reply'] = $origSeed['last_reply'];
+                                if (!empty($origSeed['replies'])) $sc['replies'] = $origSeed['replies'];
                             }
+                            break;
                         }
                     }
                 }

@@ -357,13 +357,37 @@
             "angle": "Wave 2 #5/5 · QUERY ONLY in email body (no sample pages per Liza Dawson rule)",
             "subject_line": "Query for Caitlin Blasdell: ARMY AUNTS: THE ROYAL SPELLING WAR (Middle Grade)",
             "custom_blurb": "Query Letter Only inline (no sample pages or attachments).",
-            "copy_rev": 1,
-            "stage": "Sent Step 1",
-            "delivery_status": "Sent (Gmail 1a1faf8688622818)",
+            "copy_rev": 2,
+            "stage": "Dropped",
+            "delivery_status": "Passed — Form Reply (2026-11-23)",
             "resend_id": null,
             "sent_at": "2026-11-20T21:59:06Z",
             "step_2_sent_at": null,
-            "notes": "Wave 2 #5/5 — SENT LIVE 2026-11-20 (Gmail Sent ID: 1a1faf8688622818)."
+            "notes": "Wave 2 #5/5 — SENT LIVE 2026-11-20 (Gmail Sent ID: 1a1faf8688622818). Passed 2026-11-23 (3-day turnaround: \"This is not right for me, but thank you for the look.\").",
+            "last_reply": {
+                "id": "REP-blasdell-2026-11-23",
+                "type": "human",
+                "classification": "Passed — Form Reply",
+                "from": "querycaitlin@lizadawson.com",
+                "from_name": "Caitlin Blasdell (Liza Dawson Associates)",
+                "subject": "Re: Query for Caitlin Blasdell: ARMY AUNTS: THE ROYAL SPELLING WAR (Middle Grade)",
+                "snippet": "This is not right for me, but thank you for the look.",
+                "received_at": "2026-11-24T02:26:00Z",
+                "reason": "Polite form pass received 2026-11-23 at 5:26 PM (3-day turnaround from 2026-11-20 send ID 1a1faf8688622818)"
+            },
+            "replies": [
+                {
+                    "id": "REP-blasdell-2026-11-23",
+                    "type": "human",
+                    "classification": "Passed — Form Reply",
+                    "from": "querycaitlin@lizadawson.com",
+                    "from_name": "Caitlin Blasdell (Liza Dawson Associates)",
+                    "subject": "Re: Query for Caitlin Blasdell: ARMY AUNTS: THE ROYAL SPELLING WAR (Middle Grade)",
+                    "snippet": "This is not right for me, but thank you for the look.",
+                    "received_at": "2026-11-24T02:26:00Z",
+                    "reason": "Polite form pass received 2026-11-23 at 5:26 PM (3-day turnaround from 2026-11-20 send ID 1a1faf8688622818)"
+                }
+            ]
         },
         {
             "id": "GW-C005",

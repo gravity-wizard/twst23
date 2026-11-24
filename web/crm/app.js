@@ -42,7 +42,7 @@ function deliveryPill(status) {
   if (!status || status === 'Not Sent') return 'status-muted';
   if (status === 'Auto-Acknowledged') return 'status-purple';
   if (status === 'Human Replied' || status === 'Replied') return 'status-ok';
-  if (status.includes('Bounce') || status.includes('Rejected') || status.includes('Dropped')) return 'status-danger';
+  if (status.includes('Bounce') || status.includes('Rejected') || status.includes('Dropped') || status.includes('Passed')) return 'status-danger';
   if (status.includes('Sent')) return 'status-info';
   return 'status-muted';
 }
