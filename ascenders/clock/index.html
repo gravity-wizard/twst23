@@ -104,10 +104,24 @@
         const m = decMsd(s.slice(0, 3)), l = decPeak(s.slice(4, 7));
         if (m !== null && l !== null) return { mode: "Single-Peak", unix: T0 + m * TRIAD + l };
       }
-      if (s.length === 15 && isSep(s[3]) && isSep(s[7]) && isSep(s[11]) && /^[a-z][1-57-9][a-z]$/.test(s.slice(4, 7)) && /^[a-z][1-57-9][a-z]$/.test(s.slice(8, 11))) {
-        const m = decMsd(s.slice(0, 3)), v1 = decPeak(s.slice(4, 7)), v2 = decPeak(s.slice(8, 11)), v3 = decPeak(s.slice(12, 15));
-        if (m !== null && v1 !== null && v2 !== null && v3 !== null) {
-          return { mode: `3-Peaks (${s.slice(4, 7)}^${s.slice(8, 11)})`, unix: T0 + m * TRIAD + ((v1 + v2 + v3 + m) % TRIAD) };
+      if (s.length >= 15 && (s.length - 3) % 4 === 0) {
+        const peaks = (s.length - 3) / 4;
+        if (peaks >= 3 && peaks <= 7) {
+          let sepsOk = true;
+          for (let i = 0; i < peaks; i++) if (!isSep(s[3 + 4 * i])) sepsOk = false;
+          const m = decMsd(s.slice(0, 3));
+          if (sepsOk && m !== null) {
+            let sum = m, valid = true, wishParts = [];
+            for (let i = 0; i < peaks; i++) {
+              const t = s.slice(4 + 4 * i, 7 + 4 * i);
+              if (i < peaks - 1 && !/^[a-z][1-57-9][a-z]$/.test(t)) { valid = false; break; }
+              if (i < peaks - 1) wishParts.push(t);
+              const v = decPeak(t);
+              if (v === null) { valid = false; break; }
+              sum += v;
+            }
+            if (valid) return { mode: `${peaks}-Peaks (${s.length} chars · ${wishParts.join("^")})`, unix: T0 + m * TRIAD + (sum % TRIAD) };
+          }
         }
       }
       const dash = s.lastIndexOf("-");

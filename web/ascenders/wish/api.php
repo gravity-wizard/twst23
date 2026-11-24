@@ -318,7 +318,7 @@ function parse_wish_window(string $raw, array $config): array {
         'fullscreen' => 'f5n',
     ];
     $tokens = preg_split('/[\s^\/-]+/', strtolower($trimmed), -1, PREG_SPLIT_NO_EMPTY) ?: [];
-    if (count($tokens) >= 1 && count($tokens) <= 2) {
+    if (count($tokens) >= 1 && count($tokens) <= 6) {
         $mapped = array_map(fn(string $t) => $aliases[$t] ?? $t, $tokens);
         $allValid = true;
         foreach ($mapped as $t) {
@@ -330,10 +330,13 @@ function parse_wish_window(string $raw, array $config): array {
         if ($allValid) {
             $canonicalWish = implode('^', $mapped);
             if (is_clean_acode_sequence($canonicalWish)) {
+                $peaks = count($mapped) === 1 ? 3 : count($mapped) + 1;
                 return [
                     'kind' => 'conforming',
                     'conforming' => true,
                     'triads' => $mapped,
+                    'peaks' => $peaks,
+                    'slugLength' => 3 + 4 * $peaks,
                     'canonicalWish' => $canonicalWish,
                     'quotaCost' => 1,
                     'maxBytes' => $maxBytes,
@@ -346,6 +349,8 @@ function parse_wish_window(string $raw, array $config): array {
         'kind' => 'nonconforming',
         'conforming' => false,
         'triads' => [],
+        'peaks' => 0,
+        'slugLength' => 0,
         'canonicalWish' => '',
         'quotaCost' => $nonConfCost,
         'maxBytes' => $nonConfMax,
@@ -371,7 +376,10 @@ function mint_conforming_3peaks_slug(array $wishTriads, int $unixSeconds, array 
     $msdClean = false;
 
     $t1 = $cleanWish[0];
-    $v1 = decode_peak_triad($t1) ?? 0;
+    $wishSum = 0;
+    foreach ($cleanWish as $wt) {
+        $wishSum += decode_peak_triad($wt) ?? 0;
+    }
 
     for ($step = 0; $step < 2000; ) {
         $elapsed = $sec - $epoch;
@@ -390,19 +398,20 @@ function mint_conforming_3peaks_slug(array $wishTriads, int $unixSeconds, array 
             continue;
         }
 
-        if (count($cleanWish) === 2) {
-            $t2 = $cleanWish[1];
-            $v2 = decode_peak_triad($t2) ?? 0;
-            $needed = (($lsdVal - $msdVal - $v1 - $v2) % $triadBase + $triadBase) % $triadBase;
-            $s3Canon = encode_peak_triad_canonical($needed);
-            $s3Slug = is_a8a_triad($s3Canon) ? $s3Canon : encode_peak_triad_urlsafe($needed);
-            $canonical = "{$msd}^{$t1}^{$t2}^{$s3Canon}";
-            $slug = "{$msd}-{$t1}-{$t2}-{$s3Slug}";
+        if (count($cleanWish) >= 2) {
+            $peaks = count($cleanWish) + 1;
+            $needed = (($lsdVal - $msdVal - $wishSum) % $triadBase + $triadBase) % $triadBase;
+            $snCanon = encode_peak_triad_canonical($needed);
+            $snSlug = is_a8a_triad($snCanon) ? $snCanon : encode_peak_triad_urlsafe($needed);
+            $canonBody = implode('^', $cleanWish);
+            $slugBody = implode('-', $cleanWish);
+            $canonical = "{$msd}^{$canonBody}^{$snCanon}";
+            $slug = "{$msd}-{$slugBody}-{$snSlug}";
             if (is_clean_acode_sequence($canonical) && is_clean_acode_sequence($slug) && !isset($existing[$slug]) && !isset($existing[$canonical])) {
-                return ['slug' => $slug, 'canonical' => $canonical, 'unixSeconds' => $sec];
+                return ['slug' => $slug, 'canonical' => $canonical, 'peaks' => $peaks, 'unixSeconds' => $sec];
             }
         } else {
-            $rem = (($lsdVal - $msdVal - $v1) % $triadBase + $triadBase) % $triadBase;
+            $rem = (($lsdVal - $msdVal - $wishSum) % $triadBase + $triadBase) % $triadBase;
             $seed = (($elapsed ^ 0x9e3779b9) * 2654435761) & 0x7fffffff;
             for ($attempt = 0; $attempt < 600; $attempt++) {
                 $idx2 = (($seed + ($attempt + 1) * 2246822519) & 0x7fffffff) % $a8aCount;
@@ -415,7 +424,7 @@ function mint_conforming_3peaks_slug(array $wishTriads, int $unixSeconds, array 
                 $canonical = "{$msd}^{$t1}^{$t2}^{$cand3}";
                 $slug = "{$msd}-{$t1}-{$t2}-{$cand3}";
                 if (is_clean_acode_sequence($canonical) && is_clean_acode_sequence($slug) && !isset($existing[$slug]) && !isset($existing[$canonical])) {
-                    return ['slug' => $slug, 'canonical' => $canonical, 'unixSeconds' => $sec];
+                    return ['slug' => $slug, 'canonical' => $canonical, 'peaks' => 3, 'unixSeconds' => $sec];
                 }
             }
             for ($attempt = 0; $attempt < 200; $attempt++) {
@@ -429,7 +438,7 @@ function mint_conforming_3peaks_slug(array $wishTriads, int $unixSeconds, array 
                 $canonical = "{$msd}^{$t1}^{$t2}^{$s3Canon}";
                 $slug = "{$msd}-{$t1}-{$t2}-{$s3Slug}";
                 if (is_clean_acode_sequence($canonical) && is_clean_acode_sequence($slug) && !isset($existing[$slug]) && !isset($existing[$canonical])) {
-                    return ['slug' => $slug, 'canonical' => $canonical, 'unixSeconds' => $sec];
+                    return ['slug' => $slug, 'canonical' => $canonical, 'peaks' => 3, 'unixSeconds' => $sec];
                 }
             }
         }
@@ -438,7 +447,7 @@ function mint_conforming_3peaks_slug(array $wishTriads, int $unixSeconds, array 
         $sec++;
     }
 
-    throw new RuntimeException('Unable to mint unique conforming 3-peaks slug.');
+    throw new RuntimeException('Unable to mint unique conforming N-peaks slug.');
 }
 
 function decode_acode_timestamp(string $code): ?int {
@@ -457,19 +466,26 @@ function decode_acode_timestamp(string $code): ?int {
         return $epoch + $msdVal * $triadBase + $lsdVal;
     }
 
-    if (strlen($s) === 15 && $isSep($s[3]) && $isSep($s[7]) && $isSep($s[11])) {
-        $msd = substr($s, 0, 3);
-        $p1 = substr($s, 4, 3);
-        $p2 = substr($s, 8, 3);
-        $p3 = substr($s, 12, 3);
-        if (!is_a8a_triad($p1) || !is_a8a_triad($p2)) return null;
-        $msdVal = decode_compact_time($msd);
-        $v1 = decode_peak_triad($p1);
-        $v2 = decode_peak_triad($p2);
-        $v3 = decode_peak_triad($p3);
-        if ($msdVal === null || $v1 === null || $v2 === null || $v3 === null) return null;
-        $lsdVal = ($v1 + $v2 + $v3 + $msdVal) % $triadBase;
-        return $epoch + $msdVal * $triadBase + $lsdVal;
+    $len = strlen($s);
+    if ($len >= 15 && ($len - 3) % 4 === 0) {
+        $peaks = intdiv($len - 3, 4);
+        if ($peaks >= 3 && $peaks <= 7) {
+            for ($i = 0; $i < $peaks; $i++) {
+                if (!$isSep($s[3 + 4 * $i])) return null;
+            }
+            $msdVal = decode_compact_time(substr($s, 0, 3));
+            if ($msdVal === null) return null;
+            $sum = $msdVal;
+            for ($i = 0; $i < $peaks; $i++) {
+                $triad = substr($s, 4 + 4 * $i, 3);
+                if ($i < $peaks - 1 && !is_a8a_triad($triad)) return null;
+                $v = decode_peak_triad($triad);
+                if ($v === null) return null;
+                $sum += $v;
+            }
+            $lsdVal = $sum % $triadBase;
+            return $epoch + $msdVal * $triadBase + $lsdVal;
+        }
     }
 
     return null;

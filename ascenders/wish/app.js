@@ -118,16 +118,17 @@ function parseWishInput(raw) {
     return { kind: "blank", conforming: true, triads: [], canonicalWish: "" };
   }
   const tokens = trimmed.toLowerCase().split(/[\s^\/-]+/).filter(Boolean);
-  if (tokens.length >= 1 && tokens.length <= 2) {
+  if (tokens.length >= 1 && tokens.length <= 6) {
     const mapped = tokens.map((t) => WISH_TRIAD_ALIASES[t] || t);
     if (mapped.every((t) => isA8aTriad(t) && isCleanAcodeSeq(t))) {
       const canonicalWish = mapped.join("^");
       if (isCleanAcodeSeq(canonicalWish)) {
-        return { kind: "conforming", conforming: true, triads: mapped, canonicalWish };
+        const peaks = mapped.length === 1 ? 3 : mapped.length + 1;
+        return { kind: "conforming", conforming: true, triads: mapped, peaks, canonicalWish };
       }
     }
   }
-  return { kind: "nonconforming", conforming: false, triads: [], canonicalWish: "" };
+  return { kind: "nonconforming", conforming: false, triads: [], peaks: 0, canonicalWish: "" };
 }
 
 function buildAcodeTimeSlug() {
@@ -166,7 +167,7 @@ function buildConforming3PeaksSlug(triads) {
   const a8aCount = 5408;
   let sec = Math.max(epoch, Math.floor(Date.now() / 1000));
   const t1 = triads[0];
-  const v1 = decodePeakVal(t1);
+  const wishSum = triads.reduce((acc, t) => acc + decodePeakVal(t), 0);
 
   for (let step = 0; step < 200; step++, sec++) {
     const elapsed = sec - epoch;
@@ -175,17 +176,15 @@ function buildConforming3PeaksSlug(triads) {
     const msd = encodeCompactVal(msdVal).padStart(3, "0").slice(-3).replace(/0/g, "_").replace(/\|/g, "_").replace(/\^/g, "-");
     if (!isCleanAcodeSeq(msd.replace(/_/g, "0"))) continue;
 
-    if (triads.length === 2) {
-      const t2 = triads[1];
-      const v2 = decodePeakVal(t2);
-      const needed = (((lsdVal - msdVal - v1 - v2) % triadBase) + triadBase) % triadBase;
-      const s3Canon = encodeCompactVal(needed).padStart(3, "0").slice(-3);
-      const s3Url = s3Canon.replace(/\|/g, "_").replace(/\^/g, "-");
-      const canon = `${msd}^${t1}^${t2}^${s3Canon}`;
-      const slug = `${msd}-${t1}-${t2}-${s3Url}`;
+    if (triads.length >= 2) {
+      const needed = (((lsdVal - msdVal - wishSum) % triadBase) + triadBase) % triadBase;
+      const snCanon = encodeCompactVal(needed).padStart(3, "0").slice(-3);
+      const snUrl = snCanon.replace(/\|/g, "_").replace(/\^/g, "-");
+      const canon = `${msd}^${triads.join("^")}^${snCanon}`;
+      const slug = `${msd}-${triads.join("-")}-${snUrl}`;
       if (isCleanAcodeSeq(canon) && isCleanAcodeSeq(slug)) return slug;
     } else {
-      const rem = (((lsdVal - msdVal - v1) % triadBase) + triadBase) % triadBase;
+      const rem = (((lsdVal - msdVal - wishSum) % triadBase) + triadBase) % triadBase;
       for (let attempt = 0; attempt < 300; attempt++) {
         const t2 = a8aFromIdx((elapsed + attempt * 37) % a8aCount);
         if (!isCleanAcodeSeq(t2)) continue;
